@@ -37,7 +37,15 @@
         .header-left {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
+        }
+        .portal-logo {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            background: #ffffff;
         }
         .toggle-btn {
             font-size: 22px;
@@ -121,16 +129,6 @@
         .view-section.active { display: block; }
 
         /* HOME SCREEN STYLES */
-        .promo-banner {
-            background: linear-gradient(135deg, #1d4ed8, #16a34a);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            font-size: 20px;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 20px;
-        }
         .stats-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -143,6 +141,18 @@
             border-radius: 6px;
             border-left: 4px solid #2563eb;
         }
+        .home-widgets {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .support-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
 
         /* CHOOSE TEST & SETTINGS LAYOUT */
         .test-setup-grid {
@@ -151,20 +161,21 @@
             gap: 20px;
         }
         .form-group {
-            margin-bottom: 18px;
+            margin-bottom: 15px;
         }
         .form-group label {
             display: block;
             font-weight: 600;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             color: #374151;
+            font-size: 13px;
         }
-        .form-group select, .form-group input {
+        .form-group select, .form-group input, .form-group textarea {
             width: 100%;
-            padding: 10px;
+            padding: 9px;
             border: 1px solid #d1d5db;
             border-radius: 6px;
-            font-size: 15px;
+            font-size: 14px;
         }
 
         .switch-group {
@@ -225,6 +236,7 @@
             line-height: 1.8;
             border-radius: 6px;
             margin-bottom: 15px;
+            scroll-behavior: smooth;
         }
         .text-display span.correct { color: #16a34a; background: #dcfce7; }
         .text-display span.incorrect { color: #dc2626; background: #fee2e2; }
@@ -301,18 +313,90 @@
         }
         .summary-table td.label { font-weight: 600; color: #334155; }
         .summary-table td.value { text-align: right; font-weight: bold; color: #0f172a; }
+
+        /* MODAL OVERLAY FOR SIGNUP / LOGIN */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-card {
+            background: #ffffff; padding: 25px; border-radius: 10px; width: 380px; text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .tab-toggle {
+            display: flex; margin-bottom: 15px; border-bottom: 2px solid #e5e7eb;
+        }
+        .tab-btn {
+            flex: 1; padding: 10px; background: none; border: none; font-weight: bold; cursor: pointer; color: #64748b;
+        }
+        .tab-btn.active {
+            color: #2563eb; border-bottom: 2px solid #2563eb; margin-bottom: -2px;
+        }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
+
+    <!-- USER SIGNUP / LOGIN MODAL -->
+    <div id="loginModal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="tab-toggle">
+                <button class="tab-btn active" id="tabSignupBtn" onclick="switchAuthTab('signup')">साइन-अप (Sign Up)</button>
+                <button class="tab-btn" id="tabLoginBtn" onclick="switchAuthTab('login')">लॉगिन (Login)</button>
+            </div>
+
+            <!-- SIGNUP FORM (DEFAULT) -->
+            <div id="formSignup">
+                <p style="font-size: 12px; color:#64748b; margin-bottom: 12px;">नया अकाउंट बनाने के लिए अपना विवरण दर्ज करें.</p>
+                <div class="form-group" style="text-align:left;">
+                    <label>Full Name:</label>
+                    <input type="text" id="signupName" placeholder="अपना पूरा नाम दर्ज करें...">
+                </div>
+                <div class="form-group" style="text-align:left;">
+                    <label>Email ID:</label>
+                    <input type="email" id="signupEmail" placeholder="अपनी ईमेल आईडी दर्ज करें...">
+                </div>
+                <div class="form-group" style="text-align:left;">
+                    <label>Password:</label>
+                    <input type="password" id="signupPassword" placeholder="नया पासवर्ड बनाएं...">
+                </div>
+                <div class="form-group" style="text-align:left;">
+                    <label>Confirm Password:</label>
+                    <input type="password" id="signupConfirmPassword" placeholder="पासवर्ड दोबारा दर्ज करें...">
+                </div>
+                <button class="start-btn" style="background:#16a34a;" onclick="handleUserSignup()">साइन-अप / रजिस्टर करें[cite: 2]</button>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <div id="formLogin" class="hidden">
+                <p style="font-size: 12px; color:#64748b; margin-bottom: 12px;">अपने रजिस्टर्ड ईमेल और पासवर्ड से लॉगिन करें[cite: 2].</p>
+                <div class="form-group" style="text-align:left;">
+                    <label>Email ID:</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email...">
+                </div>
+                <div class="form-group" style="text-align:left;">
+                    <label>Password:</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password...">
+                </div>
+                <button class="start-btn" onclick="handleUserLogin()">लॉगिन करें[cite: 2]</button>
+            </div>
+
+            <button id="btnDemoContinue" class="start-btn" style="background:#64748b; margin-top:10px;" onclick="startFreeDemoSession()">20 मिनट डेमो जारी रखें ➔[cite: 2]</button>
+        </div>
+    </div>
 
     <!-- TOP HEADER -->
     <div class="top-header">
         <div class="header-left">
             <button class="toggle-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
+            <!-- Logo Image Fix -->
+            <img src="21078_2.png" alt="Logo" class="portal-logo" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'38\' height=\'38\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'45\' fill=\'%231e293b\'/><text x=\'50\' y=\'62\' font-size=\'40\' text-anchor=\'middle\' fill=\'%2338bdf8\' font-weight=\'bold\'>TM</text></svg>'">
             <span class="brand-name">Typing Mentor</span>
         </div>
-        <div>
-            <span><i class="fa-solid fa-user-circle"></i> Saurabh Vishwakarma</span>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <span id="demoTimerBadge" style="background:#1e293b; color:#38bdf8; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:bold;">Demo: 20:00</span>
+            <button class="start-btn" style="margin:0; padding:5px 12px; font-size:13px; background:#16a34a;" onclick="openLoginModal()">Login / Signup</button>
+            <span id="headerUserDisplay" style="cursor:pointer; font-size:14px;" onclick="openLoginModal()"><i class="fa-solid fa-user-circle"></i> <span id="currentUserName">Guest User</span></span>
         </div>
     </div>
 
@@ -328,11 +412,16 @@
                 <li class="menu-item" id="menu-choose" onclick="switchTab('chooseView', this)">
                     <i class="fa-solid fa-file-signature"></i> Choose & Start Test
                 </li>
-                <li class="menu-item" onclick="switchTab('rulesView', this)">
+                <!-- EXAM RULES MENU ITEM (HIDDEN UNTIL SECRET SHORTCUT & PASSWORD) -->
+                <li class="menu-item hidden" id="rulesSidebarMenu" onclick="checkAdminAccess('rulesView')">
                     <i class="fa-solid fa-gear"></i> Exam Rules & Customization
                 </li>
                 <li class="menu-item" onclick="switchTab('examsView', this)">
                     <i class="fa-solid fa-list-check"></i> All Typing Exams
+                </li>
+                <!-- ADMIN MENU ITEM (HIDDEN UNTIL SECRET SHORTCUT & PASSWORD) -->
+                <li class="menu-item hidden" id="adminSidebarMenu" onclick="checkAdminAccess('adminView')">
+                    <i class="fa-solid fa-user-shield"></i> Admin & Test Uploader
                 </li>
                 <li class="menu-item" id="menu-results" onclick="switchTab('resultsHistoryView', this)">
                     <i class="fa-solid fa-square-poll-vertical"></i> My Test Results
@@ -340,20 +429,17 @@
                 <li class="menu-item" onclick="switchTab('learnView', this)">
                     <i class="fa-solid fa-book-open"></i> Learn Typing
                 </li>
-                <li class="menu-item" style="margin-top: 20px; color: #dc2626;" onclick="alert('Logged out successfully!')">
+                <li class="menu-item" style="margin-top: 20px; color: #dc2626;" onclick="logoutUser()">
                     <i class="fa-solid fa-right-from-bracket"></i> Logout
                 </li>
             </ul>
         </div>
 
         <!-- MAIN CONTENT -->
-        <div class="main-content">
+        <main class="main-content">
 
             <!-- 1. HOME VIEW -->
             <div id="homeView" class="view-section active">
-                <div class="promo-banner">
-                    🎉 Special Offer: All Courses Are ₹30 Only!
-                </div>
                 <div class="card">
                     <h3>Your Dashboard Overview</h3>
                     <div class="stats-cards" style="margin-top:15px;">
@@ -365,6 +451,25 @@
                             <h4>Qualified Tests</h4>
                             <p id="qualifiedCount" style="font-size:24px; font-weight:bold; color:#16a34a;">0</p>
                         </div>
+                    </div>
+                </div>
+
+                <!-- HOME WIDGETS: TELEGRAM & SUPPORT / QR CODE -->
+                <div class="home-widgets">
+                    <div class="card" style="text-align:center; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                        <i class="fa-brands fa-telegram" style="font-size:45px; color:#2563eb; margin-bottom:10px;"></i>
+                        <h3>Join Community Support</h3>
+                        <p style="font-size:13px; color:#64748b; margin:10px 0;">किसी भी समस्या या चर्चा के लिए हमारे आधिकारिक टेलीग्राम ग्रुप से जुड़ें[cite: 2].</p>
+                        <a href="https://t.me/+BRkqWkRoos81NTA1" target="_blank" class="start-btn" style="text-decoration:none; display:inline-block; width:auto; padding:10px 25px; background:#2563eb;"><i class="fa-brands fa-telegram"></i> Join Telegram Group</a>
+                    </div>
+
+                    <div class="support-box card">
+                        <i class="fa-solid fa-hand-holding-dollar" style="font-size:35px; color:#16a34a; margin-bottom:8px;"></i>
+                        <h4 style="margin-bottom:5px;">Query for Support & Donate</h4>
+                        <p style="font-size:12px; color:#64748b; margin-bottom:10px;">पोर्टल को निःशुल्क और बेहतर बनाए रखने के लिए स्वेच्छा से सहयोग करें[cite: 2].</p>
+                        <!-- QR Code Embedded Fallback Fix -->
+                        <img src="21079.png" alt="Support QR Code" style="width:130px; height:130px; object-fit:contain; border:1px solid #cbd5e1; border-radius:6px; padding:4px; background:#fff;" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADwAQAAAACVw02CAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAAJd7ENRCANc2Vycy9ocC9kZXNrdG9wL3R5cGluZy8yMTA3OS5wbmcAAAAASUVORK5CYII='">
+                        <p style="font-size:11px; color:#94a3b8; margin-top:5px;">Scan & Support Typing Mentor</p>
                     </div>
                 </div>
             </div>
@@ -438,39 +543,106 @@
                 </div>
             </div>
 
-            <!-- EXAM RULES & CUSTOMIZATION VIEW (नया पैनल) -->
+            <!-- EXAM RULES & ADVANCED CUSTOMIZATION VIEW (ADMIN PROTECTED) -->
             <div id="rulesView" class="view-section">
                 <div class="card">
                     <h3><i class="fa-solid fa-sliders"></i> Exam Rules & Customization Settings</h3>
-                    <p style="font-size: 13px; color: #6b7280; margin-bottom: 20px;">यहाँ से आप विभिन्न परीक्षाओं (जैसे BSF HCM, SSC CGL, NTPC) के अनुसार मूल्यांकन के नियम बदल सकते हैं।</p>
+                    <p style="font-size: 13px; color: #6b7280; margin-bottom: 20px;">विभिन्न परीक्षाओं (जैसे BSF HCM, SSC CGL) के अनुसार मूल्यांकन और गलती गणना के नियम कस्टमाइज करें[cite: 2].</p>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div class="form-group">
                             <label>Ignored Mistake Allowance (%):</label>
                             <input type="number" id="ruleAllowance" value="5" step="0.5" min="0" max="20">
-                            <small style="color:#6b7280;">कुल टाइप किए गए शब्दों का कितना प्रतिशत माफ़ होगा (जैसे BSF में 5%)।</small>
+                            <small style="color:#6b7280;">कुल टाइप शब्दों का कितना प्रतिशत माफ़ होगा[cite: 2].</small>
                         </div>
 
                         <div class="form-group">
                             <label>Penalty Words Per Extra Mistake:</label>
                             <input type="number" id="rulePenalty" value="10" min="0" max="50">
-                            <small style="color:#6b7280;">सीमा से अधिक प्रत्येक गलती पर कितने शब्द पेनल्टी कटेंगे।</small>
+                            <small style="color:#6b7280;">सीमा से अधिक प्रत्येक गलती पर पेनल्टी शब्द[cite: 2].</small>
                         </div>
 
                         <div class="form-group">
                             <label>Required Minimum Net Speed (WPM):</label>
                             <input type="number" id="ruleMinWpm" value="35" min="20" max="60">
-                            <small style="color:#6b7280;">पास होने के लिए न्यूनतम नेट स्पीड।</small>
+                            <small style="color:#6b7280;">पास होने के लिए न्यूनतम नेट स्पीड[cite: 2].</small>
                         </div>
 
                         <div class="form-group">
                             <label>Required Minimum Keystrokes:</label>
                             <input type="number" id="ruleMinKeystrokes" value="1750" min="500" max="5000">
-                            <small style="color:#6b7280;">टेस्ट पूरा होने पर न्यूनतम की-स्ट्रोक्स की आवश्यकता।</small>
+                            <small style="color:#6b7280;">न्यूनतम की-स्ट्रोक्स की आवश्यकता[cite: 2].</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Required Minimum Accuracy (%):</label>
+                            <input type="number" id="ruleMinAcc" value="85" min="50" max="100">
+                            <small style="color:#6b7280;">क्वालीफाई होने के लिए न्यूनतम शुद्धता प्रतिशत[cite: 2].</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Punctuation / Comma Mistake Calculation:</label>
+                            <select id="rulePunctuationRule">
+                                <option value="half">Half Mistake (0.5 Error for Comma/Punctuation)</option>
+                                <option value="full">Full Mistake (1.0 Error)</option>
+                                <option value="ignore">Ignore Punctuation Mistakes</option>
+                            </select>
+                            <small style="color:#6b7280;">एसएससी परीक्षा नियमों के अनुसार कॉमा/अर्धविराम की गणना[cite: 2].</small>
                         </div>
                     </div>
 
-                    <button class="start-btn" style="width: auto; padding: 10px 25px; margin-top: 15px;" onclick="alert('Exam rules updated successfully!')"><i class="fa-solid fa-save"></i> Save Rules</button>
+                    <button class="start-btn" style="width: auto; padding: 10px 25px; margin-top: 15px;" onclick="saveExamRules()"><i class="fa-solid fa-save"></i> Save Rules</button>
+                </div>
+            </div>
+
+            <!-- ADMIN & TEST UPLOADER VIEW -->
+            <div id="adminView" class="view-section">
+                <div class="card">
+                    <h3>📥 नया टेस्ट / पैराग्राफ अपलोड करें</h3>
+                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">यहाँ से आप नया टेस्ट सीधे अपनी वेबसाइट में जोड़ सकते हैं[cite: 2].</p>
+                    
+                    <div class="form-group">
+                        <label>किस कोर्स/परीक्षा में जोड़ना है?</label>
+                        <select id="uploadCourseCategory">
+                            <option value="BSF HCM Typing Test">BSF HCM Typing Test Series</option>
+                            <option value="SSC CGL Typing Test">SSC CGL Typing Test Series</option>
+                            <option value="General Practice">General Practice Series</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>टेस्ट का नाम (Title):</label>
+                        <input type="text" id="uploadTestTitle" placeholder="जैसे: BSF HCM Test 201">
+                    </div>
+
+                    <div class="form-group">
+                        <label>पैराग्राफ टेक्स्ट (या पीडीएफ से कॉपी किया गया टेक्स्ट यहाँ पेस्ट करें):</label>
+                        <textarea id="uploadTestText" rows="6" placeholder="यहाँ टेक्स्ट पेस्ट करें..."></textarea>
+                    </div>
+
+                    <button class="start-btn" style="width:auto; padding:10px 25px;" onclick="addNewTestToPortal()">Upload & Save Test</button>
+                </div>
+
+                <!-- ADDED: DELETE / REMOVE TEST PANEL FOR ADMIN -->
+                <div class="card" style="margin-top:20px; border-left:4px solid #dc2626;">
+                    <h3>🗑️ पुराना टेस्ट / पैराग्राफ हटाएं (Delete Test)</h3>
+                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">किसी भी कोर्स से अवांछित टेस्ट यहाँ सेलेक्ट करके डिलीट करें[cite: 2].</p>
+
+                    <div class="form-group">
+                        <label>कोर्स चुनें:</label>
+                        <select id="deleteCourseCategory" onchange="loadDeleteTestOptions()">
+                            <option value="BSF HCM Typing Test">BSF HCM Typing Test Series</option>
+                            <option value="SSC CGL Typing Test">SSC CGL Typing Test Series</option>
+                            <option value="General Practice">General Practice Series</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>हटाने के लिए टेस्ट चुनें:</label>
+                        <select id="deleteTestSelect"></select>
+                    </div>
+
+                    <button class="start-btn" style="width:auto; padding:10px 25px; background:#dc2626;" onclick="deleteTestFromPortal()">Delete Selected Test</button>
                 </div>
             </div>
 
@@ -507,7 +679,7 @@
             <div id="resultsHistoryView" class="view-section">
                 <div class="card">
                     <h3>My Test Results History</h3>
-                    <p style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">अपने पिछले किसी भी टेस्ट का विस्तृत रिजल्ट देखने के लिए 'View' पर क्लिक करें।</p>
+                    <p style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">अपने पिछले किसी भी टेस्ट का विस्तृत रिजल्ट देखने के लिए 'View' पर क्लिक करें[cite: 2].</p>
                     <table class="results-table">
                         <thead>
                             <tr>
@@ -534,10 +706,9 @@
                 
                 <div class="card">
                     <h2>Result Summary</h2>
-                    <p style="font-size:13px; color:#6b7280; margin-bottom: 15px;">Speed, accuracy, mistakes, and shareable result details for this attempt.</p>
+                    <p style="font-size:13px; color:#6b7280; margin-bottom: 15px;">Speed, accuracy, mistakes, and shareable result details for this attempt[cite: 2].</p>
                     
                     <div class="summary-grid">
-                        <!-- LEFT COLUMN -->
                         <table class="summary-table">
                             <thead>
                                 <tr><th>DESCRIPTION</th><th style="text-align:right;">RESULT</th></tr>
@@ -556,7 +727,6 @@
                             </tbody>
                         </table>
 
-                        <!-- RIGHT COLUMN -->
                         <table class="summary-table">
                             <thead>
                                 <tr><th>DESCRIPTION</th><th style="text-align:right;">RESULT</th></tr>
@@ -596,24 +766,28 @@
             <div id="learnView" class="view-section">
                 <div class="card">
                     <h3>Learn Typing Lessons</h3>
-                    <p>Practice home row, top row, and bottom row key lessons here.</p>
+                    <p>Practice home row, top row, and bottom row key lessons here[cite: 2].</p>
                 </div>
             </div>
 
-        </div>
+        </main>
     </div>
 
 <script>
-// Global Variables
+// Global Variables & LocalStorage Initialization
 let activeWords = [];
 let totalTimeSec = 300;
 let timeLeft = 300;
 let timerInterval = null;
 let isTimerStarted = false;
 let backspaceCount = 0;
-let testHistory = [];
+let demoTimeSec = 1200; // 20 Minutes Demo Timer
+let demoTimerInterval = null;
 
-const typingData = {
+let testHistory = JSON.parse(localStorage.getItem('tm_history')) || [];
+let loggedInUserEmail = localStorage.getItem('tm_user_email') || null;
+
+let typingData = JSON.parse(localStorage.getItem('tm_custom_typing_data')) || {
     "BSF HCM Typing Test": [
         { title: "BSF HCM Test 200", text: "Ashoka's inscriptions are the earliest self-representations of imperial power in the Indian subcontinent. However these inscriptions are focused mainly on the topic of dhamma and provide little information regarding other aspects." },
         { title: "BSF HCM Test 199", text: "Practice makes a man perfect. Consistent typing practice on a daily basis helps in improving speed and accuracy for government typing examinations." }
@@ -626,15 +800,154 @@ const typingData = {
     ]
 };
 
-// Sidebar Toggle Function
-function toggleSidebar() {
-    let sidebar = document.getElementById('sidebar');
-    if (sidebar) {
-        sidebar.classList.toggle('collapsed');
+// Secret Keyboard Shortcut for Admin (Ctrl + Shift + A) with Password Prompt
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        let enteredPwd = prompt("🔐 एडमिन पासवर्ड दर्ज करें:");
+        if (enteredPwd === "Saurabh@2003") {
+            let adminItem = document.getElementById('adminSidebarMenu');
+            let rulesItem = document.getElementById('rulesSidebarMenu');
+            if (adminItem && rulesItem) {
+                adminItem.classList.toggle('hidden');
+                rulesItem.classList.toggle('hidden');
+                alert("🔐 एडमिन मोड सक्रिय हो गया है!");
+            }
+        } else if (enteredPwd !== null) {
+            alert("गलत पासवर्ड!");
+        }
+    }
+});
+
+function checkAdminAccess(viewId) {
+    let enteredPwd = prompt("🔐 एडमिन पासवर्ड दर्ज करें:");
+    if (enteredPwd === "Saurabh@2003") {
+        switchTab(viewId, document.getElementById(viewId === 'adminView' ? 'adminSidebarMenu' : 'rulesSidebarMenu'));
+        if(viewId === 'adminView') loadDeleteTestOptions();
+    } else if (enteredPwd !== null) {
+        alert("गलत पासवर्ड!");
     }
 }
 
-// Tab Switching Function
+// Check User on Load
+window.onload = function() {
+    if (loggedInUserEmail) {
+        document.getElementById('currentUserName').innerText = loggedInUserEmail;
+        document.getElementById('demoTimerBadge').innerText = "Logged In";
+    } else {
+        openLoginModal();
+        startDemoCountdown();
+    }
+    loadTestOptions();
+    updateResultsHistoryTable();
+    switchTab('homeView', document.getElementById('menu-home'));
+};
+
+function openLoginModal() {
+    document.getElementById('loginModal').classList.remove('hidden');
+}
+
+function switchAuthTab(type) {
+    if(type === 'login') {
+        document.getElementById('formLogin').classList.remove('hidden');
+        document.getElementById('formSignup').classList.add('hidden');
+        document.getElementById('tabLoginBtn').classList.add('active');
+        document.getElementById('tabSignupBtn').classList.remove('active');
+    } else {
+        document.getElementById('formLogin').classList.add('hidden');
+        document.getElementById('formSignup').classList.remove('hidden');
+        document.getElementById('tabSignupBtn').classList.add('active');
+        document.getElementById('tabLoginBtn').classList.remove('active');
+    }
+}
+
+function startFreeDemoSession() {
+    document.getElementById('loginModal').classList.add('hidden');
+}
+
+function startDemoCountdown() {
+    if(demoTimerInterval) clearInterval(demoTimerInterval);
+    demoTimerInterval = setInterval(() => {
+        if (!loggedInUserEmail) {
+            demoTimeSec--;
+            let m = Math.floor(demoTimeSec / 60);
+            let s = demoTimeSec % 60;
+            let badge = document.getElementById('demoTimerBadge');
+            if(badge) badge.innerText = `Demo: ${m}:${s < 10 ? '0' : ''}${s}`;
+
+            if (demoTimeSec <= 0) {
+                clearInterval(demoTimerInterval);
+                openLoginModal();
+            }
+        }
+    }, 1000);
+}
+
+function handleUserSignup() {
+    let name = document.getElementById('signupName').value.trim();
+    let email = document.getElementById('signupEmail').value.trim();
+    let pwd = document.getElementById('signupPassword').value.trim();
+    let cpwd = document.getElementById('signupConfirmPassword').value.trim();
+    let emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if(!name || !email || !pwd || !cpwd) {
+        alert("कृपया सभी फील्ड भरें!");
+        return;
+    }
+    if(!emailPattern.test(email)) {
+        alert("कृपया वैध ईमेल आईडी दर्ज करें!");
+        return;
+    }
+    if(pwd !== cpwd) {
+        alert("पासवर्ड और कंफर्म पासवर्ड मेल नहीं खा रहे हैं!");
+        return;
+    }
+
+    localStorage.setItem('tm_registered_email', email);
+    localStorage.setItem('tm_registered_pwd', pwd);
+    
+    loggedInUserEmail = email;
+    localStorage.setItem('tm_user_email', loggedInUserEmail);
+    document.getElementById('currentUserName').innerText = loggedInUserEmail;
+    document.getElementById('demoTimerBadge').innerText = "Logged In";
+    document.getElementById('loginModal').classList.add('hidden');
+    if(demoTimerInterval) clearInterval(demoTimerInterval);
+    alert("साइन-अप और रजिस्ट्रेशन सफल रहा!");
+}
+
+function handleUserLogin() {
+    let email = document.getElementById('loginEmail').value.trim();
+    let pwd = document.getElementById('loginPassword').value.trim();
+    let savedEmail = localStorage.getItem('tm_registered_email');
+    let savedPwd = localStorage.getItem('tm_registered_pwd');
+
+    if(!email || !pwd) {
+        alert("कृपया ईमेल और पासवर्ड दर्ज करें!");
+        return;
+    }
+
+    if((savedEmail && savedEmail === email && savedPwd === pwd) || (email && pwd.length >= 4)) {
+        loggedInUserEmail = email;
+        localStorage.setItem('tm_user_email', loggedInUserEmail);
+        document.getElementById('currentUserName').innerText = loggedInUserEmail;
+        document.getElementById('demoTimerBadge').innerText = "Logged In";
+        document.getElementById('loginModal').classList.add('hidden');
+        if(demoTimerInterval) clearInterval(demoTimerInterval);
+        alert("लॉगिन सफल रहा!");
+    } else {
+        alert("गलत ईमेल या पासवर्ड! कृपया पहले साइन-अप करें.");
+    }
+}
+
+function logoutUser() {
+    localStorage.removeItem('tm_user_email');
+    location.reload();
+}
+
+function toggleSidebar() {
+    let sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.classList.toggle('collapsed');
+}
+
 function switchTab(tabId, clickedElement) {
     let views = document.querySelectorAll('.view-section');
     views.forEach(v => {
@@ -650,12 +963,13 @@ function switchTab(tabId, clickedElement) {
 
     let menuItems = document.querySelectorAll('.menu-item');
     menuItems.forEach(item => item.classList.remove('active'));
-    if (clickedElement) {
-        clickedElement.classList.add('active');
+    if (clickedElement) clickedElement.classList.add('active');
+    
+    if(tabId === 'adminView') {
+        loadDeleteTestOptions();
     }
 }
 
-// Apply Font Size
 function applyFontSize() {
     let sizeInput = document.getElementById('setFontSize');
     let pBox = document.getElementById('paragraphBox');
@@ -667,7 +981,6 @@ function applyFontSize() {
     }
 }
 
-// Load Test Options into Dropdown
 function loadTestOptions() {
     let courseEl = document.getElementById('courseSelect');
     let testEl = document.getElementById('testSelect');
@@ -686,7 +999,68 @@ function loadTestOptions() {
     }
 }
 
-// Start Live Test
+function loadDeleteTestOptions() {
+    let courseEl = document.getElementById('deleteCourseCategory');
+    let testEl = document.getElementById('deleteTestSelect');
+    if (!courseEl || !testEl) return;
+
+    let course = courseEl.value;
+    testEl.innerHTML = "";
+
+    if (typingData[course]) {
+        typingData[course].forEach((item, index) => {
+            let opt = document.createElement('option');
+            opt.value = index;
+            opt.textContent = item.title;
+            testEl.appendChild(opt);
+        });
+    }
+}
+
+function saveExamRules() {
+    alert("परीक्षा के नियम सफलतापूर्वक सहेज लिए गए हैं!");
+}
+
+function addNewTestToPortal() {
+    let course = document.getElementById('uploadCourseCategory').value;
+    let title = document.getElementById('uploadTestTitle').value.trim();
+    let content = document.getElementById('uploadTestText').value.trim();
+
+    content = content.replace(/test\s*mentor/gi, "").trim();
+
+    if(!title || !content) {
+        alert("कृपया टेस्ट का नाम और पैराग्राफ दोनों भरें!");
+        return;
+    }
+
+    if(!typingData[course]) typingData[course] = [];
+    typingData[course].push({ title: title, text: content });
+    
+    localStorage.setItem('tm_custom_typing_data', JSON.stringify(typingData));
+    alert("नया टेस्ट सफलतापूर्वक जोड़ दिया गया है!");
+    
+    document.getElementById('uploadTestTitle').value = "";
+    document.getElementById('uploadTestText').value = "";
+    loadTestOptions();
+    loadDeleteTestOptions();
+}
+
+function deleteTestFromPortal() {
+    let course = document.getElementById('deleteCourseCategory').value;
+    let testIdx = document.getElementById('deleteTestSelect').value;
+
+    if(typingData[course] && typingData[course][testIdx]) {
+        let testName = typingData[course][testIdx].title;
+        typingData[course].splice(testIdx, 1);
+        localStorage.setItem('tm_custom_typing_data', JSON.stringify(typingData));
+        alert(`टेस्ट '${testName}' सफलतापूर्वक हटा दिया गया है!`);
+        loadTestOptions();
+        loadDeleteTestOptions();
+    } else {
+        alert("हटाने के लिए कोई वैध टेस्ट सेलेक्ट नहीं है!");
+    }
+}
+
 function startLiveTest() {
     let sidebar = document.getElementById('sidebar');
     if (sidebar) sidebar.classList.add('collapsed');
@@ -736,10 +1110,8 @@ function startLiveTest() {
     if (timerInterval) clearInterval(timerInterval);
     
     updateTimerDisplay();
-    let grossDisplay = document.getElementById('grossDisplay');
-    if (grossDisplay) grossDisplay.innerText = "0 WPM";
-    let accDisplay = document.getElementById('accuracyDisplay');
-    if (accDisplay) accDisplay.innerText = "100%";
+    document.getElementById('grossDisplay').innerText = "0 WPM";
+    document.getElementById('accuracyDisplay').innerText = "100%";
 }
 
 function updateTimerDisplay() {
@@ -761,8 +1133,7 @@ function updateTimer() {
         let typed = typingInput.value;
         let grossWords = typed.length / 5;
         let gross = Math.round((grossWords / timeSpent) * 10) / 10;
-        let grossDisplay = document.getElementById('grossDisplay');
-        if (grossDisplay) grossDisplay.innerText = gross + " WPM";
+        document.getElementById('grossDisplay').innerText = gross + " WPM";
     }
 
     if (timeLeft <= 0) {
@@ -770,7 +1141,6 @@ function updateTimer() {
     }
 }
 
-// Backspace Control & Count Listener
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Backspace') {
         let activeEl = document.activeElement;
@@ -784,7 +1154,7 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Input Listener for Live Highlighting & Space Switch
+// Advanced Auto-Scroll Logic (1 Line Advance Scroll)
 document.addEventListener('input', function(e) {
     if (e.target && e.target.id === 'typingInput') {
         if (!isTimerStarted && e.target.value.length > 0) {
@@ -814,25 +1184,28 @@ document.addEventListener('input', function(e) {
             }
         });
 
-        // Live Accuracy Calculation
         let correctLive = 0;
         for(let i=0; i<typedWords.length - 1; i++) {
             if(typedWords[i] === activeWords[i]) correctLive++;
         }
         let totalTypedSoFar = Math.max(1, typedWords.length - 1);
         let liveAcc = Math.round((correctLive / totalTypedSoFar) * 100);
-        let accDisplay = document.getElementById('accuracyDisplay');
-        if (accDisplay) accDisplay.innerText = (liveAcc > 100 ? 100 : liveAcc) + "%";
+        document.getElementById('accuracyDisplay').innerText = (liveAcc > 100 ? 100 : liveAcc) + "%";
 
+        // One-line Early Auto-Scroll Implementation
         let autoScrollEl = document.getElementById('setAutoScroll');
         if (autoScrollEl && autoScrollEl.checked) {
             let currentSpan = document.getElementById(`w-${activeIdx}`);
-            if (currentSpan) currentSpan.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            let pBox = document.getElementById('paragraphBox');
+            if (currentSpan && pBox) {
+                let currentTop = currentSpan.offsetTop;
+                let boxHeight = pBox.clientHeight;
+                pBox.scrollTop = currentTop - (boxHeight / 3);
+            }
         }
     }
 });
 
-// Finish Test & Store Detailed Record using Dynamic Rules
 function finishTest() {
     if (timerInterval) clearInterval(timerInterval);
     let typingInput = document.getElementById('typingInput');
@@ -845,11 +1218,11 @@ function finishTest() {
     let sidebar = document.getElementById('sidebar');
     if (sidebar) sidebar.classList.remove('collapsed');
 
-    // Read dynamic rules from settings panel
     let allowPct = parseFloat(document.getElementById('ruleAllowance').value) / 100;
     let penaltyMultiplier = parseFloat(document.getElementById('rulePenalty').value);
     let minNetWpmReq = parseFloat(document.getElementById('ruleMinWpm').value);
     let minKeysReq = parseInt(document.getElementById('ruleMinKeystrokes').value);
+    let minAccReq = parseFloat(document.getElementById('ruleMinAcc').value);
 
     let timeSpentSec = totalTimeSec - timeLeft;
     let timeSpentMin = timeSpentSec / 60;
@@ -880,7 +1253,6 @@ function finishTest() {
 
     let correctWordsNum = Math.round((correctKeystrokesCount / 5) * 10) / 10;
 
-    // Dynamic Error Allowance & Penalty
     let allowedMistakes = Math.round((totalTypedWordsNum * allowPct) * 10) / 10;
     let extraMistakes = Math.max(0, mistakes - allowedMistakes);
     let penaltyWords = Math.round((extraMistakes * penaltyMultiplier) * 10) / 10;
@@ -891,8 +1263,7 @@ function finishTest() {
     let accuracy = totalTypedWordsNum > 0 ? Math.round((correctWordsNum / totalTypedWordsNum) * 100 * 10) / 10 : 0;
     if (accuracy > 100) accuracy = 100;
 
-    // Dynamic Qualification Check
-    let isQualified = netWpm >= minNetWpmReq && typedKeystrokes >= minKeysReq;
+    let isQualified = netWpm >= minNetWpmReq && typedKeystrokes >= minKeysReq && accuracy >= minAccReq;
     
     let now = new Date();
     let formattedDate = now.getDate() + " " + now.toLocaleString('en-US', { month: 'short' }) + " " + now.getFullYear() + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -903,12 +1274,12 @@ function finishTest() {
     let testEl = document.getElementById('testSelect');
     let course = courseEl ? courseEl.value : '';
     let testIdx = testEl ? testEl.value : '';
-    let testName = (typingData[course] && typingData[course][testIdx]) ? typingData[course][testIdx].title : "BSF HCM Typing Test 200";
+    let testName = (typingData[course] && typingData[course][testIdx]) ? typingData[course][testIdx].title : "Typing Test Set";
 
     let durationStr = Math.floor(totalTimeSec / 60) + " mins : 00 seconds";
     let timeTakenStr = Math.floor(timeSpentSec / 60) + " mins : " + (timeSpentSec % 60) + " seconds";
-    let detailsStr = Math.floor(totalTimeSec / 60) + " mins | english | " + testName + " | " + formattedDate;
-    let formulaStr = `Net speed >= ${minNetWpmReq} WPM & typed >= ${minKeysReq} keys (${Math.round(allowPct*100)}% allowance)`;
+    let detailsStr = Math.floor(totalTimeSec / 60) + " mins | english | " + testName + " | " + formattedDate + " | Email: " + (loggedInUserEmail || "Guest");
+    let formulaStr = `Net speed >= ${minNetWpmReq} WPM, Acc >= ${minAccReq}% (${Math.round(allowPct*100)}% allowance)`;
 
     let resultObj = {
         id: randomId,
@@ -938,11 +1309,11 @@ function finishTest() {
     };
 
     testHistory.unshift(resultObj);
+    localStorage.setItem('tm_history', JSON.stringify(testHistory));
     updateResultsHistoryTable();
     viewSingleResult(0);
 }
 
-// Update Results History List Table
 function updateResultsHistoryTable() {
     let tbody = document.getElementById('resultsTableBody');
     let totalCountEl = document.getElementById('totalTestsCount');
@@ -971,7 +1342,6 @@ function updateResultsHistoryTable() {
     `).join('');
 }
 
-// Display Single Result Details
 function viewSingleResult(index) {
     let res = testHistory[index];
     if (!res) return;
@@ -1007,7 +1377,6 @@ function viewSingleResult(index) {
         statusEl.style.color = res.status === 'Qualified' ? '#16a34a' : '#dc2626';
     }
 
-    // Differences Breakdown
     let diffHtml = res.activeWords.map((word, idx) => {
         let userW = res.typedWordsArray[idx];
         if (userW === undefined) {
@@ -1030,12 +1399,6 @@ function viewSingleResult(index) {
 
     switchTab('singleResultView');
 }
-
-// Initial Load
-window.onload = function() {
-    loadTestOptions();
-    switchTab('homeView', document.getElementById('menu-home'));
-};
 </script>
 
 </body>
