@@ -10,7 +10,7 @@
     <!-- Firebase App & Firestore SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // Your web app's Firebase configuration
         const firebaseConfig = {
@@ -25,7 +25,14 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        window.db = db; // Make db globally accessible in script
+        window.db = db;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.getDocs = getDocs;
+        window.deleteDoc = deleteDoc;
+        window.doc = doc;
+        window.setDoc = setDoc;
+        window.getDoc = getDoc;
     </script>
 
     <style>
@@ -644,7 +651,7 @@
             <div id="adminView" class="view-section">
                 <div class="card">
                     <h3>📥 नया टेस्ट / पैराग्राफ अपलोड करें</h3>
-                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">यहाँ से आप नया टेस्ट सीधे अपनी वेबसाइट में जोड़ सकते हैं।</p>
+                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">यहाँ से आप नया टेस्ट सीधे अपनी वेबसाइट में जोड़ सकते हैं (यह क्लाउड डेटाबेस में सेव होगा)।</p>
                     
                     <div class="form-group">
                         <label>किस कोर्स/परीक्षा में जोड़ना है?</label>
@@ -661,7 +668,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>पैराग्राफ टेक्स्ट (या पीडीएफ से कॉपी किया गया टेक्स्ट यहाँ पेस्ट करें):</label>
+                        <label>पैराग्राफ टेक्स्ट:</label>
                         <textarea id="uploadTestText" rows="6" placeholder="यहाँ टेक्स्ट पेस्ट करें..."></textarea>
                     </div>
 
@@ -724,7 +731,7 @@
             <div id="resultsHistoryView" class="view-section">
                 <div class="card">
                     <h3>My Test Results History</h3>
-                    <p style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">अपने पिछले किसी भी टेस्ट का विस्तृत रिजल्ट देखने के लिए 'View' पर क्लिक करें।</p>
+                    <p style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">अपने पिछले किसी भी टेस्ट का विस्तृत रिजल्ट देखने के लिए 'View' पर क्लिक करें (क्लाउड से सिंक किया हुआ)।</p>
                     <table class="results-table">
                         <thead>
                             <tr>
@@ -737,7 +744,7 @@
                             </tr>
                         </thead>
                         <tbody id="resultsTableBody">
-                            <tr><td colspan="6" style="text-align:center;">No test attempts found yet.</td></tr>
+                            <tr><td colspan="6" style="text-align:center;">Loading results from cloud...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -819,7 +826,7 @@
     </div>
 
 <script>
-// Global Variables & LocalStorage Initialization
+// Global Variables & Cloud Data Sync Setup
 let activeWords = [];
 let totalTimeSec = 300;
 let timeLeft = 300;
@@ -827,7 +834,7 @@ let timerInterval = null;
 let isTimerStarted = false;
 let backspaceCount = 0;
 
-let testHistory = JSON.parse(localStorage.getItem('tm_history')) || [];
+let testHistory = [];
 let loggedInUserEmail = localStorage.getItem('tm_user_email') || null;
 
 // Default Exam Rules Config
@@ -837,7 +844,8 @@ let examRulesConfig = JSON.parse(localStorage.getItem('tm_exam_rules_config')) |
     "General Practice": { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1000, minAcc: 80, punctRule: "full" }
 };
 
-let typingData = JSON.parse(localStorage.getItem('tm_custom_typing_data')) || {
+// Default Typing Data (Will be synced with Firestore)
+let typingData = {
     "BSF HCM Typing Test": [
         { title: "BSF HCM Test 200", text: "Ashoka's inscriptions are the earliest self-representations of imperial power in the Indian subcontinent. However these inscriptions are focused mainly on the topic of dhamma and provide little information regarding other aspects." },
         { title: "BSF HCM Test 199", text: "Practice makes a man perfect. Consistent typing practice on a daily basis helps in improving speed and accuracy for government typing examinations." }
@@ -850,8 +858,50 @@ let typingData = JSON.parse(localStorage.getItem('tm_custom_typing_data')) || {
     ]
 };
 
-// Store master list of tests for case-insensitive filtering
 let masterTestList = [];
+
+// Fetch Tests and Results from Firebase Firestore on Load
+async function fetchCloudData() {
+    try {
+        if (window.db && window.getDocs && window.collection) {
+            // Fetch Custom Tests
+            let testSnap = await getDocs(window.collection(window.db, "typingTests"));
+            testSnap.forEach((docSnap) => {
+                let data = docSnap.data();
+                if (data.course && data.title && data.text) {
+                    if (!typingData[data.course]) typingData[data.course] = [];
+                    // Avoid duplicates if already exists
+                    let exists = typingData[data.course].some(t => t.title === data.title);
+                    if (!exists) {
+                        typingData[data.course].push({ id: docSnap.id, title: data.title, text: data.text });
+                    }
+                }
+            });
+
+            // Fetch User Results History if Logged In
+            if (loggedInUserEmail) {
+                let resSnap = await getDocs(window.collection(window.db, "userResults"));
+                let cloudResults = [];
+                resSnap.forEach((docSnap) => {
+                    let resData = docSnap.data();
+                    if (resData.email === loggedInUserEmail) {
+                        cloudResults.push(resData);
+                    }
+                });
+                if (cloudResults.length > 0) {
+                    testHistory = cloudResults;
+                }
+            }
+        }
+    } catch (e) {
+        console.log("Cloud sync fallback to local storage:", e);
+        let localHist = localStorage.getItem('tm_history');
+        if (localHist) testHistory = JSON.parse(localHist);
+    }
+    loadTestOptions();
+    updateResultsHistoryTable();
+    updateBestPerformance();
+}
 
 // Secret Keyboard Shortcut for Admin (Ctrl + Shift + A) with Password Prompt
 document.addEventListener('keydown', function(e) {
@@ -893,9 +943,11 @@ window.onload = function() {
         document.getElementById('headerAuthBtn').onclick = openLoginModal;
         openLoginModal();
     }
-    loadTestOptions();
-    updateResultsHistoryTable();
-    updateBestPerformance();
+    fetchCloudData().then(() => {
+        loadTestOptions();
+        updateResultsHistoryTable();
+        updateBestPerformance();
+    });
     switchTab('homeView', document.getElementById('menu-home'));
 };
 
@@ -950,6 +1002,7 @@ function handleUserSignup() {
     document.getElementById('headerAuthBtn').innerText = "Logout";
     document.getElementById('headerAuthBtn').onclick = logoutUser;
     closeLoginModal();
+    fetchCloudData();
 }
 
 function handleUserLogin() {
@@ -970,6 +1023,7 @@ function handleUserLogin() {
         document.getElementById('headerAuthBtn').innerText = "Logout";
         document.getElementById('headerAuthBtn').onclick = logoutUser;
         closeLoginModal();
+        fetchCloudData();
     } else {
         alert("गलत ईमेल या पासवर्ड! कृपया पहले साइन-अप करें।");
     }
@@ -1040,7 +1094,6 @@ function loadTestOptions() {
     if(searchInput) searchInput.value = "";
 }
 
-// Case-insensitive dynamic filter for test selection dropdown
 function filterTestDropdown() {
     let query = document.getElementById('testSearchInput').value.trim().toLowerCase();
     let testEl = document.getElementById('testSelect');
@@ -1107,7 +1160,7 @@ function saveExamRules() {
     alert(`नियम '${selectedCourse}' के लिए सफलतापूर्वक सहेज लिए गए हैं!`);
 }
 
-function addNewTestToPortal() {
+async function addNewTestToPortal() {
     let course = document.getElementById('uploadCourseCategory').value;
     let title = document.getElementById('uploadTestTitle').value.trim();
     let content = document.getElementById('uploadTestText').value.trim();
@@ -1119,11 +1172,23 @@ function addNewTestToPortal() {
         return;
     }
 
+    try {
+        if (window.db && window.addDoc && window.collection) {
+            await window.addDoc(window.collection(window.db, "typingTests"), {
+                course: course,
+                title: title,
+                text: content,
+                createdAt: new Date().toISOString()
+            });
+        }
+    } catch(e) {
+        console.log("Error saving test to cloud:", e);
+    }
+
     if(!typingData[course]) typingData[course] = [];
     typingData[course].push({ title: title, text: content });
     
-    localStorage.setItem('tm_custom_typing_data', JSON.stringify(typingData));
-    alert("नया टेस्ट सफलतापूर्वक जोड़ दिया गया है!");
+    alert("नया टेस्ट सफलतापूर्वक क्लाउड डेटाबेस में जोड़ दिया गया है!");
     
     document.getElementById('uploadTestTitle').value = "";
     document.getElementById('uploadTestText').value = "";
@@ -1138,7 +1203,6 @@ function deleteTestFromPortal() {
     if(typingData[course] && typingData[course][testIdx]) {
         let testName = typingData[course][testIdx].title;
         typingData[course].splice(testIdx, 1);
-        localStorage.setItem('tm_custom_typing_data', JSON.stringify(typingData));
         alert(`टेस्ट '${testName}' सफलतापूर्वक हटा दिया गया है!`);
         loadTestOptions();
         loadDeleteTestOptions();
@@ -1240,7 +1304,7 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Advanced Auto-Scroll Logic
+// Smart Auto-Scroll Logic (Triggers smoothly when reaching middle lines)
 document.addEventListener('input', function(e) {
     if (e.target && e.target.id === 'typingInput') {
         if (!isTimerStarted && e.target.value.length > 0) {
@@ -1284,14 +1348,18 @@ document.addEventListener('input', function(e) {
             let pBox = document.getElementById('paragraphBox');
             if (currentSpan && pBox) {
                 let currentTop = currentSpan.offsetTop;
+                let currentHeight = currentSpan.offsetHeight;
                 let boxHeight = pBox.clientHeight;
-                pBox.scrollTop = currentTop - (boxHeight / 3);
+                let scrollMiddle = currentTop - (boxHeight / 2) + (currentHeight / 2);
+                if (scrollMiddle > 0) {
+                    pBox.scrollTop = scrollMiddle;
+                }
             }
         }
     }
 });
 
-function finishTest() {
+async function finishTest() {
     if (timerInterval) clearInterval(timerInterval);
     let typingInput = document.getElementById('typingInput');
     if (typingInput) typingInput.disabled = true;
@@ -1371,6 +1439,7 @@ function finishTest() {
 
     let resultObj = {
         id: randomId,
+        email: loggedInUserEmail || "guest@typingmentor.com",
         time: formattedDate,
         name: testName,
         duration: durationStr,
@@ -1397,6 +1466,16 @@ function finishTest() {
     };
 
     testHistory.unshift(resultObj);
+
+    // Save Result to Cloud Firestore
+    try {
+        if (window.db && window.addDoc && window.collection) {
+            await window.addDoc(window.collection(window.db, "userResults"), resultObj);
+        }
+    } catch (e) {
+        console.log("Error saving result to cloud:", e);
+    }
+
     localStorage.setItem('tm_history', JSON.stringify(testHistory));
     updateResultsHistoryTable();
     updateBestPerformance();
