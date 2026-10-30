@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Typing Test Portal</title>
+    <title>Professional Typing Test Portal - Typing Mentor</title>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase App, Auth & Firestore SDKs -->
+    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -22,28 +22,48 @@
             appId: "1:498381172066:web:950ccd22fdc599c172103b"
         };
 
-        const app = initializeApp(firebaseConfig);
-        window.db = getFirestore(app);
-        window.auth = getAuth(app);
-        window.googleProvider = new GoogleAuthProvider();
-        window.signInWithPopup = signInWithPopup;
-        window.signOut = signOut;
-        window.collection = collection;
-        window.addDoc = addDoc;
-        window.getDocs = getDocs;
+        try {
+            const app = initializeApp(firebaseConfig);
+            window.db = getFirestore(app);
+            window.auth = getAuth(app);
+            window.googleProvider = new GoogleAuthProvider();
+            window.signInWithPopup = signInWithPopup;
+            window.signOut = signOut;
+            window.collection = collection;
+            window.addDoc = addDoc;
+            window.getDocs = getDocs;
+            window.query = query;
+            window.where = where;
 
-        onAuthStateChanged(window.auth, (user) => {
-            if (user) {
-                window.loggedInUserEmail = user.email;
-                localStorage.setItem('tm_user_email', user.email);
-                let nameEl = document.getElementById('currentUserName');
-                if(nameEl) nameEl.innerText = user.email;
-                let authBtn = document.getElementById('headerAuthBtn');
-                if(authBtn) { authBtn.innerText = "Logout"; authBtn.onclick = handleGoogleLogout; }
-                closeLoginModal();
-                if(typeof fetchCloudData === 'function') fetchCloudData();
-            }
-        });
+            onAuthStateChanged(window.auth, (user) => {
+                if (user) {
+                    window.loggedInUserEmail = user.email;
+                    window.loggedInUserName = user.displayName || user.email;
+                    localStorage.setItem('tm_user_email', user.email);
+                    localStorage.setItem('tm_user_name', window.loggedInUserName);
+                    
+                    let nameEl = document.getElementById('currentUserName');
+                    if(nameEl) nameEl.innerText = window.loggedInUserName;
+                    let authBtn = document.getElementById('headerAuthBtn');
+                    if(authBtn) { 
+                        authBtn.innerText = "Logout"; 
+                        authBtn.onclick = handleGoogleLogout; 
+                    }
+                    closeLoginModal();
+                    if(typeof fetchCloudData === 'function') fetchCloudData();
+                } else {
+                    window.loggedInUserEmail = null;
+                    window.loggedInUserName = "Guest User";
+                    let nameEl = document.getElementById('currentUserName');
+                    if(nameEl) nameEl.innerText = "Guest User";
+                    let authBtn = document.getElementById('headerAuthBtn');
+                    if(authBtn) { 
+                        authBtn.innerText = "Login / Signup"; 
+                        authBtn.onclick = openLoginModal; 
+                    }
+                }
+            });
+        } catch(e) { console.log("Firebase Init Error:", e); }
     </script>
 
     <style>
@@ -358,7 +378,7 @@
         .summary-table td.label { font-weight: 600; color: #334155; }
         .summary-table td.value { text-align: right; font-weight: bold; color: #0f172a; }
 
-        /* MODAL OVERLAY FOR SIGNUP / LOGIN */
+        /* MODAL OVERLAY FOR GOOGLE LOGIN */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000;
@@ -390,7 +410,6 @@
     <div class="top-header">
         <div class="header-left">
             <button class="toggle-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
-            <!-- Logo using your uploaded file 21097 -->
             <img src="21097.png" onerror="this.onerror=null; this.src='21097.jpg'; this.onerror=function(){this.src='21097.jpeg';};" alt="Logo" class="portal-logo">
             <span class="brand-name">Typing Mentor</span>
         </div>
@@ -441,7 +460,6 @@
                 <div class="card">
                     <h3>Your Dashboard Overview</h3>
                     
-                    <!-- Highest Performance & Motivation Banner -->
                     <div style="background: linear-gradient(135deg, #eff6ff, #dbeafe); border-left: 5px solid #2563eb; padding: 15px; border-radius: 6px; margin: 15px 0;">
                         <h4 style="color: #1e40af; margin-bottom: 5px;"><i class="fa-solid fa-trophy"></i> All-Time Highest Performance Record</h4>
                         <p style="font-size: 14px; color: #334155; margin-bottom: 8px;">
@@ -465,7 +483,6 @@
                     </div>
                 </div>
 
-                <!-- HOME WIDGETS -->
                 <div class="home-widgets">
                     <div class="card" style="text-align:center; display:flex; flex-direction:column; justify-content:center; align-items:center;">
                         <i class="fa-brands fa-telegram" style="font-size:45px; color:#2563eb; margin-bottom:10px;"></i>
@@ -478,7 +495,6 @@
                         <i class="fa-solid fa-hand-holding-dollar" style="font-size:35px; color:#16a34a; margin-bottom:8px;"></i>
                         <h4 style="margin-bottom:5px;">Query for Support & Donate</h4>
                         <p style="font-size:12px; color:#64748b; margin-bottom:10px;">पोर्टल को निःशुल्क और बेहतर बनाए रखने के लिए स्वेच्छा से सहयोग करें।</p>
-                        <!-- QR Code using your uploaded file 21079 -->
                         <img src="21079.png" onerror="this.onerror=null; this.src='21079.jpg'; this.onerror=function(){this.src='21079.jpeg';};" alt="Support QR Code" style="width:130px; height:130px; object-fit:contain; border:1px solid #cbd5e1; border-radius:6px; padding:4px; background:#fff;">
                         <p style="font-size:11px; color:#94a3b8; margin-top:5px;">Scan & Support Typing Mentor</p>
                     </div>
@@ -491,7 +507,6 @@
                     <h3>Choose & Start Test</h3>
                     <div class="test-setup-grid" style="margin-top: 15px;">
                         
-                        <!-- Left Controls -->
                         <div>
                             <div class="form-group">
                                 <label><i class="fa-solid fa-graduation-cap"></i> Select Course:</label>
@@ -521,7 +536,6 @@
                             <button class="start-btn" onclick="startLiveTest()"><i class="fa-solid fa-play"></i> Start Test</button>
                         </div>
 
-                        <!-- Right Controls (Test Settings) -->
                         <div style="background: #f9fafb; padding: 15px; border-radius: 6px; border: 1px solid #e5e7eb;">
                             <h4 style="margin-bottom: 15px;"><i class="fa-solid fa-sliders"></i> Test Settings</h4>
                             
@@ -555,7 +569,7 @@
                 </div>
             </div>
 
-            <!-- EXAM RULES & ADVANCED CUSTOMIZATION VIEW -->
+            <!-- EXAM RULES VIEW -->
             <div id="rulesView" class="view-section">
                 <div class="card">
                     <h3><i class="fa-solid fa-sliders"></i> Exam Rules & Customization Settings</h3>
@@ -616,11 +630,11 @@
                 </div>
             </div>
 
-            <!-- ADMIN & TEST UPLOADER VIEW (CLOUD SYNCED) -->
+            <!-- ADMIN VIEW (GLOBAL CLOUD UPLOAD) -->
             <div id="adminView" class="view-section">
                 <div class="card">
-                    <h3>📥 नया टेस्ट / पैराग्राफ अपलोड करें (Cloud Sync)</h3>
-                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">यहाँ से आप जो भी टेस्ट अपलोड करेंगे, वह सीधे क्लाउड डेटाबेस पर जाएगा और सभी यूज़र्स को दिखेगा।</p>
+                    <h3>📥 नया टेस्ट / पैराग्राफ अपलोड करें (Cloud Sync Live)</h3>
+                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">यहाँ से आप जो भी टेस्ट अपलोड करेंगे, वह तुरंत सीधे क्लाउड डेटाबेस पर जाएगा और सभी यूज़र्स के पोर्टल पर दिखेगा।</p>
                     
                     <div class="form-group">
                         <label>किस कोर्स/परीक्षा में जोड़ना है?</label>
@@ -641,7 +655,7 @@
                         <textarea id="uploadTestText" rows="6" placeholder="यहाँ टेक्स्ट पेस्ट करें..."></textarea>
                     </div>
 
-                    <button class="start-btn" style="width:auto; padding:10px 25px;" onclick="addNewTestToPortal()">Upload to Cloud & Save</button>
+                    <button class="start-btn" style="width:auto; padding:10px 25px;" onclick="addNewTestToPortal()">Upload to Cloud & Publish</button>
                 </div>
             </div>
 
@@ -780,7 +794,7 @@ let timerInterval = null;
 let isTimerStarted = false;
 let backspaceCount = 0;
 
-let testHistory = JSON.parse(localStorage.getItem('tm_history')) || [];
+let testHistory = [];
 let loggedInUserEmail = localStorage.getItem('tm_user_email') || null;
 
 let examRulesConfig = JSON.parse(localStorage.getItem('tm_exam_rules_config')) || {
@@ -804,52 +818,67 @@ let typingData = {
 
 let masterTestList = [];
 
-// Google Auth Handlers
 async function handleGoogleLogin() {
     try {
         let result = await window.signInWithPopup(window.auth, window.googleProvider);
-        loggedInUserEmail = result.user.email;
-        localStorage.setItem('tm_user_email', loggedInUserEmail);
-        document.getElementById('currentUserName').innerText = loggedInUserEmail;
+        window.loggedInUserEmail = result.user.email;
+        window.loggedInUserName = result.user.displayName || result.user.email;
+        
+        localStorage.setItem('tm_user_email', window.loggedInUserEmail);
+        localStorage.setItem('tm_user_name', window.loggedInUserName);
+        
+        document.getElementById('currentUserName').innerText = window.loggedInUserName;
         document.getElementById('headerAuthBtn').innerText = "Logout";
         document.getElementById('headerAuthBtn').onclick = logoutUser;
         closeLoginModal();
         fetchCloudData();
     } catch (error) {
-        alert("Google Login Error: " + error.message);
+        if (error.code !== "auth/popup-closed-by-user") {
+            alert("Google Login Error: " + error.message);
+        }
     }
 }
 
 async function handleGoogleLogout() {
-    try {
-        await window.signOut(window.auth);
-    } catch(e) {}
+    try { await window.signOut(window.auth); } catch(e) {}
     localStorage.removeItem('tm_user_email');
-    loggedInUserEmail = null;
+    localStorage.removeItem('tm_user_name');
+    window.loggedInUserEmail = null;
+    window.loggedInUserName = "Guest User";
+    testHistory = [];
     location.reload();
 }
 
-// Fetch Tests from Cloud Firestore so everyone gets uploaded tests
 async function fetchCloudData() {
     try {
         if (window.db && window.getDocs) {
+            // 1. Fetch Tests uploaded by Admin
             let snap = await window.getDocs(window.collection(window.db, "typingTests"));
             snap.forEach(docSnap => {
                 let data = docSnap.data();
                 if (data.course && data.title && data.text) {
                     if (!typingData[data.course]) typingData[data.course] = [];
-                    // Avoid duplication if already present
                     if (!typingData[data.course].some(t => t.title === data.title)) {
                         typingData[data.course].push({ title: data.title, text: data.text });
                     }
                 }
             });
             loadTestOptions();
+
+            // 2. Fetch User Specific Test History from Firestore
+            if (window.loggedInUserEmail) {
+                let q = window.query(window.collection(window.db, "userResults"), window.where("email", "==", window.loggedInUserEmail));
+                let userSnap = await window.getDocs(q);
+                testHistory = [];
+                userSnap.forEach(d => testHistory.push(d.data()));
+                testHistory.sort((a,b) => new Date(b.rawTimestamp) - new Date(a.rawTimestamp));
+                updateResultsHistoryTable();
+                updateBestPerformance();
+            }
         }
     } catch(e) { console.log("Cloud Fetch Error:", e); }
 }
 
-// Secret Keyboard Shortcut for Admin (Ctrl + Shift + A)
 document.addEventListener('keydown', function(e) {
     if (e.ctrlKey && e.shiftKey && e.key === 'A') {
         let enteredPwd = prompt("🔐 एडमिन पासवर्ड दर्ज करें:");
@@ -878,8 +907,12 @@ function checkAdminAccess(viewId) {
 }
 
 window.onload = function() {
-    if (loggedInUserEmail) {
-        document.getElementById('currentUserName').innerText = loggedInUserEmail;
+    let savedEmail = localStorage.getItem('tm_user_email');
+    let savedName = localStorage.getItem('tm_user_name');
+    if (savedEmail) {
+        window.loggedInUserEmail = savedEmail;
+        window.loggedInUserName = savedName || savedEmail;
+        document.getElementById('currentUserName').innerText = window.loggedInUserName;
         document.getElementById('headerAuthBtn').innerText = "Logout";
         document.getElementById('headerAuthBtn').onclick = logoutUser;
     } else {
@@ -888,25 +921,14 @@ window.onload = function() {
         document.getElementById('headerAuthBtn').onclick = openLoginModal;
         openLoginModal();
     }
-    fetchCloudData().then(() => {
-        loadTestOptions();
-    });
-    updateResultsHistoryTable();
-    updateBestPerformance();
+    fetchCloudData();
+    loadTestOptions();
     switchTab('homeView', document.getElementById('menu-home'));
 };
 
-function openLoginModal() {
-    document.getElementById('loginModal').classList.remove('hidden');
-}
-
-function closeLoginModal() {
-    document.getElementById('loginModal').classList.add('hidden');
-}
-
-function logoutUser() {
-    handleGoogleLogout();
-}
+function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
+function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
+function logoutUser() { handleGoogleLogout(); }
 
 function toggleSidebar() {
     let sidebar = document.getElementById('sidebar');
@@ -915,10 +937,7 @@ function toggleSidebar() {
 
 function switchTab(tabId, clickedElement) {
     let views = document.querySelectorAll('.view-section');
-    views.forEach(v => {
-        v.classList.remove('active');
-        v.style.display = 'none';
-    });
+    views.forEach(v => { v.classList.remove('active'); v.style.display = 'none'; });
     
     let targetView = document.getElementById(tabId);
     if (targetView) {
@@ -1015,7 +1034,6 @@ function saveExamRules() {
     alert(`नियम '${selectedCourse}' के लिए सफलतापूर्वक सहेज लिए गए हैं!`);
 }
 
-// Global Cloud Test Uploader
 async function addNewTestToPortal() {
     let course = document.getElementById('uploadCourseCategory').value;
     let title = document.getElementById('uploadTestTitle').value.trim();
@@ -1031,9 +1049,10 @@ async function addNewTestToPortal() {
             await window.addDoc(window.collection(window.db, "typingTests"), {
                 course: course,
                 title: title,
-                text: content
+                text: content,
+                uploadedAt: new Date().toISOString()
             });
-            alert("नया टेस्ट सफलतापूर्वक क्लाउड डेटाबेस पर अपलोड कर दिया गया है! अब यह सभी यूज़र्स को दिखेगा।");
+            alert("नया टेस्ट क्लाउड पर अपलोड हो गया है! अब यह सभी यूज़र्स के पोर्टल पर तुरंत लाइव हो जाएगा।");
         } else {
             alert("डेटाबेस कनेक्टेड नहीं है!");
             return;
@@ -1194,7 +1213,7 @@ document.addEventListener('input', function(e) {
     }
 });
 
-function finishTest() {
+async function finishTest() {
     if (timerInterval) clearInterval(timerInterval);
     let typingInput = document.getElementById('typingInput');
     if (typingInput) typingInput.disabled = true;
@@ -1269,11 +1288,13 @@ function finishTest() {
 
     let durationStr = Math.floor(totalTimeSec / 60) + " mins : 00 seconds";
     let timeTakenStr = Math.floor(timeSpentSec / 60) + " mins : " + (timeSpentSec % 60) + " seconds";
-    let detailsStr = Math.floor(totalTimeSec / 60) + " mins | english | " + testName + " | " + formattedDate + " | Email: " + (loggedInUserEmail || "Guest");
+    let detailsStr = Math.floor(totalTimeSec / 60) + " mins | english | " + testName + " | " + formattedDate + " | Email: " + (window.loggedInUserEmail || "Guest");
     let formulaStr = `Net speed >= ${minNetWpmReq} WPM, Acc >= ${minAccReq}% (${Math.round(allowPct*100)}% allowance)`;
 
     let resultObj = {
         id: randomId,
+        email: window.loggedInUserEmail || "Guest",
+        rawTimestamp: now.toISOString(),
         time: formattedDate,
         name: testName,
         duration: durationStr,
@@ -1299,8 +1320,14 @@ function finishTest() {
         typedText: typed
     };
 
+    // Save Result to Firestore Cloud Database
+    try {
+        if(window.db && window.addDoc && window.collection && window.loggedInUserEmail) {
+            await window.addDoc(window.collection(window.db, "userResults"), resultObj);
+        }
+    } catch(e) { console.log("Save Result Error:", e); }
+
     testHistory.unshift(resultObj);
-    localStorage.setItem('tm_history', JSON.stringify(testHistory));
     updateResultsHistoryTable();
     updateBestPerformance();
     viewSingleResult(0);
@@ -1318,7 +1345,7 @@ function updateResultsHistoryTable() {
     if (!tbody) return;
 
     if (testHistory.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No test attempts found yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No test attempts found for this user.</td></tr>`;
         return;
     }
 
