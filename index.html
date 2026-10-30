@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google Search Console Verification Tag -->
+    <meta name="google-site-verification" content="xz-L7mPwkpVz6ayZ3bNurIePxjCg7LEmZMI1WHBh1Yw" />
     <title>Professional Typing Test Portal - Typing Mentor</title>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -268,11 +270,9 @@
                     <div class="test-setup-grid" style="margin-top: 15px;">
                         <div>
                             <div class="form-group">
-                                <label><i class="fa-solid fa-graduation-cap"></i> Select Course:</label>
+                                <label><i class="fa-solid fa-graduation-cap"></i> Select Course / Test Series:</label>
                                 <select id="courseSelect" onchange="loadTestOptions()">
-                                    <option value="BSF HCM Typing Test">BSF HCM Typing Test Series</option>
-                                    <option value="SSC CGL Typing Test">SSC CGL Typing Test Series</option>
-                                    <option value="General Practice">General Practice Series</option>
+                                    <!-- Dynamic options populated via JS -->
                                 </select>
                             </div>
 
@@ -331,9 +331,7 @@
                     <div class="form-group" style="margin-bottom: 20px; background: #eef2ff; padding: 12px; border-radius: 6px;">
                         <label style="color:#1e3a8a; font-size:14px;"><i class="fa-solid fa-graduation-cap"></i> Select Course / Exam to Customize Rules:</label>
                         <select id="ruleCourseSelect" onchange="loadExamRulesForCourse()" style="margin-top:5px; font-weight:bold;">
-                            <option value="BSF HCM Typing Test">BSF HCM Typing Test Series</option>
-                            <option value="SSC CGL Typing Test">SSC CGL Typing Test Series</option>
-                            <option value="General Practice">General Practice Series</option>
+                            <!-- Dynamic options populated via JS -->
                         </select>
                     </div>
 
@@ -371,24 +369,23 @@
                 </div>
             </div>
 
-            <!-- ADMIN VIEW (GLOBAL CLOUD UPLOAD) -->
+            <!-- ADMIN VIEW (GLOBAL CLOUD UPLOAD & NEW TEST SERIES CREATOR) -->
             <div id="adminView" class="view-section">
                 <div class="card">
-                    <h3>📥 नया टेस्ट / पैराग्राफ अपलोड करें (Cloud Sync Live)</h3>
-                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">यहाँ से आप जो भी टेस्ट अपलोड करेंगे, वह सीधे क्लाउड डेटाबेस पर सेव होगा और सभी यूज़र्स के लिए लाइव हो जाएगा।</p>
+                    <h3>📥 नया टेस्ट सीरीज / पैराग्राफ अपलोड करें (Cloud Sync Live)</h3>
+                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">यहाँ से आप नया कोर्स (जैसे RRB NTPC) बना सकते हैं या किसी मौजूदा सीरीज में नया टेस्ट जोड़ सकते हैं।</p>
                     
                     <div class="form-group">
-                        <label>किस कोर्स/परीक्षा में जोड़ना है?</label>
-                        <select id="uploadCourseCategory">
-                            <option value="BSF HCM Typing Test">BSF HCM Typing Test Series</option>
-                            <option value="SSC CGL Typing Test">SSC CGL Typing Test Series</option>
-                            <option value="General Practice">General Practice Series</option>
+                        <label>नया कोर्स/टेस्ट सीरीज नाम बनाएं या सेलेक्ट करें:</label>
+                        <input type="text" id="uploadNewCourseInput" placeholder="या नया कोर्स नाम टाइप करें (जैसे: RRB NTPC Typing Test Series)">
+                        <select id="uploadCourseCategory" style="margin-top:6px;" onchange="document.getElementById('uploadNewCourseInput').value = this.value;">
+                            <!-- Dynamic options populated via JS -->
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label>टेस्ट का नाम (Title):</label>
-                        <input type="text" id="uploadTestTitle" placeholder="जैसे: BSF HCM Test 201">
+                        <input type="text" id="uploadTestTitle" placeholder="जैसे: NTPC CBT-2 Typing Test 01">
                     </div>
 
                     <div class="form-group">
@@ -418,11 +415,9 @@
             <!-- 4. ALL TYPING EXAMS VIEW -->
             <div id="examsView" class="view-section">
                 <div class="card">
-                    <h3>All Available Exams</h3>
-                    <ul style="margin-top: 10px; padding-left: 20px;">
-                        <li>BSF HCM Typing Test Series (Available)</li>
-                        <li>SSC CGL & CHSL Exam Series (Available)</li>
-                        <li>RRB NTPC Typing Skill Test (Available)</li>
+                    <h3>All Available Exams & Test Series</h3>
+                    <ul id="allExamsList" style="margin-top: 10px; padding-left: 20px;">
+                        <!-- Dynamic list populated via JS -->
                     </ul>
                 </div>
             </div>
@@ -523,7 +518,7 @@ let examRulesConfig = JSON.parse(localStorage.getItem('tm_exam_rules_config')) |
     "General Practice": { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1000, minAcc: 80, punctRule: "full" }
 };
 
-let typingData = {
+let typingData = JSON.parse(localStorage.getItem('tm_typing_data_custom')) || {
     "BSF HCM Typing Test": [
         { title: "BSF HCM Test 200", text: "Ashoka's inscriptions are the earliest self-representations of imperial power in the Indian subcontinent. However these inscriptions are focused mainly on the topic of dhamma and provide little information regarding other aspects." },
         { title: "BSF HCM Test 199", text: "Practice makes a man perfect. Consistent typing practice on a daily basis helps in improving speed and accuracy for government typing examinations." }
@@ -634,7 +629,10 @@ async function fetchCloudData() {
                     }
                 }
             });
+            localStorage.setItem('tm_typing_data_custom', JSON.stringify(typingData));
+            refreshCourseDropdowns();
             loadTestOptions();
+            updateAllExamsViewList();
 
             if (window.loggedInUserEmail) {
                 let q = window.query(window.collection(window.db, "userResults"), window.where("email", "==", window.loggedInUserEmail));
@@ -671,6 +669,7 @@ function checkAdminAccess(viewId) {
     if (enteredPwd === "Saurabh@2003") {
         switchTab(viewId, document.getElementById(viewId === 'adminView' ? 'adminSidebarMenu' : 'rulesSidebarMenu'));
         if(viewId === 'rulesView') loadExamRulesForCourse();
+        if(viewId === 'adminView') refreshCourseDropdowns();
     } else if (enteredPwd !== null) {
         alert("गलत पासवर्ड!");
     }
@@ -684,8 +683,10 @@ window.onload = function() {
         window.loggedInUserName = savedName || savedEmail.split('@')[0];
     }
     updateHeaderUserUI();
+    refreshCourseDropdowns();
     fetchCloudData();
     loadTestOptions();
+    updateAllExamsViewList();
     switchTab('homeView', document.getElementById('menu-home'));
 };
 
@@ -714,6 +715,7 @@ function switchTab(tabId, clickedElement) {
     
     if(tabId === 'rulesView') loadExamRulesForCourse();
     if(tabId === 'homeView') updateBestPerformance();
+    if(tabId === 'examsView') updateAllExamsViewList();
 }
 
 function applyFontSize() {
@@ -725,6 +727,31 @@ function applyFontSize() {
         pBox.style.fontSize = size;
         tInput.style.fontSize = size;
     }
+}
+
+function refreshCourseDropdowns() {
+    let courseSelect = document.getElementById('courseSelect');
+    let ruleCourseSelect = document.getElementById('ruleCourseSelect');
+    let uploadCourseCategory = document.getElementById('uploadCourseCategory');
+    
+    let courses = Object.keys(typingData);
+    
+    let populate = (el) => {
+        if(!el) return;
+        let currentVal = el.value;
+        el.innerHTML = "";
+        courses.forEach(c => {
+            let opt = document.createElement('option');
+            opt.value = c;
+            opt.textContent = c;
+            el.appendChild(opt);
+        });
+        if(courses.includes(currentVal)) el.value = currentVal;
+    };
+
+    populate(courseSelect);
+    populate(ruleCourseSelect);
+    populate(uploadCourseCategory);
 }
 
 function loadTestOptions() {
@@ -769,8 +796,13 @@ function loadExamRulesForCourse() {
     let courseSelect = document.getElementById('ruleCourseSelect');
     if(!courseSelect) return;
     let selectedCourse = courseSelect.value;
-    let rules = examRulesConfig[selectedCourse] || { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, punctRule: "half" };
+    
+    // Default rules if not present
+    if(!examRulesConfig[selectedCourse]) {
+        examRulesConfig[selectedCourse] = { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1500, minAcc: 80, punctRule: "half" };
+    }
 
+    let rules = examRulesConfig[selectedCourse];
     document.getElementById('ruleAllowance').value = rules.allowance;
     document.getElementById('rulePenalty').value = rules.penalty;
     document.getElementById('ruleMinWpm').value = rules.minWpm;
@@ -798,7 +830,10 @@ function saveExamRules() {
 }
 
 async function addNewTestToPortal() {
-    let course = document.getElementById('uploadCourseCategory').value;
+    let customCourseInput = document.getElementById('uploadNewCourseInput').value.trim();
+    let selectCourse = document.getElementById('uploadCourseCategory').value;
+    let course = customCourseInput ? customCourseInput : selectCourse;
+    
     let title = document.getElementById('uploadTestTitle').value.trim();
     let content = document.getElementById('uploadTestText').value.trim();
 
@@ -815,10 +850,7 @@ async function addNewTestToPortal() {
                 text: content,
                 uploadedAt: new Date().toISOString()
             });
-            alert("नया टेस्ट क्लाउड पर अपलोड हो गया है! अब यह सभी यूज़र्स के पोर्टल पर तुरंत लाइव हो जाएगा।");
-        } else {
-            alert("डेटाबेस कनेक्टेड नहीं है!");
-            return;
+            alert("नया टेस्ट/कोर्स क्लाउड पर अपलोड हो गया है! अब यह सभी यूज़र्स के पोर्टल पर लाइव हो जाएगा।");
         }
     } catch(e) {
         alert("अपलोड करने में एरर आई: " + e.message);
@@ -828,9 +860,28 @@ async function addNewTestToPortal() {
     if(!typingData[course]) typingData[course] = [];
     typingData[course].push({ title: title, text: content });
     
+    localStorage.setItem('tm_typing_data_custom', JSON.stringify(typingData));
+    
     document.getElementById('uploadTestTitle').value = "";
     document.getElementById('uploadTestText').value = "";
+    document.getElementById('uploadNewCourseInput').value = "";
+    
+    refreshCourseDropdowns();
     loadTestOptions();
+    updateAllExamsViewList();
+}
+
+function updateAllExamsViewList() {
+    let listEl = document.getElementById('allExamsList');
+    if(!listEl) return;
+    listEl.innerHTML = "";
+    Object.keys(typingData).forEach(courseName => {
+        let count = typingData[courseName].length;
+        let li = document.createElement('li');
+        li.style.marginBottom = "8px";
+        li.innerHTML = `<b>${courseName}</b> — (${count} Test Paragraphs Available) <span style="color:#16a34a; font-size:12px; font-weight:bold;">[Active Series]</span>`;
+        listEl.appendChild(li);
+    });
 }
 
 function startLiveTest() {
@@ -926,7 +977,7 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// SMART AUTO-SCROLL FIX: Scroll only when reaching 3rd/4th line (middle of view)
+// SMART AUTO-SCROLL FIX: Scroll only when reaching middle of view
 document.addEventListener('input', function(e) {
     if (e.target && e.target.id === 'typingInput') {
         if (!isTimerStarted && e.target.value.length > 0) {
@@ -964,16 +1015,15 @@ document.addEventListener('input', function(e) {
         let liveAcc = Math.round((correctLive / totalTypedSoFar) * 100);
         document.getElementById('accuracyDisplay').innerText = (liveAcc > 100 ? 100 : liveAcc) + "%";
 
-        // Smart Scroll logic: scroll only when active word moves down by lines
         let autoScrollEl = document.getElementById('setAutoScroll');
         if (autoScrollEl && autoScrollEl.checked) {
             let currentSpan = document.getElementById(`w-${activeIdx}`);
             let pBox = document.getElementById('paragraphBox');
             if (currentSpan && pBox) {
                 let spanTop = currentSpan.offsetTop - pBox.offsetTop;
-                let scrollThreshold = pBox.clientHeight * 0.4; // Scroll when past 40% height of view
+                let scrollThreshold = pBox.clientHeight * 0.4;
                 if (spanTop > scrollThreshold) {
-                    pBox.scrollTop = spanTop - 60; // Keep active line comfortably in view
+                    pBox.scrollTop = spanTop - 60;
                 }
             }
         }
