@@ -392,7 +392,7 @@
     <div class="top-header">
         <div class="header-left">
             <button class="toggle-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
-            <!-- Logo using your uploaded file 21097 (supports png, jpg, jpeg) -->
+            <!-- Logo using your uploaded file 21097 -->
             <img src="21097.png" onerror="this.onerror=null; this.src='21097.jpg'; this.onerror=function(){this.src='21097.jpeg';};" alt="Logo" class="portal-logo">
             <span class="brand-name">Typing Mentor</span>
         </div>
@@ -467,7 +467,7 @@
                     </div>
                 </div>
 
-                <!-- HOME WIDGETS: TELEGRAM & SUPPORT / QR CODE -->
+                <!-- HOME WIDGETS -->
                 <div class="home-widgets">
                     <div class="card" style="text-align:center; display:flex; flex-direction:column; justify-content:center; align-items:center;">
                         <i class="fa-brands fa-telegram" style="font-size:45px; color:#2563eb; margin-bottom:10px;"></i>
@@ -480,7 +480,7 @@
                         <i class="fa-solid fa-hand-holding-dollar" style="font-size:35px; color:#16a34a; margin-bottom:8px;"></i>
                         <h4 style="margin-bottom:5px;">Query for Support & Donate</h4>
                         <p style="font-size:12px; color:#64748b; margin-bottom:10px;">पोर्टल को निःशुल्क और बेहतर बनाए रखने के लिए स्वेच्छा से सहयोग करें।</p>
-                        <!-- QR Code using your uploaded file 21079 (supports png, jpg, jpeg) -->
+                        <!-- QR Code using your uploaded file 21079 -->
                         <img src="21079.png" onerror="this.onerror=null; this.src='21079.jpg'; this.onerror=function(){this.src='21079.jpeg';};" alt="Support QR Code" style="width:130px; height:130px; object-fit:contain; border:1px solid #cbd5e1; border-radius:6px; padding:4px; background:#fff;">
                         <p style="font-size:11px; color:#94a3b8; margin-top:5px;">Scan & Support Typing Mentor</p>
                     </div>
@@ -497,8 +497,6 @@
                         <div>
                             <div class="form-group">
                                 <label><i class="fa-solid fa-graduation-cap"></i> Select Course:</label>
-                                <!-- Search filter for courses -->
-                                <input type="text" id="courseSearchInput" placeholder="कोर्स सर्च करें (जैसे: BSF)..." oninput="filterCourseOptions()" style="margin-bottom: 6px;">
                                 <select id="courseSelect" onchange="loadTestOptions()">
                                     <option value="BSF HCM Typing Test">BSF HCM Typing Test Series</option>
                                     <option value="SSC CGL Typing Test">SSC CGL Typing Test Series</option>
@@ -507,10 +505,9 @@
                             </div>
 
                             <div class="form-group">
-                                <label><i class="fa-solid fa-file-lines"></i> Select Test:</label>
-                                <!-- Search filter for tests -->
-                                <input type="text" id="testSearchInput" placeholder="टेस्ट सर्च करें (जैसे: Test 101)..." oninput="filterTestOptions()" style="margin-bottom: 6px;">
-                                <select id="testSelect" size="5" style="height: 130px;"></select>
+                                <label><i class="fa-solid fa-file-lines"></i> Select Test (Type to filter):</label>
+                                <input type="text" id="testSearchInput" placeholder="टेस्ट सर्च करें (जैसे: 101 या BSF)..." oninput="filterTestDropdown()" style="margin-bottom:6px;">
+                                <select id="testSelect" size="6" style="height: 140px;"></select>
                             </div>
 
                             <div class="form-group">
@@ -831,7 +828,10 @@ let typingData = JSON.parse(localStorage.getItem('tm_custom_typing_data')) || {
     ]
 };
 
-// Secret Keyboard Shortcut for Admin (Ctrl + Shift + A) with Password Prompt (No popups on success)
+// Store master list of tests for case-insensitive filtering
+let masterTestList = [];
+
+// Secret Keyboard Shortcut for Admin (Ctrl + Shift + A) with Password Prompt
 document.addEventListener('keydown', function(e) {
     if (e.ctrlKey && e.shiftKey && e.key === 'A') {
         let enteredPwd = prompt("🔐 एडमिन पासवर्ड दर्ज करें:");
@@ -1003,37 +1003,36 @@ function loadTestOptions() {
 
     let course = courseEl.value;
     testEl.innerHTML = "";
+    masterTestList = [];
 
     if (typingData[course]) {
         typingData[course].forEach((item, index) => {
+            masterTestList.push({ index: index, title: item.title });
             let opt = document.createElement('option');
             opt.value = index;
             opt.textContent = item.title;
             testEl.appendChild(opt);
         });
     }
+    let searchInput = document.getElementById('testSearchInput');
+    if(searchInput) searchInput.value = "";
 }
 
-// Filter Course Options dynamically via search input
-function filterCourseOptions() {
-    let filter = document.getElementById('courseSearchInput').value.toLowerCase();
-    let select = document.getElementById('courseSelect');
-    let options = select.options;
-    for (let i = 0; i < options.length; i++) {
-        let txt = options[i].text.toLowerCase();
-        options[i].style.display = txt.includes(filter) ? "" : "none";
-    }
-}
+// Case-insensitive dynamic filter for test selection dropdown
+function filterTestDropdown() {
+    let query = document.getElementById('testSearchInput').value.trim().toLowerCase();
+    let testEl = document.getElementById('testSelect');
+    if (!testEl) return;
 
-// Filter Test Options dynamically via search input
-function filterTestOptions() {
-    let filter = document.getElementById('testSearchInput').value.toLowerCase();
-    let select = document.getElementById('testSelect');
-    let options = select.options;
-    for (let i = 0; i < options.length; i++) {
-        let txt = options[i].text.toLowerCase();
-        options[i].style.display = txt.includes(filter) ? "" : "none";
-    }
+    testEl.innerHTML = "";
+    let filtered = masterTestList.filter(item => item.title.toLowerCase().includes(query));
+
+    filtered.forEach(item => {
+        let opt = document.createElement('option');
+        opt.value = item.index;
+        opt.textContent = item.title;
+        testEl.appendChild(opt);
+    });
 }
 
 function loadDeleteTestOptions() {
@@ -1219,7 +1218,7 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Advanced Auto-Scroll Logic (1 Line Advance Scroll)
+// Advanced Auto-Scroll Logic
 document.addEventListener('input', function(e) {
     if (e.target && e.target.id === 'typingInput') {
         if (!isTimerStarted && e.target.value.length > 0) {
@@ -1257,7 +1256,6 @@ document.addEventListener('input', function(e) {
         let liveAcc = Math.round((correctLive / totalTypedSoFar) * 100);
         document.getElementById('accuracyDisplay').innerText = (liveAcc > 100 ? 100 : liveAcc) + "%";
 
-        // One-line Early Auto-Scroll Implementation
         let autoScrollEl = document.getElementById('setAutoScroll');
         if (autoScrollEl && autoScrollEl.checked) {
             let currentSpan = document.getElementById(`w-${activeIdx}`);
@@ -1287,9 +1285,9 @@ function finishTest() {
     let testEl = document.getElementById('testSelect');
     let course = courseEl ? courseEl.value : 'General Practice';
     let testIdx = testEl ? testEl.value : '';
-    let testName = (typingData[course] && typingData[course][testIdx]) ? typingData[course][testIdx].title : "Typing Test Set";
+    if (!typingData[course] || !typingData[course][testIdx]) return;
+    let testName = typingData[course][testIdx].title;
 
-    // Dynamic Rules by Selected Course
     let rules = examRulesConfig[course] || { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, punctRule: "half" };
 
     let allowPct = rules.allowance / 100;
@@ -1411,7 +1409,6 @@ function updateResultsHistoryTable() {
     `).join('');
 }
 
-// Update All-Time Highest Performance Record on Dashboard
 function updateBestPerformance() {
     let bestSpeed = 0;
     let bestAcc = 0;
@@ -1430,7 +1427,6 @@ function updateBestPerformance() {
     if(speedEl) speedEl.innerText = bestSpeed + " WPM";
     if(accEl) accEl.innerText = bestAcc + "%";
 
-    // Dynamic motivation quotes rotation or selection
     let quotes = [
         "\"सफलता एक दिन में नहीं मिलती, लेकिन ठान लो तो एक दिन जरूर मिलती है! निरंतर अभ्यास ही सफलता की चाबी है।\"",
         "\"मुश्किलें दिल के इरादे आजमाती हैं, स्वप्न के पर्दे निगाहों से हटाती हैं, हौसला मत हार गिर कर ऐ मुसाफिर, ठोकरें इंसान को चलना सिखाती हैं!\"",
