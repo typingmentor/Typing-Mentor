@@ -134,7 +134,7 @@
 </head>
 <body>
 
-    <!-- USER LOGIN / SIGNUP MODAL (Google + Manual Email/Password) -->
+    <!-- USER LOGIN / SIGNUP MODAL -->
     <div id="loginModal" class="modal-overlay hidden">
         <div class="modal-card">
             <button class="close-modal-btn" onclick="closeLoginModal()">&times;</button>
@@ -271,14 +271,12 @@
                         <div>
                             <div class="form-group">
                                 <label><i class="fa-solid fa-graduation-cap"></i> Select Course / Test Series:</label>
-                                <select id="courseSelect" onchange="loadTestOptions()">
-                                    <!-- Dynamic options populated via JS -->
-                                </select>
+                                <select id="courseSelect" onchange="loadTestOptions()"></select>
                             </div>
 
                             <div class="form-group">
                                 <label><i class="fa-solid fa-file-lines"></i> Select Test (Type to filter):</label>
-                                <input type="text" id="testSearchInput" placeholder="टेस्ट सर्च करें (जैसे: 101 या BSF)..." oninput="filterTestDropdown()" style="margin-bottom:6px;">
+                                <input type="text" id="testSearchInput" placeholder="टेस्ट सर्च करें (जैसे: 1 या BSF)..." oninput="filterTestDropdown()" style="margin-bottom:6px;">
                                 <select id="testSelect" size="6" style="height: 140px;"></select>
                             </div>
 
@@ -330,9 +328,7 @@
                     
                     <div class="form-group" style="margin-bottom: 20px; background: #eef2ff; padding: 12px; border-radius: 6px;">
                         <label style="color:#1e3a8a; font-size:14px;"><i class="fa-solid fa-graduation-cap"></i> Select Course / Exam to Customize Rules:</label>
-                        <select id="ruleCourseSelect" onchange="loadExamRulesForCourse()" style="margin-top:5px; font-weight:bold;">
-                            <!-- Dynamic options populated via JS -->
-                        </select>
+                        <select id="ruleCourseSelect" onchange="loadExamRulesForCourse()" style="margin-top:5px; font-weight:bold;"></select>
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -369,23 +365,21 @@
                 </div>
             </div>
 
-            <!-- ADMIN VIEW (GLOBAL CLOUD UPLOAD & NEW TEST SERIES CREATOR) -->
+            <!-- ADMIN VIEW -->
             <div id="adminView" class="view-section">
                 <div class="card">
-                    <h3>📥 नया टेस्ट सीरीज / पैराग्राफ अपलोड करें (Cloud Sync Live)</h3>
-                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">यहाँ से आप नया कोर्स (जैसे RRB NTPC) बना सकते हैं या किसी मौजूदा सीरीज में नया टेस्ट जोड़ सकते हैं।</p>
+                    <h3>📥 नया टेस्ट सीरीज / पैराग्राफ अपलोड करें</h3>
+                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">नया कोर्स बनाएं या किसी मौजूदा सीरीज में टेस्ट जोड़ें।</p>
                     
                     <div class="form-group">
-                        <label>नया कोर्स/टेस्ट सीरीज नाम बनाएं या सेलेक्ट करें:</label>
-                        <input type="text" id="uploadNewCourseInput" placeholder="या नया कोर्स नाम टाइप करें (जैसे: RRB NTPC Typing Test Series)">
-                        <select id="uploadCourseCategory" style="margin-top:6px;" onchange="document.getElementById('uploadNewCourseInput').value = this.value;">
-                            <!-- Dynamic options populated via JS -->
-                        </select>
+                        <label>कोर्स/टेस्ट सीरीज नाम:</label>
+                        <input type="text" id="uploadNewCourseInput" placeholder="या नया कोर्स नाम टाइप करें (जैसे: RRB NTPC Typing Test)">
+                        <select id="uploadCourseCategory" style="margin-top:6px;" onchange="document.getElementById('uploadNewCourseInput').value = this.value; renderAdminDeleteList();"></select>
                     </div>
 
                     <div class="form-group">
                         <label>टेस्ट का नाम (Title):</label>
-                        <input type="text" id="uploadTestTitle" placeholder="जैसे: NTPC CBT-2 Typing Test 01">
+                        <input type="text" id="uploadTestTitle" placeholder="जैसे: Test 1 या NTPC Test 01">
                     </div>
 
                     <div class="form-group">
@@ -394,6 +388,16 @@
                     </div>
 
                     <button class="start-btn" style="width:auto; padding:10px 25px;" onclick="addNewTestToPortal()">Upload to Cloud & Publish</button>
+
+                    <!-- Manage / Delete Section -->
+                    <div style="margin-top: 25px; border-top: 1px solid #e5e7eb; padding-top: 15px;">
+                        <h4 style="color:#dc2626; margin-bottom:10px;"><i class="fa-solid fa-trash-can"></i> टेस्ट्स या कोर्स मैनेज / डिलीट करें</h4>
+                        <div style="display:flex; gap:10px; margin-bottom:10px;">
+                            <button onclick="deleteEntireCourse()" style="background:#dc2626; color:white; border:none; padding:6px 12px; border-radius:4px; font-size:12px; cursor:pointer;"><i class="fa-solid fa-triangle-exclamation"></i> पूरा कोर्स डिलीट करें</button>
+                        </div>
+                        <p style="font-size:12px; color:#6b7280; margin-bottom:8px;">चुने गए कोर्स के व्यक्तिगत टेस्ट्स यहाँ से हटाएं:</p>
+                        <div id="adminDeleteListContainer"></div>
+                    </div>
                 </div>
             </div>
 
@@ -416,9 +420,7 @@
             <div id="examsView" class="view-section">
                 <div class="card">
                     <h3>All Available Exams & Test Series</h3>
-                    <ul id="allExamsList" style="margin-top: 10px; padding-left: 20px;">
-                        <!-- Dynamic list populated via JS -->
-                    </ul>
+                    <ul id="allExamsList" style="margin-top: 10px; padding-left: 20px;"></ul>
                 </div>
             </div>
 
@@ -507,6 +509,7 @@ let timeLeft = 300;
 let timerInterval = null;
 let isTimerStarted = false;
 let backspaceCount = 0;
+let isAdminLoggedIn = false; // एडमिन सेशन याद रखने के लिए
 
 let testHistory = [];
 let loggedInUserEmail = localStorage.getItem('tm_user_email') || null;
@@ -649,29 +652,52 @@ async function fetchCloudData() {
 
 document.addEventListener('keydown', function(e) {
     if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-        let enteredPwd = prompt("🔐 एडमिन पासवर्ड दर्ज करें:");
-        if (enteredPwd === "Saurabh@2003") {
+        if (isAdminLoggedIn) {
             let adminItem = document.getElementById('adminSidebarMenu');
             let rulesItem = document.getElementById('rulesSidebarMenu');
             if (adminItem && rulesItem) {
                 adminItem.classList.toggle('hidden');
                 rulesItem.classList.toggle('hidden');
             }
-            alert("एडमिन एक्सेस एक्टिवेट हो गया है!");
-        } else if (enteredPwd !== null) {
-            alert("गलत पासवर्ड!");
+        } else {
+            let enteredPwd = prompt("🔐 एडमिन पासवर्ड दर्ज करें:");
+            if (enteredPwd === "Saurabh@2003") {
+                isAdminLoggedIn = true;
+                let adminItem = document.getElementById('adminSidebarMenu');
+                let rulesItem = document.getElementById('rulesSidebarMenu');
+                if (adminItem && rulesItem) {
+                    adminItem.classList.remove('hidden');
+                    rulesItem.classList.remove('hidden');
+                }
+                alert("एडमिन एक्सेस एक्टिवेट हो गया है!");
+            } else if (enteredPwd !== null) {
+                alert("गलत पासवर्ड!");
+            }
         }
     }
 });
 
 function checkAdminAccess(viewId) {
-    let enteredPwd = prompt("🔐 एडमिन पासवर्ड दर्ज करें:");
-    if (enteredPwd === "Saurabh@2003") {
+    if (isAdminLoggedIn) {
         switchTab(viewId, document.getElementById(viewId === 'adminView' ? 'adminSidebarMenu' : 'rulesSidebarMenu'));
         if(viewId === 'rulesView') loadExamRulesForCourse();
-        if(viewId === 'adminView') refreshCourseDropdowns();
-    } else if (enteredPwd !== null) {
-        alert("गलत पासवर्ड!");
+        if(viewId === 'adminView') { refreshCourseDropdowns(); renderAdminDeleteList(); }
+    } else {
+        let enteredPwd = prompt("🔐 एडमिन पासवर्ड दर्ज करें:");
+        if (enteredPwd === "Saurabh@2003") {
+            isAdminLoggedIn = true;
+            let adminItem = document.getElementById('adminSidebarMenu');
+            let rulesItem = document.getElementById('rulesSidebarMenu');
+            if (adminItem && rulesItem) {
+                adminItem.classList.remove('hidden');
+                rulesItem.classList.remove('hidden');
+            }
+            switchTab(viewId, document.getElementById(viewId === 'adminView' ? 'adminSidebarMenu' : 'rulesSidebarMenu'));
+            if(viewId === 'rulesView') loadExamRulesForCourse();
+            if(viewId === 'adminView') { refreshCourseDropdowns(); renderAdminDeleteList(); }
+        } else if (enteredPwd !== null) {
+            alert("गलत पासवर्ड!");
+        }
     }
 }
 
@@ -716,6 +742,7 @@ function switchTab(tabId, clickedElement) {
     if(tabId === 'rulesView') loadExamRulesForCourse();
     if(tabId === 'homeView') updateBestPerformance();
     if(tabId === 'examsView') updateAllExamsViewList();
+    if(tabId === 'adminView') renderAdminDeleteList();
 }
 
 function applyFontSize() {
@@ -752,6 +779,7 @@ function refreshCourseDropdowns() {
     populate(courseSelect);
     populate(ruleCourseSelect);
     populate(uploadCourseCategory);
+    renderAdminDeleteList();
 }
 
 function loadTestOptions() {
@@ -764,7 +792,12 @@ function loadTestOptions() {
     masterTestList = [];
 
     if (typingData[course]) {
-        typingData[course].forEach((item, index) => {
+        // क्रमवार (1, 2, 3...) सॉर्टिंग
+        let sortedList = [...typingData[course]].sort((a, b) => {
+            return a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' });
+        });
+
+        sortedList.forEach((item, index) => {
             masterTestList.push({ index: index, title: item.title });
             let opt = document.createElement('option');
             opt.value = index;
@@ -792,12 +825,64 @@ function filterTestDropdown() {
     });
 }
 
+function renderAdminDeleteList() {
+    let container = document.getElementById('adminDeleteListContainer');
+    if (!container) return;
+    let courseEl = document.getElementById('uploadCourseCategory');
+    if (!courseEl) return;
+    let course = courseEl.value;
+    container.innerHTML = "";
+
+    if (typingData[course] && typingData[course].length > 0) {
+        typingData[course].forEach((testObj, idx) => {
+            let itemDiv = document.createElement('div');
+            itemDiv.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:#f3f4f6; border-radius:4px; margin-bottom:6px; border:1px solid #e5e7eb;";
+            itemDiv.innerHTML = `
+                <span style="font-size:13px; font-weight:600;">${testObj.title}</span>
+                <button onclick="deleteTestFromCourse('${course}', ${idx})" style="background:#dc2626; color:white; border:none; padding:4px 10px; border-radius:4px; font-size:12px; cursor:pointer;"><i class="fa-solid fa-trash"></i> Delete Test</button>
+            `;
+            container.appendChild(itemDiv);
+        });
+    } else {
+        container.innerHTML = `<p style="font-size:12px; color:#94a3b8;">इस कोर्स में कोई टेस्ट मौजूद नहीं है।</p>`;
+    }
+}
+
+function deleteTestFromCourse(course, index) {
+    if (confirm(`क्या आप वाकई '${typingData[course][index].title}' को हटाना चाहते हैं?`)) {
+        typingData[course].splice(index, 1);
+        localStorage.setItem('tm_typing_data_custom', JSON.stringify(typingData));
+        alert("टेस्ट सफलतापूर्वक हटा दिया गया है!");
+        loadTestOptions();
+        renderAdminDeleteList();
+        updateAllExamsViewList();
+    }
+}
+
+function deleteEntireCourse() {
+    let courseEl = document.getElementById('uploadCourseCategory');
+    if (!courseEl) return;
+    let course = courseEl.value;
+
+    if (confirm(`⚠️ चेतावनी: क्या आप पूरा कोर्स '${course}' और उसके अंदर के सभी टेस्ट्स को हमेशा के लिए हटाना चाहते हैं?`)) {
+        delete typingData[course];
+        if(examRulesConfig[course]) delete examRulesConfig[course];
+        
+        localStorage.setItem('tm_typing_data_custom', JSON.stringify(typingData));
+        localStorage.setItem('tm_exam_rules_config', JSON.stringify(examRulesConfig));
+        
+        alert("कोर्स सफलतापूर्वक हटा दिया गया है!");
+        refreshCourseDropdowns();
+        loadTestOptions();
+        updateAllExamsViewList();
+    }
+}
+
 function loadExamRulesForCourse() {
     let courseSelect = document.getElementById('ruleCourseSelect');
     if(!courseSelect) return;
     let selectedCourse = courseSelect.value;
     
-    // Default rules if not present
     if(!examRulesConfig[selectedCourse]) {
         examRulesConfig[selectedCourse] = { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1500, minAcc: 80, punctRule: "half" };
     }
@@ -850,11 +935,9 @@ async function addNewTestToPortal() {
                 text: content,
                 uploadedAt: new Date().toISOString()
             });
-            alert("नया टेस्ट/कोर्स क्लाउड पर अपलोड हो गया है! अब यह सभी यूज़र्स के पोर्टल पर लाइव हो जाएगा।");
         }
     } catch(e) {
-        alert("अपलोड करने में एरर आई: " + e.message);
-        return;
+        console.log("Cloud Upload Warning:", e);
     }
 
     if(!typingData[course]) typingData[course] = [];
@@ -862,6 +945,7 @@ async function addNewTestToPortal() {
     
     localStorage.setItem('tm_typing_data_custom', JSON.stringify(typingData));
     
+    alert("नया टेस्ट/कोर्स सफलतापूर्वक जोड़ दिया गया है!");
     document.getElementById('uploadTestTitle').value = "";
     document.getElementById('uploadTestText').value = "";
     document.getElementById('uploadNewCourseInput').value = "";
@@ -869,6 +953,7 @@ async function addNewTestToPortal() {
     refreshCourseDropdowns();
     loadTestOptions();
     updateAllExamsViewList();
+    renderAdminDeleteList();
 }
 
 function updateAllExamsViewList() {
@@ -977,7 +1062,7 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// SMART AUTO-SCROLL FIX: Scroll only when reaching middle of view
+// SMART AUTO-SCROLL FIX
 document.addEventListener('input', function(e) {
     if (e.target && e.target.id === 'typingInput') {
         if (!isTimerStarted && e.target.value.length > 0) {
