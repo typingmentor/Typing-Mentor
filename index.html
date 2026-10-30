@@ -10,10 +10,9 @@
     <!-- Firebase App, Auth & Firestore SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDN6wecthuH2oIcHHpuSzseSjMWb6R8gow",
             authDomain: "typing-mentor-4cfc2.firebaseapp.com",
@@ -23,381 +22,102 @@
             appId: "1:498381172066:web:950ccd22fdc599c172103b"
         };
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const googleProvider = new GoogleAuthProvider();
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            const googleProvider = new GoogleAuthProvider();
 
-        window.db = db;
-        window.auth = auth;
-        window.googleProvider = googleProvider;
-        window.signInWithPopup = signInWithPopup;
-        window.signOut = signOut;
-        window.collection = collection;
-        window.addDoc = addDoc;
-        window.getDocs = getDocs;
-        window.deleteDoc = deleteDoc;
-        window.doc = doc;
+            window.db = db;
+            window.auth = auth;
+            window.googleProvider = googleProvider;
+            window.signInWithPopup = signInWithPopup;
+            window.signOut = signOut;
+            window.collection = collection;
+            window.addDoc = addDoc;
+            window.getDocs = getDocs;
 
-        // Listen to Auth State Changes
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                window.loggedInUserEmail = user.email;
-                localStorage.setItem('tm_user_email', user.email);
-                let nameEl = document.getElementById('currentUserName');
-                if(nameEl) nameEl.innerText = user.email;
-                let authBtn = document.getElementById('headerAuthBtn');
-                if(authBtn) {
-                    authBtn.innerText = "Logout";
-                    authBtn.onclick = handleGoogleLogout;
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    window.loggedInUserEmail = user.email;
+                    localStorage.setItem('tm_user_email', user.email);
+                    let nameEl = document.getElementById('currentUserName');
+                    if(nameEl) nameEl.innerText = user.email;
+                    let authBtn = document.getElementById('headerAuthBtn');
+                    if(authBtn) {
+                        authBtn.innerText = "Logout";
+                        authBtn.onclick = handleGoogleLogout;
+                    }
+                    closeLoginModal();
+                    if(typeof fetchCloudData === 'function') fetchCloudData();
                 }
-                closeLoginModal();
-                if(typeof fetchCloudData === 'function') fetchCloudData();
-            } else {
-                window.loggedInUserEmail = null;
-            }
-        });
+            });
+        } catch(e) {
+            console.log("Firebase Init Error:", e);
+        }
     </script>
 
     <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            background-color: #ffffff;
-            color: #333333;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* HEADER */
-        .top-header {
-            height: 60px;
-            background-color: #2563eb;
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            z-index: 100;
-        }
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .portal-logo {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid white;
-            background: #ffffff;
-        }
-        .toggle-btn {
-            font-size: 22px;
-            cursor: pointer;
-            color: white;
-            background: none;
-            border: none;
-        }
-        .brand-name {
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        /* MAIN WRAPPER */
-        .app-container {
-            display: flex;
-            flex: 1;
-            height: calc(100vh - 60px);
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: 260px;
-            min-width: 260px;
-            background-color: #ffffff;
-            border-right: 1px solid #e5e7eb;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease;
-            z-index: 90;
-            height: 100%;
-        }
-        .sidebar.collapsed {
-            margin-left: -260px;
-        }
-        .menu-list {
-            list-style: none;
-            padding: 15px 10px;
-        }
-        .menu-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 15px;
-            margin-bottom: 5px;
-            border-radius: 6px;
-            cursor: pointer;
-            color: #4b5563;
-            font-weight: 500;
-            font-size: 15px;
-            transition: background 0.2s, color 0.2s;
-        }
-        .menu-item:hover, .menu-item.active {
-            background-color: #e0e7ff;
-            color: #1d4ed8;
-            border-left: 4px solid #16a34a;
-        }
-        .menu-item i {
-            font-size: 18px;
-            width: 22px;
-            text-align: center;
-        }
-
-        /* MAIN CONTENT AREA */
-        .main-content {
-            flex: 1;
-            padding: 25px;
-            overflow-y: auto;
-            background-color: #f9fafb;
-            height: 100%;
-        }
-
-        .card {
-            background: #ffffff;
-            border-radius: 8px;
-            padding: 25px;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background-color: #ffffff; color: #333333; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .top-header { height: 60px; background-color: #2563eb; color: #ffffff; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 100; }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .portal-logo { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid white; background: #ffffff; }
+        .toggle-btn { font-size: 22px; cursor: pointer; color: white; background: none; border: none; }
+        .brand-name { font-size: 20px; font-weight: bold; }
+        .app-container { display: flex; flex: 1; height: calc(100vh - 60px); position: relative; overflow: hidden; }
+        .sidebar { width: 260px; min-width: 260px; background-color: #ffffff; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; transition: all 0.3s ease; z-index: 90; height: 100%; }
+        .sidebar.collapsed { margin-left: -260px; }
+        .menu-list { list-style: none; padding: 15px 10px; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; margin-bottom: 5px; border-radius: 6px; cursor: pointer; color: #4b5563; font-weight: 500; font-size: 15px; transition: background 0.2s, color 0.2s; }
+        .menu-item:hover, .menu-item.active { background-color: #e0e7ff; color: #1d4ed8; border-left: 4px solid #16a34a; }
+        .menu-item i { font-size: 18px; width: 22px; text-align: center; }
+        .main-content { flex: 1; padding: 25px; overflow-y: auto; background-color: #f9fafb; height: 100%; }
+        .card { background: #ffffff; border-radius: 8px; padding: 25px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .view-section { display: none; }
         .view-section.active { display: block; }
-
-        /* HOME SCREEN STYLES */
-        .stats-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .stat-card {
-            background: #f3f4f6;
-            padding: 15px;
-            border-radius: 6px;
-            border-left: 4px solid #2563eb;
-        }
-        .home-widgets {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        .support-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-        }
-
-        /* CHOOSE TEST & SETTINGS LAYOUT */
-        .test-setup-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: #374151;
-            font-size: 13px;
-        }
-        .form-group select, .form-group input, .form-group textarea {
-            width: 100%;
-            padding: 9px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        .switch-group {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 1px dashed #e5e7eb;
-        }
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 22px;
-        }
+        .stats-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: #f3f4f6; padding: 15px; border-radius: 6px; border-left: 4px solid #2563eb; }
+        .home-widgets { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .support-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; text-align: center; }
+        .test-setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 4px; color: #374151; font-size: 13px; }
+        .form-group select, .form-group input, .form-group textarea { width: 100%; padding: 9px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; }
+        .switch-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px dashed #e5e7eb; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc; transition: .4s; border-radius: 22px;
-        }
-        .slider:before {
-            position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
-            background-color: white; transition: .4s; border-radius: 50%;
-        }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 22px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: #16a34a; }
         input:checked + .slider:before { transform: translateX(22px); }
-
-        .start-btn {
-            background: linear-gradient(90deg, #2563eb, #16a34a);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        /* LIVE TEST AREA */
-        .live-header {
-            display: flex;
-            justify-content: space-between;
-            background: #1e293b;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-        }
-        .text-display {
-            height: 180px;
-            overflow-y: auto;
-            border: 1px solid #d1d5db;
-            padding: 15px;
-            background: #ffffff;
-            line-height: 1.8;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            scroll-behavior: smooth;
-        }
+        .start-btn { background: linear-gradient(90deg, #2563eb, #16a34a); color: white; border: none; padding: 12px 20px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 10px; }
+        .live-header { display: flex; justify-content: space-between; background: #1e293b; color: white; padding: 12px 20px; border-radius: 6px; margin-bottom: 15px; }
+        .text-display { height: 180px; overflow-y: auto; border: 1px solid #d1d5db; padding: 15px; background: #ffffff; line-height: 1.8; border-radius: 6px; margin-bottom: 15px; scroll-behavior: smooth; }
         .text-display span.correct { color: #16a34a; background: #dcfce7; }
         .text-display span.incorrect { color: #dc2626; background: #fee2e2; }
         .text-display span.current { background: #bae6fd; text-decoration: underline; font-weight: normal !important; }
-
-        textarea.type-area {
-            width: 100%;
-            height: 120px;
-            padding: 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            resize: none;
-            outline: none;
-        }
-
-        /* RESULTS TABLE & VIEW BUTTON */
-        table.results-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        table.results-table th, table.results-table td {
-            border: 1px solid #e5e7eb;
-            padding: 10px 12px;
-            text-align: left;
-            font-size: 14px;
-        }
+        textarea.type-area { width: 100%; height: 120px; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; resize: none; outline: none; }
+        table.results-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        table.results-table th, table.results-table td { border: 1px solid #e5e7eb; padding: 10px 12px; text-align: left; font-size: 14px; }
         table.results-table th { background-color: #f3f4f6; }
         .status-qualified { color: #16a34a; font-weight: bold; }
         .status-nonqualified { color: #dc2626; font-weight: bold; }
-
-        .btn-view-result {
-            background-color: #2563eb;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-        }
-        .btn-view-result:hover {
-            background-color: #1d4ed8;
-        }
-
-        /* SUMMARY TABLE */
-        .summary-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 15px;
-            background: #eef2ff;
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #cbd5e1;
-        }
-        .summary-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .summary-table th {
-            text-align: left;
-            padding: 8px 12px;
-            font-size: 13px;
-            color: #334155;
-            text-transform: uppercase;
-            border-bottom: 2px solid #cbd5e1;
-        }
-        .summary-table td {
-            padding: 8px 12px;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 14px;
-        }
+        .btn-view-result { background-color: #2563eb; color: white; padding: 5px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: bold; cursor: pointer; border: none; }
+        .btn-view-result:hover { background-color: #1d4ed8; }
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px; background: #eef2ff; padding: 15px; border-radius: 6px; border: 1px solid #cbd5e1; }
+        .summary-table { width: 100%; border-collapse: collapse; }
+        .summary-table th { text-align: left; padding: 8px 12px; font-size: 13px; color: #334155; text-transform: uppercase; border-bottom: 2px solid #cbd5e1; }
+        .summary-table td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
         .summary-table td.label { font-weight: 600; color: #334155; }
         .summary-table td.value { text-align: right; font-weight: bold; color: #0f172a; }
-
-        /* MODAL OVERLAY FOR SIGNUP / LOGIN */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000;
-        }
-        .modal-card {
-            background: #ffffff; padding: 25px; border-radius: 10px; width: 380px; text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            position: relative;
-        }
-        .tab-toggle {
-            display: flex; margin-bottom: 15px; border-bottom: 2px solid #e5e7eb;
-        }
-        .tab-btn {
-            flex: 1; padding: 10px; background: none; border: none; font-weight: bold; cursor: pointer; color: #64748b;
-        }
-        .tab-btn.active {
-            color: #2563eb; border-bottom: 2px solid #2563eb; margin-bottom: -2px;
-        }
-        .close-modal-btn {
-            position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; color: #64748b; border: none; background: none;
-        }
-        .google-btn {
-            background: #db4437; color: white; border: none; padding: 12px 20px; font-size: 15px; font-weight: bold;
-            border-radius: 6px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-card { background: #ffffff; padding: 25px; border-radius: 10px; width: 380px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative; }
+        .tab-toggle { display: flex; margin-bottom: 15px; border-bottom: 2px solid #e5e7eb; }
+        .tab-btn { flex: 1; padding: 10px; background: none; border: none; font-weight: bold; cursor: pointer; color: #64748b; }
+        .tab-btn.active { color: #2563eb; border-bottom: 2px solid #2563eb; margin-bottom: -2px; }
+        .close-modal-btn { position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; color: #64748b; border: none; background: none; }
+        .google-btn { background: #db4437; color: white; border: none; padding: 12px 20px; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 15px; }
         .google-btn:hover { background: #c53929; }
         .hidden { display: none !important; }
     </style>
@@ -410,7 +130,6 @@
             <button class="close-modal-btn" onclick="closeLoginModal()">&times;</button>
             <h3 style="margin-bottom: 15px; color: #1e293b;">Typing Mentor Login</h3>
             
-            <!-- GOOGLE SIGN-IN BUTTON -->
             <button class="google-btn" onclick="handleGoogleLogin()">
                 <i class="fa-brands fa-google"></i> Sign in with Google
             </button>
@@ -424,7 +143,6 @@
                 <button class="tab-btn" id="tabLoginBtn" onclick="switchAuthTab('login')">लॉगिन</button>
             </div>
 
-            <!-- SIGNUP FORM -->
             <div id="formSignup">
                 <div class="form-group" style="text-align:left;">
                     <label>Full Name:</label>
@@ -441,7 +159,6 @@
                 <button class="start-btn" style="background:#16a34a; margin-top:5px;" onclick="handleUserSignup()">रजिस्टर करें</button>
             </div>
 
-            <!-- LOGIN FORM -->
             <div id="formLogin" class="hidden">
                 <div class="form-group" style="text-align:left;">
                     <label>Email ID:</label>
@@ -471,40 +188,20 @@
 
     <!-- MAIN APP CONTAINER -->
     <div class="app-container">
-
-        <!-- SIDEBAR -->
         <div class="sidebar" id="sidebar">
             <ul class="menu-list">
-                <li class="menu-item active" id="menu-home" onclick="switchTab('homeView', this)">
-                    <i class="fa-solid fa-house"></i> Home
-                </li>
-                <li class="menu-item" id="menu-choose" onclick="switchTab('chooseView', this)">
-                    <i class="fa-solid fa-file-signature"></i> Choose & Start Test
-                </li>
-                <li class="menu-item hidden" id="rulesSidebarMenu" onclick="checkAdminAccess('rulesView')">
-                    <i class="fa-solid fa-gear"></i> Exam Rules & Customization
-                </li>
-                <li class="menu-item" onclick="switchTab('examsView', this)">
-                    <i class="fa-solid fa-list-check"></i> All Typing Exams
-                </li>
-                <li class="menu-item hidden" id="adminSidebarMenu" onclick="checkAdminAccess('adminView')">
-                    <i class="fa-solid fa-user-shield"></i> Admin & Test Uploader
-                </li>
-                <li class="menu-item" id="menu-results" onclick="switchTab('resultsHistoryView', this)">
-                    <i class="fa-solid fa-square-poll-vertical"></i> My Test Results
-                </li>
-                <li class="menu-item" onclick="switchTab('learnView', this)">
-                    <i class="fa-solid fa-book-open"></i> Learn Typing
-                </li>
-                <li class="menu-item" style="margin-top: 20px; color: #dc2626;" onclick="logoutUser()">
-                    <i class="fa-solid fa-right-from-bracket"></i> Logout
-                </li>
+                <li class="menu-item active" id="menu-home" onclick="switchTab('homeView', this)"><i class="fa-solid fa-house"></i> Home</li>
+                <li class="menu-item" id="menu-choose" onclick="switchTab('chooseView', this)"><i class="fa-solid fa-file-signature"></i> Choose & Start Test</li>
+                <li class="menu-item hidden" id="rulesSidebarMenu" onclick="checkAdminAccess('rulesView')"><i class="fa-solid fa-gear"></i> Exam Rules & Customization</li>
+                <li class="menu-item" onclick="switchTab('examsView', this)"><i class="fa-solid fa-list-check"></i> All Typing Exams</li>
+                <li class="menu-item hidden" id="adminSidebarMenu" onclick="checkAdminAccess('adminView')"><i class="fa-solid fa-user-shield"></i> Admin & Test Uploader</li>
+                <li class="menu-item" id="menu-results" onclick="switchTab('resultsHistoryView', this)"><i class="fa-solid fa-square-poll-vertical"></i> My Test Results</li>
+                <li class="menu-item" onclick="switchTab('learnView', this)"><i class="fa-solid fa-book-open"></i> Learn Typing</li>
+                <li class="menu-item" style="margin-top: 20px; color: #dc2626;" onclick="logoutUser()"><i class="fa-solid fa-right-from-bracket"></i> Logout</li>
             </ul>
         </div>
 
-        <!-- MAIN CONTENT -->
         <main class="main-content">
-
             <!-- 1. HOME VIEW -->
             <div id="homeView" class="view-section active">
                 <div class="card">
@@ -512,45 +209,17 @@
                     <div style="background: linear-gradient(135deg, #eff6ff, #dbeafe); border-left: 5px solid #2563eb; padding: 15px; border-radius: 6px; margin: 15px 0;">
                         <h4 style="color: #1e40af; margin-bottom: 5px;"><i class="fa-solid fa-trophy"></i> All-Time Highest Performance Record</h4>
                         <p style="font-size: 14px; color: #334155; margin-bottom: 8px;">
-                            Net Speed: <b id="bestSpeedDisplay" style="color: #16a34a;">0 WPM</b> | 
-                            Accuracy: <b id="bestAccDisplay" style="color: #2563eb;">0%</b>
-                        </p>
-                        <p style="font-style: italic; font-size: 13px; color: #475569;" id="motivationQuote">
-                            "सफलता एक दिन में नहीं मिलती, लेकिन ठान लो तो एक दिन जरूर मिलती है!"
+                            Net Speed: <b id="bestSpeedDisplay" style="color: #16a34a;">0 WPM</b> | Accuracy: <b id="bestAccDisplay" style="color: #2563eb;">0%</b>
                         </p>
                     </div>
-
                     <div class="stats-cards" style="margin-top:15px;">
-                        <div class="stat-card">
-                            <h4>Total Tests Given</h4>
-                            <p id="totalTestsCount" style="font-size:24px; font-weight:bold; color:#2563eb;">0</p>
-                        </div>
-                        <div class="stat-card" style="border-left-color: #16a34a;">
-                            <h4>Qualified Tests</h4>
-                            <p id="qualifiedCount" style="font-size:24px; font-weight:bold; color:#16a34a;">0</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="home-widgets">
-                    <div class="card" style="text-align:center; display:flex; flex-direction:column; justify-content:center; align-items:center;">
-                        <i class="fa-brands fa-telegram" style="font-size:45px; color:#2563eb; margin-bottom:10px;"></i>
-                        <h3>Join Community Support</h3>
-                        <p style="font-size:13px; color:#64748b; margin:10px 0;">किसी भी समस्या या चर्चा के लिए हमारे टेलीग्राम ग्रुप से जुड़ें।</p>
-                        <a href="https://t.me/+BRkqWkRoos81NTA1" target="_blank" class="start-btn" style="text-decoration:none; display:inline-block; width:auto; padding:10px 25px; background:#2563eb;"><i class="fa-brands fa-telegram"></i> Join Telegram</a>
-                    </div>
-
-                    <div class="support-box card">
-                        <i class="fa-solid fa-hand-holding-dollar" style="font-size:35px; color:#16a34a; margin-bottom:8px;"></i>
-                        <h4 style="margin-bottom:5px;">Query for Support & Donate</h4>
-                        <p style="font-size:12px; color:#64748b; margin-bottom:10px;">पोर्टल को बेहतर बनाए रखने के लिए सहयोग करें।</p>
-                        <img src="21079.png" onerror="this.onerror=null; this.src='21079.jpg'; this.onerror=function(){this.src='21079.jpeg';};" alt="Support QR Code" style="width:130px; height:130px; object-fit:contain; border:1px solid #cbd5e1; border-radius:6px; padding:4px; background:#fff;">
-                        <p style="font-size:11px; color:#94a3b8; margin-top:5px;">Scan & Support</p>
+                        <div class="stat-card"><h4>Total Tests Given</h4><p id="totalTestsCount" style="font-size:24px; font-weight:bold; color:#2563eb;">0</p></div>
+                        <div class="stat-card" style="border-left-color: #16a34a;"><h4>Qualified Tests</h4><p id="qualifiedCount" style="font-size:24px; font-weight:bold; color:#16a34a;">0</p></div>
                     </div>
                 </div>
             </div>
 
-            <!-- 2. CHOOSE & START TEST VIEW -->
+            <!-- 2. CHOOSE & START TEST -->
             <div id="chooseView" class="view-section">
                 <div class="card">
                     <h3>Choose & Start Test</h3>
@@ -564,13 +233,11 @@
                                     <option value="General Practice">General Practice Series</option>
                                 </select>
                             </div>
-
                             <div class="form-group">
-                                <label><i class="fa-solid fa-file-lines"></i> Select Test (Type to filter):</label>
+                                <label><i class="fa-solid fa-file-lines"></i> Select Test:</label>
                                 <input type="text" id="testSearchInput" placeholder="टेस्ट सर्च करें..." oninput="filterTestDropdown()" style="margin-bottom:6px;">
                                 <select id="testSelect" size="6" style="height: 140px;"></select>
                             </div>
-
                             <div class="form-group">
                                 <label><i class="fa-solid fa-clock"></i> Duration (In Minutes):</label>
                                 <select id="timeSelect">
@@ -580,126 +247,20 @@
                                     <option value="15">15 Minutes</option>
                                 </select>
                             </div>
-
                             <button class="start-btn" onclick="startLiveTest()"><i class="fa-solid fa-play"></i> Start Test</button>
                         </div>
-
                         <div style="background: #f9fafb; padding: 15px; border-radius: 6px; border: 1px solid #e5e7eb;">
                             <h4 style="margin-bottom: 15px;"><i class="fa-solid fa-sliders"></i> Test Settings</h4>
-                            <div class="switch-group">
-                                <span>Highlight Typing Words</span>
-                                <label class="switch"><input type="checkbox" id="setHighlight" checked><span class="slider"></span></label>
-                            </div>
-                            <div class="switch-group">
-                                <span>Auto Scroll Paragraph</span>
-                                <label class="switch"><input type="checkbox" id="setAutoScroll" checked><span class="slider"></span></label>
-                            </div>
-                            <div class="switch-group">
-                                <span>Allow Backspace Key</span>
-                                <label class="switch"><input type="checkbox" id="setBackspace" checked><span class="slider"></span></label>
-                            </div>
-                            <div class="switch-group">
-                                <span>Full Screen Mode</span>
-                                <label class="switch"><input type="checkbox" id="setFullScreen" checked><span class="slider"></span></label>
-                            </div>
-                            <div class="form-group" style="margin-top: 10px;">
-                                <label>Default Font Size (px):</label>
-                                <input type="number" id="setFontSize" value="18" min="14" max="28" onchange="applyFontSize()">
-                            </div>
+                            <div class="switch-group"><span>Highlight Typing Words</span><label class="switch"><input type="checkbox" id="setHighlight" checked><span class="slider"></span></label></div>
+                            <div class="switch-group"><span>Auto Scroll Paragraph</span><label class="switch"><input type="checkbox" id="setAutoScroll" checked><span class="slider"></span></label></div>
+                            <div class="switch-group"><span>Allow Backspace Key</span><label class="switch"><input type="checkbox" id="setBackspace" checked><span class="slider"></span></label></div>
+                            <div class="switch-group"><span>Full Screen Mode</span><label class="switch"><input type="checkbox" id="setFullScreen" checked><span class="slider"></span></label></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- EXAM RULES -->
-            <div id="rulesView" class="view-section">
-                <div class="card">
-                    <h3><i class="fa-solid fa-sliders"></i> Exam Rules & Customization Settings</h3>
-                    <div class="form-group" style="margin-bottom: 20px; background: #eef2ff; padding: 12px; border-radius: 6px;">
-                        <label style="color:#1e3a8a; font-size:14px;"><i class="fa-solid fa-graduation-cap"></i> Select Course / Exam:</label>
-                        <select id="ruleCourseSelect" onchange="loadExamRulesForCourse()" style="margin-top:5px; font-weight:bold;">
-                            <option value="BSF HCM Typing Test">BSF HCM Typing Test Series</option>
-                            <option value="SSC CGL Typing Test">SSC CGL Typing Test Series</option>
-                            <option value="General Practice">General Practice Series</option>
-                        </select>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <div class="form-group">
-                            <label>Ignored Mistake Allowance (%):</label>
-                            <input type="number" id="ruleAllowance" value="5" step="0.5" min="0" max="20">
-                        </div>
-                        <div class="form-group">
-                            <label>Penalty Words Per Extra Mistake:</label>
-                            <input type="number" id="rulePenalty" value="10" min="0" max="50">
-                        </div>
-                        <div class="form-group">
-                            <label>Required Minimum Net Speed (WPM):</label>
-                            <input type="number" id="ruleMinWpm" value="35" min="20" max="60">
-                        </div>
-                        <div class="form-group">
-                            <label>Required Minimum Keystrokes:</label>
-                            <input type="number" id="ruleMinKeystrokes" value="1750" min="500" max="5000">
-                        </div>
-                        <div class="form-group">
-                            <label>Required Minimum Accuracy (%):</label>
-                            <input type="number" id="ruleMinAcc" value="85" min="50" max="100">
-                        </div>
-                        <div class="form-group">
-                            <label>Punctuation Calculation:</label>
-                            <select id="rulePunctuationRule">
-                                <option value="half">Half Mistake</option>
-                                <option value="full">Full Mistake</option>
-                                <option value="ignore">Ignore</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button class="start-btn" style="width: auto; padding: 10px 25px; margin-top: 15px;" onclick="saveExamRules()"><i class="fa-solid fa-save"></i> Save Rules</button>
-                </div>
-            </div>
-
-            <!-- ADMIN VIEW -->
-            <div id="adminView" class="view-section">
-                <div class="card">
-                    <h3>📥 नया टेस्ट अपलोड करें</h3>
-                    <div class="form-group">
-                        <label>कोर्स चुनें:</label>
-                        <select id="uploadCourseCategory">
-                            <option value="BSF HCM Typing Test">BSF HCM Typing Test Series</option>
-                            <option value="SSC CGL Typing Test">SSC CGL Typing Test Series</option>
-                            <option value="General Practice">General Practice Series</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>टेस्ट का नाम:</label>
-                        <input type="text" id="uploadTestTitle" placeholder="जैसे: BSF HCM Test 201">
-                    </div>
-                    <div class="form-group">
-                        <label>पैराग्राफ टेक्स्ट:</label>
-                        <textarea id="uploadTestText" rows="6" placeholder="टेक्स्ट यहाँ पेस्ट करें..."></textarea>
-                    </div>
-                    <button class="start-btn" style="width:auto; padding:10px 25px;" onclick="addNewTestToPortal()">Upload & Save Test</button>
-                </div>
-
-                <div class="card" style="margin-top:20px; border-left:4px solid #dc2626;">
-                    <h3>🗑️ टेस्ट हटाएं</h3>
-                    <div class="form-group">
-                        <label>कोर्स चुनें:</label>
-                        <select id="deleteCourseCategory" onchange="loadDeleteTestOptions()">
-                            <option value="BSF HCM Typing Test">BSF HCM Typing Test Series</option>
-                            <option value="SSC CGL Typing Test">SSC CGL Typing Test Series</option>
-                            <option value="General Practice">General Practice Series</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>टेस्ट चुनें:</label>
-                        <select id="deleteTestSelect"></select>
-                    </div>
-                    <button class="start-btn" style="width:auto; padding:10px 25px; background:#dc2626;" onclick="deleteTestFromPortal()">Delete Test</button>
-                </div>
-            </div>
-
-            <!-- 3. LIVE TEST VIEW -->
+            <!-- LIVE TEST VIEW -->
             <div id="liveTestView" class="view-section">
                 <div class="card" id="testContainer">
                     <div class="live-header">
@@ -707,170 +268,70 @@
                         <div>Gross Speed: <b id="grossDisplay">0 WPM</b></div>
                         <div>Accuracy: <b id="accuracyDisplay">100%</b></div>
                     </div>
-
                     <div class="text-display" id="paragraphBox"></div>
-
                     <textarea class="type-area" id="typingInput" placeholder="Start typing here..."></textarea>
-
                     <button class="start-btn" style="background: #16a34a; margin-top: 15px;" onclick="finishTest()">Submit Test</button>
                 </div>
             </div>
 
-            <!-- 4. ALL EXAMS -->
-            <div id="examsView" class="view-section">
-                <div class="card">
-                    <h3>All Available Exams</h3>
-                    <ul style="margin-top: 10px; padding-left: 20px;">
-                        <li>BSF HCM Typing Test Series</li>
-                        <li>SSC CGL & CHSL Exam Series</li>
-                        <li>RRB NTPC Typing Skill Test</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- 5. RESULTS HISTORY -->
+            <!-- RESULTS HISTORY -->
             <div id="resultsHistoryView" class="view-section">
                 <div class="card">
                     <h3>My Test Results History</h3>
                     <table class="results-table">
                         <thead>
-                            <tr>
-                                <th>Exam Time</th>
-                                <th>Test Name</th>
-                                <th>Accuracy (%)</th>
-                                <th>Status</th>
-                                <th>Net WPM</th>
-                                <th>Action</th>
-                            </tr>
+                            <tr><th>Exam Time</th><th>Test Name</th><th>Accuracy (%)</th><th>Status</th><th>Net WPM</th><th>Action</th></tr>
                         </thead>
-                        <tbody id="resultsTableBody">
-                            <tr><td colspan="6" style="text-align:center;">Loading results...</td></tr>
-                        </tbody>
+                        <tbody id="resultsTableBody"><tr><td colspan="6" style="text-align:center;">No test attempts found yet.</td></tr></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- 6. SINGLE RESULT SUMMARY -->
+            <!-- SINGLE RESULT SUMMARY -->
             <div id="singleResultView" class="view-section">
                 <button class="btn-view-result" onclick="switchTab('resultsHistoryView', document.getElementById('menu-results'))" style="margin-bottom: 15px; padding: 8px 15px; font-size:14px;">
                     <i class="fa-solid fa-arrow-left"></i> Back to All Results
                 </button>
-                
                 <div class="card">
                     <h2>Result Summary</h2>
                     <div class="summary-grid">
                         <table class="summary-table">
-                            <thead><tr><th>DESCRIPTION</th><th style="text-align:right;">RESULT</th></tr></thead>
                             <tbody>
                                 <tr><td class="label">Result ID</td><td class="value" id="resLink" style="color:#2563eb;">-</td></tr>
-                                <tr><td class="label">Duration</td><td class="value" id="resDuration">-</td></tr>
                                 <tr><td class="label">Time Taken</td><td class="value" id="resTimeTaken">-</td></tr>
                                 <tr><td class="label">Total Key Strokes</td><td class="value" id="resTotalKeystrokes">0</td></tr>
-                                <tr><td class="label">Correct Words</td><td class="value" id="resCorrectWords">0</td></tr>
-                                <tr><td class="label">Incorrect Words</td><td class="value" id="resIncorrectWords">0</td></tr>
                             </tbody>
                         </table>
-
                         <table class="summary-table">
-                            <thead><tr><th>DESCRIPTION</th><th style="text-align:right;">RESULT</th></tr></thead>
                             <tbody>
                                 <tr><td class="label">Gross Speed</td><td class="value" id="resGross">0 WPM</td></tr>
                                 <tr><td class="label">Net Speed</td><td class="value" id="resNet" style="font-size:16px;">0 WPM</td></tr>
-                                <tr><td class="label">Backspace Count</td><td class="value" id="resBackspaceCount">0</td></tr>
                                 <tr><td class="label">Accuracy</td><td class="value" id="resAccuracy">0%</td></tr>
                                 <tr><td class="label">Status</td><td class="value" id="resStatus">-</td></tr>
                             </tbody>
                         </table>
                     </div>
-
                     <h4 style="margin-top: 25px;">Mistakes Breakdown:</h4>
                     <div class="text-display" id="differencesBox" style="height: 140px; margin-top: 8px; font-size: 14px; background:#ffffff;"></div>
                 </div>
             </div>
-
-            <!-- 7. LEARN TYPING -->
-            <div id="learnView" class="view-section">
-                <div class="card">
-                    <h3>Learn Typing Lessons</h3>
-                    <p>Practice home row and top row lessons here.</p>
-                </div>
-            </div>
-
         </main>
     </div>
 
 <script>
-let activeWords = [];
-let totalTimeSec = 300;
-let timeLeft = 300;
-let timerInterval = null;
-let isTimerStarted = false;
-let backspaceCount = 0;
-
-let testHistory = [];
+let activeWords = [], totalTimeSec = 300, timeLeft = 300, timerInterval = null, isTimerStarted = false, backspaceCount = 0;
+let testHistory = JSON.parse(localStorage.getItem('tm_history')) || [];
 let loggedInUserEmail = localStorage.getItem('tm_user_email') || null;
-
-let examRulesConfig = JSON.parse(localStorage.getItem('tm_exam_rules_config')) || {
-    "BSF HCM Typing Test": { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, punctRule: "half" },
-    "SSC CGL Typing Test": { allowance: 5, penalty: 10, minWpm: 27, minKeystrokes: 1500, minAcc: 80, punctRule: "half" },
-    "General Practice": { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1000, minAcc: 80, punctRule: "full" }
-};
 
 let typingData = {
     "BSF HCM Typing Test": [
         { title: "BSF HCM Test 200", text: "Ashoka's inscriptions are the earliest self-representations of imperial power in the Indian subcontinent. However these inscriptions are focused mainly on the topic of dhamma and provide little information regarding other aspects." },
         { title: "BSF HCM Test 199", text: "Practice makes a man perfect. Consistent typing practice on a daily basis helps in improving speed and accuracy for government typing examinations." }
     ],
-    "SSC CGL Typing Test": [
-        { title: "SSC CGL Practice Set 1", text: "Education is the key to success in modern life. Digital literacy and fast typing speed are mandatory skills for official desk jobs in modern government offices." }
-    ],
-    "General Practice": [
-        { title: "Speed Drill 1: Keyboard Mastery", text: "The quick brown fox jumps over the lazy dog. Typing practice helps improve finger dexterity, accuracy, and overall speed on mechanical and membrane keyboards." }
-    ]
+    "SSC CGL Typing Test": [{ title: "SSC CGL Practice Set 1", text: "Education is the key to success in modern life. Digital literacy and fast typing speed are mandatory skills." }],
+    "General Practice": [{ title: "Speed Drill 1", text: "The quick brown fox jumps over the lazy dog." }]
 };
 
-let masterTestList = [];
-
-async function fetchCloudData() {
-    try {
-        if (window.db && window.getDocs && window.collection) {
-            let testSnap = await window.getDocs(window.collection(window.db, "typingTests"));
-            testSnap.forEach((docSnap) => {
-                let data = docSnap.data();
-                if (data.course && data.title && data.text) {
-                    if (!typingData[data.course]) typingData[data.course] = [];
-                    let exists = typingData[data.course].some(t => t.title === data.title);
-                    if (!exists) {
-                        typingData[data.course].push({ id: docSnap.id, title: data.title, text: data.text });
-                    }
-                }
-            });
-
-            if (window.loggedInUserEmail) {
-                let resSnap = await window.getDocs(window.collection(window.db, "userResults"));
-                let cloudResults = [];
-                resSnap.forEach((docSnap) => {
-                    let resData = docSnap.data();
-                    if (resData.email === window.loggedInUserEmail) {
-                        cloudResults.push(resData);
-                    }
-                });
-                if (cloudResults.length > 0) {
-                    testHistory = cloudResults;
-                }
-            }
-        }
-    } catch (e) {
-        console.log("Cloud sync fallback:", e);
-        let localHist = localStorage.getItem('tm_history');
-        if (localHist) testHistory = JSON.parse(localHist);
-    }
-    loadTestOptions();
-    updateResultsHistoryTable();
-    updateBestPerformance();
-}
-
-// Google Login Function
 async function handleGoogleLogin() {
     try {
         if(window.auth && window.googleProvider && window.signInWithPopup) {
@@ -879,157 +340,39 @@ async function handleGoogleLogin() {
             window.loggedInUserEmail = user.email;
             localStorage.setItem('tm_user_email', user.email);
             document.getElementById('currentUserName').innerText = user.email;
-            let authBtn = document.getElementById('headerAuthBtn');
-            authBtn.innerText = "Logout";
-            authBtn.onclick = handleGoogleLogout;
             closeLoginModal();
-            fetchCloudData();
-            alert("गूगल द्वारा सफलतापूर्वक लॉगिन हो गया!");
+            alert("गूगल द्वारा लॉगिन सफल!");
+        } else {
+            alert("गूगल लॉगिन के लिए कृपया Firebase Console में Authentication चालू करें।");
         }
     } catch (error) {
-        console.log("Google login error:", error);
-        alert("गूगल लॉगिन असफल रहा: " + error.message);
+        alert("Firebase Console में Authentication चालू करें: " + error.message);
     }
 }
 
-async function handleGoogleLogout() {
-    try {
-        if(window.auth && window.signOut) {
-            await window.signOut(window.auth);
-        }
-    } catch(e) {}
+function handleGoogleLogout() {
     localStorage.removeItem('tm_user_email');
     window.loggedInUserEmail = null;
     location.reload();
 }
 
-document.addEventListener('keydown', function(e) {
-    if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-        let enteredPwd = prompt("🔐 एडमिन पासवर्ड दर्ज करें:");
-        if (enteredPwd === "Saurabh@2003") {
-            let adminItem = document.getElementById('adminSidebarMenu');
-            let rulesItem = document.getElementById('rulesSidebarMenu');
-            if (adminItem && rulesItem) {
-                adminItem.classList.toggle('hidden');
-                rulesItem.classList.toggle('hidden');
-            }
-        } else if (enteredPwd !== null) {
-            alert("गलत पासवर्ड!");
-        }
-    }
-});
-
-function checkAdminAccess(viewId) {
-    let enteredPwd = prompt("🔐 एडमिन पासवर्ड दर्ज करें:");
-    if (enteredPwd === "Saurabh@2003") {
-        switchTab(viewId, document.getElementById(viewId === 'adminView' ? 'adminSidebarMenu' : 'rulesSidebarMenu'));
-        if(viewId === 'adminView') loadDeleteTestOptions();
-        if(viewId === 'rulesView') loadExamRulesForCourse();
-    } else if (enteredPwd !== null) {
-        alert("गलत पासवर्ड!");
-    }
-}
-
 window.onload = function() {
-    if (window.loggedInUserEmail) {
-        let nameEl = document.getElementById('currentUserName');
-        if(nameEl) nameEl.innerText = window.loggedInUserEmail;
-        let authBtn = document.getElementById('headerAuthBtn');
-        if(authBtn) {
-            authBtn.innerText = "Logout";
-            authBtn.onclick = handleGoogleLogout;
-        }
-    } else {
-        document.getElementById('currentUserName').innerText = "Guest User";
-        document.getElementById('headerAuthBtn').innerText = "Login / Signup";
-        document.getElementById('headerAuthBtn').onclick = openLoginModal;
-        openLoginModal();
+    if (loggedInUserEmail) {
+        document.getElementById('currentUserName').innerText = loggedInUserEmail;
     }
-    fetchCloudData().then(() => {
-        loadTestOptions();
-        updateResultsHistoryTable();
-        updateBestPerformance();
-    });
+    loadTestOptions();
+    updateResultsHistoryTable();
     switchTab('homeView', document.getElementById('menu-home'));
 };
 
 function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
 function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
 
-function switchAuthTab(type) {
-    if(type === 'login') {
-        document.getElementById('formLogin').classList.remove('hidden');
-        document.getElementById('formSignup').classList.add('hidden');
-        document.getElementById('tabLoginBtn').classList.add('active');
-        document.getElementById('tabSignupBtn').classList.remove('active');
-    } else {
-        document.getElementById('formLogin').classList.add('hidden');
-        document.getElementById('formSignup').classList.remove('hidden');
-        document.getElementById('tabSignupBtn').classList.add('active');
-        document.getElementById('tabLoginBtn').classList.remove('active');
-    }
-}
-
-function handleUserSignup() {
-    let email = document.getElementById('signupEmail').value.trim();
-    let pwd = document.getElementById('signupPassword').value.trim();
-    if(!email || !pwd) { alert("कृपया सभी फील्ड भरें!"); return; }
-    window.loggedInUserEmail = email;
-    localStorage.setItem('tm_user_email', email);
-    document.getElementById('currentUserName').innerText = email;
-    document.getElementById('headerAuthBtn').innerText = "Logout";
-    document.getElementById('headerAuthBtn').onclick = handleGoogleLogout;
-    closeLoginModal();
-}
-
-function handleUserLogin() {
-    let email = document.getElementById('loginEmail').value.trim();
-    let pwd = document.getElementById('loginPassword').value.trim();
-    if(!email || !pwd) { alert("कृपया ईमेल और पासवर्ड दर्ज करें!"); return; }
-    window.loggedInUserEmail = email;
-    localStorage.setItem('tm_user_email', email);
-    document.getElementById('currentUserName').innerText = email;
-    document.getElementById('headerAuthBtn').innerText = "Logout";
-    document.getElementById('headerAuthBtn').onclick = handleGoogleLogout;
-    closeLoginModal();
-}
-
-function logoutUser() { handleGoogleLogout(); }
-
-function toggleSidebar() {
-    let sidebar = document.getElementById('sidebar');
-    if (sidebar) sidebar.classList.toggle('collapsed');
-}
-
 function switchTab(tabId, clickedElement) {
     let views = document.querySelectorAll('.view-section');
-    views.forEach(v => {
-        v.classList.remove('active');
-        v.style.display = 'none';
-    });
+    views.forEach(v => { v.classList.remove('active'); v.style.display = 'none'; });
     let targetView = document.getElementById(tabId);
-    if (targetView) {
-        targetView.style.display = 'block';
-        targetView.classList.add('active');
-    }
-    let menuItems = document.querySelectorAll('.menu-item');
-    menuItems.forEach(item => item.classList.remove('active'));
-    if (clickedElement) clickedElement.classList.add('active');
-    
-    if(tabId === 'adminView') loadDeleteTestOptions();
-    if(tabId === 'rulesView') loadExamRulesForCourse();
-    if(tabId === 'homeView') updateBestPerformance();
-}
-
-function applyFontSize() {
-    let sizeInput = document.getElementById('setFontSize');
-    let pBox = document.getElementById('paragraphBox');
-    let tInput = document.getElementById('typingInput');
-    if (sizeInput && pBox && tInput) {
-        let size = sizeInput.value + 'px';
-        pBox.style.fontSize = size;
-        tInput.style.fontSize = size;
-    }
+    if (targetView) { targetView.style.display = 'block'; targetView.classList.add('active'); }
 }
 
 function loadTestOptions() {
@@ -1038,354 +381,126 @@ function loadTestOptions() {
     if (!courseEl || !testEl) return;
     let course = courseEl.value;
     testEl.innerHTML = "";
-    masterTestList = [];
-    if (typingData[course]) {
-        typingData[course].forEach((item, index) => {
-            masterTestList.push({ index: index, title: item.title });
-            let opt = document.createElement('option');
-            opt.value = index;
-            opt.textContent = item.title;
-            testEl.appendChild(opt);
-        });
-    }
-}
-
-function filterTestDropdown() {
-    let query = document.getElementById('testSearchInput').value.trim().toLowerCase();
-    let testEl = document.getElementById('testSelect');
-    if (!testEl) return;
-    testEl.innerHTML = "";
-    let filtered = masterTestList.filter(item => item.title.toLowerCase().includes(query));
-    filtered.forEach(item => {
-        let opt = document.createElement('option');
-        opt.value = item.index;
-        opt.textContent = item.title;
-        testEl.appendChild(opt);
-    });
-}
-
-function loadDeleteTestOptions() {
-    let courseEl = document.getElementById('deleteCourseCategory');
-    let testEl = document.getElementById('deleteTestSelect');
-    if (!courseEl || !testEl) return;
-    let course = courseEl.value;
-    testEl.innerHTML = "";
     if (typingData[course]) {
         typingData[course].forEach((item, index) => {
             let opt = document.createElement('option');
-            opt.value = index;
-            opt.textContent = item.title;
+            opt.value = index; opt.textContent = item.title;
             testEl.appendChild(opt);
         });
-    }
-}
-
-function loadExamRulesForCourse() {
-    let courseSelect = document.getElementById('ruleCourseSelect');
-    if(!courseSelect) return;
-    let selectedCourse = courseSelect.value;
-    let rules = examRulesConfig[selectedCourse] || { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, punctRule: "half" };
-    document.getElementById('ruleAllowance').value = rules.allowance;
-    document.getElementById('rulePenalty').value = rules.penalty;
-    document.getElementById('ruleMinWpm').value = rules.minWpm;
-    document.getElementById('ruleMinKeystrokes').value = rules.minKeystrokes;
-    document.getElementById('ruleMinAcc').value = rules.minAcc;
-    document.getElementById('rulePunctuationRule').value = rules.punctRule;
-}
-
-function saveExamRules() {
-    let courseSelect = document.getElementById('ruleCourseSelect');
-    if(!courseSelect) return;
-    let selectedCourse = courseSelect.value;
-    examRulesConfig[selectedCourse] = {
-        allowance: parseFloat(document.getElementById('ruleAllowance').value),
-        penalty: parseFloat(document.getElementById('rulePenalty').value),
-        minWpm: parseFloat(document.getElementById('ruleMinWpm').value),
-        minKeystrokes: parseInt(document.getElementById('ruleMinKeystrokes').value),
-        minAcc: parseFloat(document.getElementById('ruleMinAcc').value),
-        punctRule: document.getElementById('rulePunctuationRule').value
-    };
-    localStorage.setItem('tm_exam_rules_config', JSON.stringify(examRulesConfig));
-    alert("नियम सहेज लिए गए हैं!");
-}
-
-async function addNewTestToPortal() {
-    let course = document.getElementById('uploadCourseCategory').value;
-    let title = document.getElementById('uploadTestTitle').value.trim();
-    let content = document.getElementById('uploadTestText').value.trim();
-    if(!title || !content) { alert("कृपया सभी फील्ड भरें!"); return; }
-    try {
-        if (window.db && window.addDoc && window.collection) {
-            await window.addDoc(window.collection(window.db, "typingTests"), { course, title, text: content });
-        }
-    } catch(e) {}
-    if(!typingData[course]) typingData[course] = [];
-    typingData[course].push({ title, text: content });
-    alert("नया टेस्ट सफलतापूर्वक जोड़ दिया गया है!");
-    document.getElementById('uploadTestTitle').value = "";
-    document.getElementById('uploadTestText').value = "";
-    loadTestOptions();
-}
-
-function deleteTestFromPortal() {
-    let course = document.getElementById('deleteCourseCategory').value;
-    let testIdx = document.getElementById('deleteTestSelect').value;
-    if(typingData[course] && typingData[course][testIdx]) {
-        typingData[course].splice(testIdx, 1);
-        alert("टेस्ट हटा दिया गया है!");
-        loadTestOptions();
-        loadDeleteTestOptions();
     }
 }
 
 function startLiveTest() {
     let sidebar = document.getElementById('sidebar');
     if (sidebar) sidebar.classList.add('collapsed');
-
-    let fullScreenToggle = document.getElementById('setFullScreen');
-    if (fullScreenToggle && fullScreenToggle.checked) {
-        let elem = document.documentElement;
-        if (elem.requestFullscreen) {
-            elem.requestFullscreen().catch(err => {});
-        }
-    }
-
     switchTab('liveTestView');
-    applyFontSize();
-
+    
     let courseEl = document.getElementById('courseSelect');
     let testEl = document.getElementById('testSelect');
-    if (!courseEl || !testEl) return;
     let course = courseEl.value;
-    let testIdx = testEl.value;
+    let testIdx = testEl.value || 0;
+    
     if (!typingData[course] || !typingData[course][testIdx]) return;
-
-    let text = typingData[course][testIdx].text;
-    activeWords = text.trim().split(/\s+/);
+    activeWords = typingData[course][testIdx].text.trim().split(/\s+/);
     
     let pBox = document.getElementById('paragraphBox');
-    if (pBox) {
-        pBox.innerHTML = activeWords.map((w, i) => `<span id="w-${i}">${w}</span>`).join(' ');
-        let firstSpan = document.getElementById('w-0');
-        if (firstSpan) firstSpan.classList.add('current');
-    }
+    if (pBox) pBox.innerHTML = activeWords.map((w, i) => `<span id="w-${i}">${w}</span>`).join(' ');
     
-    let timeSelectEl = document.getElementById('timeSelect');
-    totalTimeSec = timeSelectEl ? parseInt(timeSelectEl.value) * 60 : 300;
-    timeLeft = totalTimeSec;
-    backspaceCount = 0;
-
+    timeLeft = parseInt(document.getElementById('timeSelect').value) * 60;
     let typingInput = document.getElementById('typingInput');
-    if (typingInput) {
-        typingInput.value = '';
-        typingInput.disabled = false;
-        typingInput.focus();
-    }
-
+    if (typingInput) { typingInput.value = ''; typingInput.disabled = false; typingInput.focus(); }
     isTimerStarted = false;
     if (timerInterval) clearInterval(timerInterval);
-    updateTimerDisplay();
 }
-
-function updateTimerDisplay() {
-    let min = Math.floor(timeLeft / 60);
-    let sec = timeLeft % 60;
-    let timerDisplay = document.getElementById('timerDisplay');
-    if (timerDisplay) timerDisplay.innerText = `${min}:${sec < 10 ? '0' : ''}${sec}`;
-}
-
-function updateTimer() {
-    timeLeft--;
-    updateTimerDisplay();
-    let typingInput = document.getElementById('typingInput');
-    let timeSpent = (totalTimeSec - timeLeft) / 60;
-    if (timeSpent > 0 && typingInput) {
-        let typed = typingInput.value;
-        let gross = Math.round(((typed.length / 5) / timeSpent) * 10) / 10;
-        let gDisplay = document.getElementById('grossDisplay');
-        if(gDisplay) gDisplay.innerText = gross + " WPM";
-    }
-    if (timeLeft <= 0) finishTest();
-}
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Backspace') {
-        let activeEl = document.activeElement;
-        if (activeEl && activeEl.id === 'typingInput') {
-            backspaceCount++;
-            let backspaceToggle = document.getElementById('setBackspace');
-            if (backspaceToggle && !backspaceToggle.checked) e.preventDefault();
-        }
-    }
-});
 
 document.addEventListener('input', function(e) {
     if (e.target && e.target.id === 'typingInput') {
-        if (!isTimerStarted && e.target.value.length > 0) {
+        if (!isTimerStarted) {
             isTimerStarted = true;
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(updateTimer, 1000);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timerDisplay').innerText = Math.floor(timeLeft/60) + ":" + (timeLeft%60 < 10 ? '0':'') + (timeLeft%60);
+                if(timeLeft <= 0) finishTest();
+            }, 1000);
         }
-
         let typedVal = e.target.value;
         let typedWords = typedVal.split(/\s+/);
         let activeIdx = typedWords.length - 1;
-
-        let highlightEl = document.getElementById('setHighlight');
-        let highlight = highlightEl ? highlightEl.checked : true;
-
         activeWords.forEach((word, idx) => {
             let span = document.getElementById(`w-${idx}`);
-            if (!span) return;
-            span.className = '';
-            if (highlight) {
-                if (idx < typedWords.length - 1) {
-                    span.classList.add(typedWords[idx] === word ? 'correct' : 'incorrect');
-                } else if (idx === activeIdx) {
-                    span.classList.add('current');
-                }
+            if (span) {
+                span.className = '';
+                if (idx < typedWords.length - 1) span.classList.add(typedWords[idx] === word ? 'correct' : 'incorrect');
+                else if (idx === activeIdx) span.classList.add('current');
             }
         });
-
-        let correctLive = 0;
-        for(let i=0; i<typedWords.length - 1; i++) {
-            if(typedWords[i] === activeWords[i]) correctLive++;
-        }
-        let totalTypedSoFar = Math.max(1, typedWords.length - 1);
-        let liveAcc = Math.round((correctLive / totalTypedSoFar) * 100);
-        let accDisplay = document.getElementById('accuracyDisplay');
-        if(accDisplay) accDisplay.innerText = (liveAcc > 100 ? 100 : liveAcc) + "%";
-
-        let autoScrollEl = document.getElementById('setAutoScroll');
-        if (autoScrollEl && autoScrollEl.checked) {
-            let currentSpan = document.getElementById(`w-${activeIdx}`);
-            let pBox = document.getElementById('paragraphBox');
-            if (currentSpan && pBox) {
-                let currentTop = currentSpan.offsetTop;
-                let currentHeight = currentSpan.offsetHeight;
-                let boxHeight = pBox.clientHeight;
-                let scrollMiddle = currentTop - (boxHeight / 2) + (currentHeight / 2);
-                if (scrollMiddle > 0) pBox.scrollTop = scrollMiddle;
-            }
-        }
     }
 });
 
-async function finishTest() {
+function finishTest() {
     if (timerInterval) clearInterval(timerInterval);
     let typingInput = document.getElementById('typingInput');
     if (typingInput) typingInput.disabled = true;
 
-    if (document.exitFullscreen) {
+    if (document.fullscreenElement && document.exitFullscreen) {
         document.exitFullscreen().catch(err => {});
     }
 
     let sidebar = document.getElementById('sidebar');
     if (sidebar) sidebar.classList.remove('collapsed');
 
-    let courseEl = document.getElementById('courseSelect');
-    let testEl = document.getElementById('testSelect');
-    let course = courseEl ? courseEl.value : 'General Practice';
-    let testIdx = testEl ? testEl.value : '';
-    if (!typingData[course] || !typingData[course][testIdx]) return;
-    let testName = typingData[course][testIdx].title;
+    let course = document.getElementById('courseSelect').value;
+    let testIdx = document.getElementById('testSelect').value || 0;
+    let testName = typingData[course][testIdx] ? typingData[course][testIdx].title : "Typing Test";
 
-    let rules = examRulesConfig[course] || { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, punctRule: "half" };
-    let timeSpentSec = totalTimeSec - timeLeft;
-    let timeSpentMin = timeSpentSec / 60;
-    if (timeSpentMin <= 0) timeSpentMin = 0.01;
-    
     let typed = typingInput ? typingInput.value : "";
     let typedKeystrokes = typed.length;
-    let totalKeystrokesInOrig = activeWords.join(' ').length;
-    
-    let totalWordsInOrig = Math.round((totalKeystrokesInOrig / 5) * 10) / 10;
-    let totalTypedWordsNum = Math.round((typedKeystrokes / 5) * 10) / 10;
-    let grossWords = typedKeystrokes / 5;
-    let grossWpm = Math.round((grossWords / timeSpentMin) * 10) / 10;
-    
     let typedWordsArray = typed.trim() ? typed.trim().split(/\s+/) : [];
     let mistakes = 0;
-    let correctKeystrokesCount = 0;
 
     activeWords.forEach((word, idx) => {
-        let userW = typedWordsArray[idx] || "";
-        if (userW === word) {
-            correctKeystrokesCount += word.length + 1;
-        } else if (idx < typedWordsArray.length) {
-            mistakes++;
-        }
+        if (typedWordsArray[idx] && typedWordsArray[idx] !== word) mistakes++;
     });
 
-    let correctWordsNum = Math.round((correctKeystrokesCount / 5) * 10) / 10;
-    let allowPct = rules.allowance / 100;
-    let allowedMistakes = Math.round((totalTypedWordsNum * allowPct) * 10) / 10;
-    let extraMistakes = Math.max(0, mistakes - allowedMistakes);
-    let penaltyWords = Math.round((extraMistakes * rules.penalty) * 10) / 10;
-    
-    let netWords = Math.max(0, grossWords - penaltyWords);
-    let netWpm = Math.round((netWords / timeSpentMin) * 10) / 10;
-    let accuracy = totalTypedWordsNum > 0 ? Math.round((correctWordsNum / totalTypedWordsNum) * 100 * 10) / 10 : 0;
-    if (accuracy > 100) accuracy = 100;
-
-    let isQualified = netWpm >= rules.minWpm && typedKeystrokes >= rules.minKeystrokes && accuracy >= rules.minAcc;
-    let now = new Date();
-    let formattedDate = now.getDate() + " " + now.toLocaleString('en-US', { month: 'short' }) + " " + now.getFullYear() + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    let randomId = Math.random().toString(36).substring(2, 10).toUpperCase();
+    let grossWpm = Math.round((typedKeystrokes / 5) / 1);
+    let netWpm = Math.max(0, grossWpm - mistakes);
+    let accuracy = typedWordsArray.length > 0 ? Math.round(((typedWordsArray.length - mistakes) / typedWordsArray.length) * 100) : 100;
 
     let resultObj = {
-        id: randomId,
-        email: window.loggedInUserEmail || "guest@typingmentor.com",
-        time: formattedDate,
+        id: Math.random().toString(36).substring(2, 8).toUpperCase(),
+        time: new Date().toLocaleTimeString(),
         name: testName,
-        duration: Math.floor(totalTimeSec / 60) + " mins",
-        timeTaken: Math.floor(timeSpentSec / 60) + " mins " + (timeSpentSec % 60) + " sec",
-        totalKeystrokes: totalKeystrokesInOrig,
-        totalWords: totalWordsInOrig,
-        typedKeystrokes: typedKeystrokes,
-        correctWords: correctWordsNum,
-        incorrectWords: mistakes,
+        timeTaken: "1 min",
+        totalKeystrokes: typedKeystrokes,
         gross: grossWpm + " WPM",
         netWpm: netWpm,
-        backspaceCount: backspaceCount,
         accuracy: accuracy,
-        status: isQualified ? "Qualified" : "Non Qualified",
+        status: netWpm >= 30 ? "Qualified" : "Non Qualified",
         activeWords: activeWords,
-        typedWordsArray: typedWordsArray,
-        typedText: typed
+        typedWordsArray: typedWordsArray
     };
 
     testHistory.unshift(resultObj);
+    localStorage.setItem('tm_history', JSON.stringify(testHistory));
 
+    // Optional Cloud Save Without Crashing
     try {
         if (window.db && window.addDoc && window.collection) {
-            await window.addDoc(window.collection(window.db, "userResults"), resultObj);
+            window.addDoc(window.collection(window.db, "userResults"), resultObj);
         }
-    } catch (e) {
-        console.log("Cloud save error:", e);
-    }
+    } catch (e) {}
 
-    localStorage.setItem('tm_history', JSON.stringify(testHistory));
     updateResultsHistoryTable();
-    updateBestPerformance();
     viewSingleResult(0);
 }
 
 function updateResultsHistoryTable() {
     let tbody = document.getElementById('resultsTableBody');
-    let totalCountEl = document.getElementById('totalTestsCount');
-    let qualCountEl = document.getElementById('qualifiedCount');
-
-    if (totalCountEl) totalCountEl.innerText = testHistory.length;
-    let qualified = testHistory.filter(h => h.status === "Qualified").length;
-    if (qualCountEl) qualCountEl.innerText = qualified;
-
     if (!tbody) return;
     if (testHistory.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No test attempts found yet.</td></tr>`;
         return;
     }
-
     tbody.innerHTML = testHistory.map((h, index) => `
         <tr>
             <td>${h.time}</td>
@@ -1393,64 +508,33 @@ function updateResultsHistoryTable() {
             <td>${h.accuracy}%</td>
             <td class="${h.status === 'Qualified' ? 'status-qualified' : 'status-nonqualified'}">${h.status}</td>
             <td><b>${h.netWpm} WPM</b></td>
-            <td><button class="btn-view-result" onclick="viewSingleResult(${index})"><i class="fa-solid fa-eye"></i> View</button></td>
+            <td><button class="btn-view-result" onclick="viewSingleResult(${index})">View</button></td>
         </tr>
     `).join('');
-}
-
-function updateBestPerformance() {
-    let bestSpeed = 0, bestAcc = 0;
-    testHistory.forEach(h => {
-        if (h.netWpm > bestSpeed) {
-            bestSpeed = h.netWpm;
-            bestAcc = h.accuracy;
-        }
-    });
-    let speedEl = document.getElementById('bestSpeedDisplay');
-    let accEl = document.getElementById('bestAccDisplay');
-    if(speedEl) speedEl.innerText = bestSpeed + " WPM";
-    if(accEl) accEl.innerText = bestAcc + "%";
 }
 
 function viewSingleResult(index) {
     let res = testHistory[index];
     if (!res) return;
 
-    let setVal = (id, val) => {
-        let el = document.getElementById(id);
-        if (el) el.innerText = val;
-    };
-
-    setVal('resLink', res.id);
-    setVal('resDuration', res.duration);
-    setVal('resTimeTaken', res.timeTaken);
-    setVal('resTotalKeystrokes', res.totalKeystrokes);
-    setVal('resCorrectWords', res.correctWords);
-    setVal('resIncorrectWords', res.incorrectWords);
-    setVal('resGross', res.gross);
-    setVal('resNet', res.netWpm + " WPM");
-    setVal('resBackspaceCount', res.backspaceCount);
-    setVal('resAccuracy', res.accuracy + "%");
-    
-    let statusEl = document.getElementById('resStatus');
-    if (statusEl) {
-        statusEl.innerText = res.status;
-        statusEl.style.color = res.status === 'Qualified' ? '#16a34a' : '#dc2626';
-    }
+    document.getElementById('resLink').innerText = res.id;
+    document.getElementById('resTimeTaken').innerText = res.timeTaken;
+    document.getElementById('resTotalKeystrokes').innerText = res.totalKeystrokes;
+    document.getElementById('resGross').innerText = res.gross;
+    document.getElementById('resNet').innerText = res.netWpm + " WPM";
+    document.getElementById('resAccuracy').innerText = res.accuracy + "%";
+    document.getElementById('resStatus').innerText = res.status;
 
     let diffHtml = res.activeWords.map((word, idx) => {
         let userW = res.typedWordsArray[idx];
-        if (userW === undefined) return `<span style="color: blue; margin-right: 5px;">${word}</span>`;
-        if (userW === word) return `<span style="background-color: #dcfce7; color: #16a34a; padding: 1px 3px; border-radius: 3px; margin-right: 5px;">${word}</span>`;
-        return `<span style="color: blue; margin-right: 2px;">${word}</span><span style="color: red; text-decoration: line-through; margin-right: 5px;">${userW}</span>`;
-    }).join(' ');
+        if (!userW) return `<span style="color: blue;">${word} </span>`;
+        if (userW === word) return `<span style="color: green;">${word} </span>`;
+        return `<span style="color: red; text-decoration: line-through;">${userW}</span> <span style="color: blue;">${word} </span>`;
+    }).join('');
 
-    let diffBox = document.getElementById('differencesBox');
-    if (diffBox) diffBox.innerHTML = diffHtml;
-
+    document.getElementById('differencesBox').innerHTML = diffHtml;
     switchTab('singleResultView');
 }
 </script>
-
 </body>
 </html>
