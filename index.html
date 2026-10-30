@@ -7,10 +7,11 @@
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase App & Firestore SDKs -->
+    <!-- Firebase App, Auth & Firestore SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDN6wecthuH2oIcHHpuSzseSjMWb6R8gow",
@@ -22,8 +23,27 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        window.db = db;
+        window.db = getFirestore(app);
+        window.auth = getAuth(app);
+        window.googleProvider = new GoogleAuthProvider();
+        window.signInWithPopup = signInWithPopup;
+        window.signOut = signOut;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.getDocs = getDocs;
+
+        onAuthStateChanged(window.auth, (user) => {
+            if (user) {
+                window.loggedInUserEmail = user.email;
+                localStorage.setItem('tm_user_email', user.email);
+                let nameEl = document.getElementById('currentUserName');
+                if(nameEl) nameEl.innerText = user.email;
+                let authBtn = document.getElementById('headerAuthBtn');
+                if(authBtn) { authBtn.innerText = "Logout"; authBtn.onclick = handleGoogleLogout; }
+                closeLoginModal();
+                if(typeof fetchCloudData === 'function') fetchCloudData();
+            }
+        });
     </script>
 
     <style>
@@ -237,6 +257,10 @@
             margin-top: 10px;
         }
 
+        .google-btn {
+            background: #db4437; color: white; border: none; padding: 12px 20px; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px;
+        }
+
         /* LIVE TEST AREA */
         .live-header {
             display: flex;
@@ -344,15 +368,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             position: relative;
         }
-        .tab-toggle {
-            display: flex; margin-bottom: 15px; border-bottom: 2px solid #e5e7eb;
-        }
-        .tab-btn {
-            flex: 1; padding: 10px; background: none; border: none; font-weight: bold; cursor: pointer; color: #64748b;
-        }
-        .tab-btn.active {
-            color: #2563eb; border-bottom: 2px solid #2563eb; margin-bottom: -2px;
-        }
         .close-modal-btn {
             position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; color: #64748b; border: none; background: none;
         }
@@ -361,50 +376,13 @@
 </head>
 <body>
 
-    <!-- USER SIGNUP / LOGIN MODAL -->
+    <!-- USER GOOGLE LOGIN MODAL -->
     <div id="loginModal" class="modal-overlay hidden">
         <div class="modal-card">
             <button class="close-modal-btn" onclick="closeLoginModal()">&times;</button>
-            <div class="tab-toggle">
-                <button class="tab-btn active" id="tabSignupBtn" onclick="switchAuthTab('signup')">साइन-अप (Sign Up)</button>
-                <button class="tab-btn" id="tabLoginBtn" onclick="switchAuthTab('login')">लॉगिन (Login)</button>
-            </div>
-
-            <!-- SIGNUP FORM (DEFAULT) -->
-            <div id="formSignup">
-                <p style="font-size: 12px; color:#64748b; margin-bottom: 12px;">नया अकाउंट बनाने के लिए अपना विवरण दर्ज करें।</p>
-                <div class="form-group" style="text-align:left;">
-                    <label>Full Name:</label>
-                    <input type="text" id="signupName" placeholder="अपना पूरा नाम दर्ज करें...">
-                </div>
-                <div class="form-group" style="text-align:left;">
-                    <label>Email ID:</label>
-                    <input type="email" id="signupEmail" placeholder="अपनी ईमेल आईडी दर्ज करें...">
-                </div>
-                <div class="form-group" style="text-align:left;">
-                    <label>Password:</label>
-                    <input type="password" id="signupPassword" placeholder="नया पासवर्ड बनाएं...">
-                </div>
-                <div class="form-group" style="text-align:left;">
-                    <label>Confirm Password:</label>
-                    <input type="password" id="signupConfirmPassword" placeholder="पासवर्ड दोबारा दर्ज करें...">
-                </div>
-                <button class="start-btn" style="background:#16a34a;" onclick="handleUserSignup()">साइन-अप / रजिस्टर करें</button>
-            </div>
-
-            <!-- LOGIN FORM -->
-            <div id="formLogin" class="hidden">
-                <p style="font-size: 12px; color:#64748b; margin-bottom: 12px;">अपने रजिस्टर्ड ईमेल और पासवर्ड से लॉगिन करें।</p>
-                <div class="form-group" style="text-align:left;">
-                    <label>Email ID:</label>
-                    <input type="email" id="loginEmail" placeholder="Enter your email...">
-                </div>
-                <div class="form-group" style="text-align:left;">
-                    <label>Password:</label>
-                    <input type="password" id="loginPassword" placeholder="Enter your password...">
-                </div>
-                <button class="start-btn" onclick="handleUserLogin()">लॉगिन करें</button>
-            </div>
+            <h3 style="margin-bottom: 15px;">Typing Mentor Login</h3>
+            <p style="font-size: 13px; color:#64748b; margin-bottom: 20px;">पोर्टल पर लॉगिन करने के लिए अपने गूगल अकाउंट का उपयोग करें।</p>
+            <button class="google-btn" onclick="handleGoogleLogin()"><i class="fa-brands fa-google"></i> Sign in with Google</button>
         </div>
     </div>
 
@@ -638,11 +616,11 @@
                 </div>
             </div>
 
-            <!-- ADMIN & TEST UPLOADER VIEW -->
+            <!-- ADMIN & TEST UPLOADER VIEW (CLOUD SYNCED) -->
             <div id="adminView" class="view-section">
                 <div class="card">
-                    <h3>📥 नया टेस्ट / पैराग्राफ अपलोड करें</h3>
-                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">यहाँ से आप नया टेस्ट सीधे अपनी वेबसाइट में जोड़ सकते हैं।</p>
+                    <h3>📥 नया टेस्ट / पैराग्राफ अपलोड करें (Cloud Sync)</h3>
+                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">यहाँ से आप जो भी टेस्ट अपलोड करेंगे, वह सीधे क्लाउड डेटाबेस पर जाएगा और सभी यूज़र्स को दिखेगा।</p>
                     
                     <div class="form-group">
                         <label>किस कोर्स/परीक्षा में जोड़ना है?</label>
@@ -659,33 +637,11 @@
                     </div>
 
                     <div class="form-group">
-                        <label>पैराग्राफ टेक्स्ट (या पीडीएफ से कॉपी किया गया टेक्स्ट यहाँ पेस्ट करें):</label>
+                        <label>पैराग्राफ टेक्स्ट:</label>
                         <textarea id="uploadTestText" rows="6" placeholder="यहाँ टेक्स्ट पेस्ट करें..."></textarea>
                     </div>
 
-                    <button class="start-btn" style="width:auto; padding:10px 25px;" onclick="addNewTestToPortal()">Upload & Save Test</button>
-                </div>
-
-                <!-- DELETE / REMOVE TEST PANEL FOR ADMIN -->
-                <div class="card" style="margin-top:20px; border-left:4px solid #dc2626;">
-                    <h3>🗑️ पुराना टेस्ट / पैराग्राफ हटाएं (Delete Test)</h3>
-                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">किसी भी कोर्स से अवांछित टेस्ट यहाँ सेलेक्ट करके डिलीट करें।</p>
-
-                    <div class="form-group">
-                        <label>कोर्स चुनें:</label>
-                        <select id="deleteCourseCategory" onchange="loadDeleteTestOptions()">
-                            <option value="BSF HCM Typing Test">BSF HCM Typing Test Series</option>
-                            <option value="SSC CGL Typing Test">SSC CGL Typing Test Series</option>
-                            <option value="General Practice">General Practice Series</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>हटाने के लिए टेस्ट चुनें:</label>
-                        <select id="deleteTestSelect"></select>
-                    </div>
-
-                    <button class="start-btn" style="width:auto; padding:10px 25px; background:#dc2626;" onclick="deleteTestFromPortal()">Delete Selected Test</button>
+                    <button class="start-btn" style="width:auto; padding:10px 25px;" onclick="addNewTestToPortal()">Upload to Cloud & Save</button>
                 </div>
             </div>
 
@@ -817,7 +773,6 @@
     </div>
 
 <script>
-// Global Variables & LocalStorage Initialization
 let activeWords = [];
 let totalTimeSec = 300;
 let timeLeft = 300;
@@ -828,14 +783,13 @@ let backspaceCount = 0;
 let testHistory = JSON.parse(localStorage.getItem('tm_history')) || [];
 let loggedInUserEmail = localStorage.getItem('tm_user_email') || null;
 
-// Default Exam Rules Config
 let examRulesConfig = JSON.parse(localStorage.getItem('tm_exam_rules_config')) || {
     "BSF HCM Typing Test": { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, punctRule: "half" },
     "SSC CGL Typing Test": { allowance: 5, penalty: 10, minWpm: 27, minKeystrokes: 1500, minAcc: 80, punctRule: "half" },
     "General Practice": { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1000, minAcc: 80, punctRule: "full" }
 };
 
-let typingData = JSON.parse(localStorage.getItem('tm_custom_typing_data')) || {
+let typingData = {
     "BSF HCM Typing Test": [
         { title: "BSF HCM Test 200", text: "Ashoka's inscriptions are the earliest self-representations of imperial power in the Indian subcontinent. However these inscriptions are focused mainly on the topic of dhamma and provide little information regarding other aspects." },
         { title: "BSF HCM Test 199", text: "Practice makes a man perfect. Consistent typing practice on a daily basis helps in improving speed and accuracy for government typing examinations." }
@@ -850,7 +804,52 @@ let typingData = JSON.parse(localStorage.getItem('tm_custom_typing_data')) || {
 
 let masterTestList = [];
 
-// Secret Keyboard Shortcut for Admin (Ctrl + Shift + A) with Password Prompt
+// Google Auth Handlers
+async function handleGoogleLogin() {
+    try {
+        let result = await window.signInWithPopup(window.auth, window.googleProvider);
+        loggedInUserEmail = result.user.email;
+        localStorage.setItem('tm_user_email', loggedInUserEmail);
+        document.getElementById('currentUserName').innerText = loggedInUserEmail;
+        document.getElementById('headerAuthBtn').innerText = "Logout";
+        document.getElementById('headerAuthBtn').onclick = logoutUser;
+        closeLoginModal();
+        fetchCloudData();
+    } catch (error) {
+        alert("Google Login Error: " + error.message);
+    }
+}
+
+async function handleGoogleLogout() {
+    try {
+        await window.signOut(window.auth);
+    } catch(e) {}
+    localStorage.removeItem('tm_user_email');
+    loggedInUserEmail = null;
+    location.reload();
+}
+
+// Fetch Tests from Cloud Firestore so everyone gets uploaded tests
+async function fetchCloudData() {
+    try {
+        if (window.db && window.getDocs) {
+            let snap = await window.getDocs(window.collection(window.db, "typingTests"));
+            snap.forEach(docSnap => {
+                let data = docSnap.data();
+                if (data.course && data.title && data.text) {
+                    if (!typingData[data.course]) typingData[data.course] = [];
+                    // Avoid duplication if already present
+                    if (!typingData[data.course].some(t => t.title === data.title)) {
+                        typingData[data.course].push({ title: data.title, text: data.text });
+                    }
+                }
+            });
+            loadTestOptions();
+        }
+    } catch(e) { console.log("Cloud Fetch Error:", e); }
+}
+
+// Secret Keyboard Shortcut for Admin (Ctrl + Shift + A)
 document.addEventListener('keydown', function(e) {
     if (e.ctrlKey && e.shiftKey && e.key === 'A') {
         let enteredPwd = prompt("🔐 एडमिन पासवर्ड दर्ज करें:");
@@ -861,6 +860,7 @@ document.addEventListener('keydown', function(e) {
                 adminItem.classList.toggle('hidden');
                 rulesItem.classList.toggle('hidden');
             }
+            alert("एडमिन एक्सेस एक्टिवेट हो गया है!");
         } else if (enteredPwd !== null) {
             alert("गलत पासवर्ड!");
         }
@@ -871,14 +871,12 @@ function checkAdminAccess(viewId) {
     let enteredPwd = prompt("🔐 एडमिन पासवर्ड दर्ज करें:");
     if (enteredPwd === "Saurabh@2003") {
         switchTab(viewId, document.getElementById(viewId === 'adminView' ? 'adminSidebarMenu' : 'rulesSidebarMenu'));
-        if(viewId === 'adminView') loadDeleteTestOptions();
         if(viewId === 'rulesView') loadExamRulesForCourse();
     } else if (enteredPwd !== null) {
         alert("गलत पासवर्ड!");
     }
 }
 
-// Check User on Load
 window.onload = function() {
     if (loggedInUserEmail) {
         document.getElementById('currentUserName').innerText = loggedInUserEmail;
@@ -890,7 +888,9 @@ window.onload = function() {
         document.getElementById('headerAuthBtn').onclick = openLoginModal;
         openLoginModal();
     }
-    loadTestOptions();
+    fetchCloudData().then(() => {
+        loadTestOptions();
+    });
     updateResultsHistoryTable();
     updateBestPerformance();
     switchTab('homeView', document.getElementById('menu-home'));
@@ -904,77 +904,8 @@ function closeLoginModal() {
     document.getElementById('loginModal').classList.add('hidden');
 }
 
-function switchAuthTab(type) {
-    if(type === 'login') {
-        document.getElementById('formLogin').classList.remove('hidden');
-        document.getElementById('formSignup').classList.add('hidden');
-        document.getElementById('tabLoginBtn').classList.add('active');
-        document.getElementById('tabSignupBtn').classList.remove('active');
-    } else {
-        document.getElementById('formLogin').classList.add('hidden');
-        document.getElementById('formSignup').classList.remove('hidden');
-        document.getElementById('tabSignupBtn').classList.add('active');
-        document.getElementById('tabLoginBtn').classList.remove('active');
-    }
-}
-
-function handleUserSignup() {
-    let name = document.getElementById('signupName').value.trim();
-    let email = document.getElementById('signupEmail').value.trim();
-    let pwd = document.getElementById('signupPassword').value.trim();
-    let cpwd = document.getElementById('signupConfirmPassword').value.trim();
-    let emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if(!name || !email || !pwd || !cpwd) {
-        alert("कृपया सभी फील्ड भरें!");
-        return;
-    }
-    if(!emailPattern.test(email)) {
-        alert("कृपया वैध ईमेल आईडी दर्ज करें!");
-        return;
-    }
-    if(pwd !== cpwd) {
-        alert("पासवर्ड और कंफर्म पासवर्ड मेल नहीं खा रहे हैं!");
-        return;
-    }
-
-    localStorage.setItem('tm_registered_email', email);
-    localStorage.setItem('tm_registered_pwd', pwd);
-    
-    loggedInUserEmail = email;
-    localStorage.setItem('tm_user_email', loggedInUserEmail);
-    document.getElementById('currentUserName').innerText = loggedInUserEmail;
-    document.getElementById('headerAuthBtn').innerText = "Logout";
-    document.getElementById('headerAuthBtn').onclick = logoutUser;
-    closeLoginModal();
-}
-
-function handleUserLogin() {
-    let email = document.getElementById('loginEmail').value.trim();
-    let pwd = document.getElementById('loginPassword').value.trim();
-    let savedEmail = localStorage.getItem('tm_registered_email');
-    let savedPwd = localStorage.getItem('tm_registered_pwd');
-
-    if(!email || !pwd) {
-        alert("कृपया ईमेल और पासवर्ड दर्ज करें!");
-        return;
-    }
-
-    if((savedEmail && savedEmail === email && savedPwd === pwd) || (email && pwd.length >= 4)) {
-        loggedInUserEmail = email;
-        localStorage.setItem('tm_user_email', loggedInUserEmail);
-        document.getElementById('currentUserName').innerText = loggedInUserEmail;
-        document.getElementById('headerAuthBtn').innerText = "Logout";
-        document.getElementById('headerAuthBtn').onclick = logoutUser;
-        closeLoginModal();
-    } else {
-        alert("गलत ईमेल या पासवर्ड! कृपया पहले साइन-अप करें।");
-    }
-}
-
 function logoutUser() {
-    localStorage.removeItem('tm_user_email');
-    location.reload();
+    handleGoogleLogout();
 }
 
 function toggleSidebar() {
@@ -999,7 +930,6 @@ function switchTab(tabId, clickedElement) {
     menuItems.forEach(item => item.classList.remove('active'));
     if (clickedElement) clickedElement.classList.add('active');
     
-    if(tabId === 'adminView') loadDeleteTestOptions();
     if(tabId === 'rulesView') loadExamRulesForCourse();
     if(tabId === 'homeView') updateBestPerformance();
 }
@@ -1053,24 +983,6 @@ function filterTestDropdown() {
     });
 }
 
-function loadDeleteTestOptions() {
-    let courseEl = document.getElementById('deleteCourseCategory');
-    let testEl = document.getElementById('deleteTestSelect');
-    if (!courseEl || !testEl) return;
-
-    let course = courseEl.value;
-    testEl.innerHTML = "";
-
-    if (typingData[course]) {
-        typingData[course].forEach((item, index) => {
-            let opt = document.createElement('option');
-            opt.value = index;
-            opt.textContent = item.title;
-            testEl.appendChild(opt);
-        });
-    }
-}
-
 function loadExamRulesForCourse() {
     let courseSelect = document.getElementById('ruleCourseSelect');
     if(!courseSelect) return;
@@ -1103,44 +1015,40 @@ function saveExamRules() {
     alert(`नियम '${selectedCourse}' के लिए सफलतापूर्वक सहेज लिए गए हैं!`);
 }
 
-function addNewTestToPortal() {
+// Global Cloud Test Uploader
+async function addNewTestToPortal() {
     let course = document.getElementById('uploadCourseCategory').value;
     let title = document.getElementById('uploadTestTitle').value.trim();
     let content = document.getElementById('uploadTestText').value.trim();
-
-    content = content.replace(/test\s*mentor/gi, "").trim();
 
     if(!title || !content) {
         alert("कृपया टेस्ट का नाम और पैराग्राफ दोनों भरें!");
         return;
     }
 
+    try {
+        if(window.db && window.addDoc && window.collection) {
+            await window.addDoc(window.collection(window.db, "typingTests"), {
+                course: course,
+                title: title,
+                text: content
+            });
+            alert("नया टेस्ट सफलतापूर्वक क्लाउड डेटाबेस पर अपलोड कर दिया गया है! अब यह सभी यूज़र्स को दिखेगा।");
+        } else {
+            alert("डेटाबेस कनेक्टेड नहीं है!");
+            return;
+        }
+    } catch(e) {
+        alert("अपलोड करने में एरर आई: " + e.message);
+        return;
+    }
+
     if(!typingData[course]) typingData[course] = [];
     typingData[course].push({ title: title, text: content });
-    
-    localStorage.setItem('tm_custom_typing_data', JSON.stringify(typingData));
-    alert("नया टेस्ट सफलतापूर्वक जोड़ दिया गया है!");
     
     document.getElementById('uploadTestTitle').value = "";
     document.getElementById('uploadTestText').value = "";
     loadTestOptions();
-    loadDeleteTestOptions();
-}
-
-function deleteTestFromPortal() {
-    let course = document.getElementById('deleteCourseCategory').value;
-    let testIdx = document.getElementById('deleteTestSelect').value;
-
-    if(typingData[course] && typingData[course][testIdx]) {
-        let testName = typingData[course][testIdx].title;
-        typingData[course].splice(testIdx, 1);
-        localStorage.setItem('tm_custom_typing_data', JSON.stringify(typingData));
-        alert(`टेस्ट '${testName}' सफलतापूर्वक हटा दिया गया है!`);
-        loadTestOptions();
-        loadDeleteTestOptions();
-    } else {
-        alert("हटाने के लिए कोई वैध टेस्ट सेलेक्ट नहीं है!");
-    }
 }
 
 function startLiveTest() {
@@ -1236,7 +1144,6 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Auto-Scroll Logic
 document.addEventListener('input', function(e) {
     if (e.target && e.target.id === 'typingInput') {
         if (!isTimerStarted && e.target.value.length > 0) {
