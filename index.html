@@ -12,7 +12,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDN6wecthuH2oIcHHpuSzseSjMWb6R8gow",
             authDomain: "typing-mentor-4cfc2.firebaseapp.com",
@@ -22,10 +21,9 @@
             appId: "1:498381172066:web:950ccd22fdc599c172103b"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        window.db = db; // Make db globally accessible in script
+        window.db = db;
     </script>
 
     <style>
@@ -850,7 +848,6 @@ let typingData = JSON.parse(localStorage.getItem('tm_custom_typing_data')) || {
     ]
 };
 
-// Store master list of tests for case-insensitive filtering
 let masterTestList = [];
 
 // Secret Keyboard Shortcut for Admin (Ctrl + Shift + A) with Password Prompt
@@ -1040,7 +1037,6 @@ function loadTestOptions() {
     if(searchInput) searchInput.value = "";
 }
 
-// Case-insensitive dynamic filter for test selection dropdown
 function filterTestDropdown() {
     let query = document.getElementById('testSearchInput').value.trim().toLowerCase();
     let testEl = document.getElementById('testSelect');
@@ -1240,7 +1236,7 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Advanced Auto-Scroll Logic
+// Auto-Scroll Logic
 document.addEventListener('input', function(e) {
     if (e.target && e.target.id === 'typingInput') {
         if (!isTimerStarted && e.target.value.length > 0) {
