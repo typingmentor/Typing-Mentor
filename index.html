@@ -322,6 +322,7 @@
         .modal-card {
             background: #ffffff; padding: 25px; border-radius: 10px; width: 380px; text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: relative;
         }
         .tab-toggle {
             display: flex; margin-bottom: 15px; border-bottom: 2px solid #e5e7eb;
@@ -332,6 +333,9 @@
         .tab-btn.active {
             color: #2563eb; border-bottom: 2px solid #2563eb; margin-bottom: -2px;
         }
+        .close-modal-btn {
+            position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; color: #64748b; border: none; background: none;
+        }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -340,6 +344,7 @@
     <!-- USER SIGNUP / LOGIN MODAL -->
     <div id="loginModal" class="modal-overlay hidden">
         <div class="modal-card">
+            <button class="close-modal-btn" onclick="closeLoginModal()">&times;</button>
             <div class="tab-toggle">
                 <button class="tab-btn active" id="tabSignupBtn" onclick="switchAuthTab('signup')">साइन-अप (Sign Up)</button>
                 <button class="tab-btn" id="tabLoginBtn" onclick="switchAuthTab('login')">लॉगिन (Login)</button>
@@ -347,7 +352,7 @@
 
             <!-- SIGNUP FORM (DEFAULT) -->
             <div id="formSignup">
-                <p style="font-size: 12px; color:#64748b; margin-bottom: 12px;">नया अकाउंट बनाने के लिए अपना विवरण दर्ज करें.</p>
+                <p style="font-size: 12px; color:#64748b; margin-bottom: 12px;">नया अकाउंट बनाने के लिए अपना विवरण दर्ज करें।</p>
                 <div class="form-group" style="text-align:left;">
                     <label>Full Name:</label>
                     <input type="text" id="signupName" placeholder="अपना पूरा नाम दर्ज करें...">
@@ -364,12 +369,12 @@
                     <label>Confirm Password:</label>
                     <input type="password" id="signupConfirmPassword" placeholder="पासवर्ड दोबारा दर्ज करें...">
                 </div>
-                <button class="start-btn" style="background:#16a34a;" onclick="handleUserSignup()">साइन-अप / रजिस्टर करें[cite: 2]</button>
+                <button class="start-btn" style="background:#16a34a;" onclick="handleUserSignup()">साइन-अप / रजिस्टर करें</button>
             </div>
 
             <!-- LOGIN FORM -->
             <div id="formLogin" class="hidden">
-                <p style="font-size: 12px; color:#64748b; margin-bottom: 12px;">अपने रजिस्टर्ड ईमेल और पासवर्ड से लॉगिन करें[cite: 2].</p>
+                <p style="font-size: 12px; color:#64748b; margin-bottom: 12px;">अपने रजिस्टर्ड ईमेल और पासवर्ड से लॉगिन करें।</p>
                 <div class="form-group" style="text-align:left;">
                     <label>Email ID:</label>
                     <input type="email" id="loginEmail" placeholder="Enter your email...">
@@ -378,10 +383,8 @@
                     <label>Password:</label>
                     <input type="password" id="loginPassword" placeholder="Enter your password...">
                 </div>
-                <button class="start-btn" onclick="handleUserLogin()">लॉगिन करें[cite: 2]</button>
+                <button class="start-btn" onclick="handleUserLogin()">लॉगिन करें</button>
             </div>
-
-            <button id="btnDemoContinue" class="start-btn" style="background:#64748b; margin-top:10px;" onclick="startFreeDemoSession()">20 मिनट डेमो जारी रखें ➔[cite: 2]</button>
         </div>
     </div>
 
@@ -389,13 +392,12 @@
     <div class="top-header">
         <div class="header-left">
             <button class="toggle-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
-            <!-- Logo Image Fix -->
-            <img src="21078_2.png" alt="Logo" class="portal-logo" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'38\' height=\'38\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'45\' fill=\'%231e293b\'/><text x=\'50\' y=\'62\' font-size=\'40\' text-anchor=\'middle\' fill=\'%2338bdf8\' font-weight=\'bold\'>TM</text></svg>'">
+            <!-- Logo Image -->
+            <img id="portalLogoImg" src="21097.png" alt="Logo" class="portal-logo" onerror="this.onerror=null; this.src='21078.png';">
             <span class="brand-name">Typing Mentor</span>
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
-            <span id="demoTimerBadge" style="background:#1e293b; color:#38bdf8; padding:4px 10px; border-radius:20px; font-size:12px; font-weight:bold;">Demo: 20:00</span>
-            <button class="start-btn" style="margin:0; padding:5px 12px; font-size:13px; background:#16a34a;" onclick="openLoginModal()">Login / Signup</button>
+            <button class="start-btn" id="headerAuthBtn" style="margin:0; padding:5px 12px; font-size:13px; background:#16a34a;" onclick="openLoginModal()">Login / Signup</button>
             <span id="headerUserDisplay" style="cursor:pointer; font-size:14px;" onclick="openLoginModal()"><i class="fa-solid fa-user-circle"></i> <span id="currentUserName">Guest User</span></span>
         </div>
     </div>
@@ -459,16 +461,16 @@
                     <div class="card" style="text-align:center; display:flex; flex-direction:column; justify-content:center; align-items:center;">
                         <i class="fa-brands fa-telegram" style="font-size:45px; color:#2563eb; margin-bottom:10px;"></i>
                         <h3>Join Community Support</h3>
-                        <p style="font-size:13px; color:#64748b; margin:10px 0;">किसी भी समस्या या चर्चा के लिए हमारे आधिकारिक टेलीग्राम ग्रुप से जुड़ें[cite: 2].</p>
+                        <p style="font-size:13px; color:#64748b; margin:10px 0;">किसी भी समस्या या चर्चा के लिए हमारे आधिकारिक टेलीग्राम ग्रुप से जुड़ें।</p>
                         <a href="https://t.me/+BRkqWkRoos81NTA1" target="_blank" class="start-btn" style="text-decoration:none; display:inline-block; width:auto; padding:10px 25px; background:#2563eb;"><i class="fa-brands fa-telegram"></i> Join Telegram Group</a>
                     </div>
 
                     <div class="support-box card">
                         <i class="fa-solid fa-hand-holding-dollar" style="font-size:35px; color:#16a34a; margin-bottom:8px;"></i>
                         <h4 style="margin-bottom:5px;">Query for Support & Donate</h4>
-                        <p style="font-size:12px; color:#64748b; margin-bottom:10px;">पोर्टल को निःशुल्क और बेहतर बनाए रखने के लिए स्वेच्छा से सहयोग करें[cite: 2].</p>
-                        <!-- QR Code Embedded Fallback Fix -->
-                        <img src="21079.png" alt="Support QR Code" style="width:130px; height:130px; object-fit:contain; border:1px solid #cbd5e1; border-radius:6px; padding:4px; background:#fff;" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADwAQAAAACVw02CAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QA/4ePzL8AAAAJcEhZcwAAAEgAAABIAEbJaz4AAAAJd7ENRCANc2Vycy9ocC9kZXNrdG9wL3R5cGluZy8yMTA3OS5wbmcAAAAASUVORK5CYII='">
+                        <p style="font-size:12px; color:#64748b; margin-bottom:10px;">पोर्टल को निःशुल्क और बेहतर बनाए रखने के लिए स्वेच्छा से सहयोग करें।</p>
+                        <!-- QR Code Image -->
+                        <img id="supportQrImg" src="21079.png" alt="Support QR Code" style="width:130px; height:130px; object-fit:contain; border:1px solid #cbd5e1; border-radius:6px; padding:4px; background:#fff;" onerror="this.onerror=null; this.src='21079_3.png';">
                         <p style="font-size:11px; color:#94a3b8; margin-top:5px;">Scan & Support Typing Mentor</p>
                     </div>
                 </div>
@@ -543,41 +545,50 @@
                 </div>
             </div>
 
-            <!-- EXAM RULES & ADVANCED CUSTOMIZATION VIEW (ADMIN PROTECTED) -->
+            <!-- EXAM RULES & ADVANCED CUSTOMIZATION VIEW -->
             <div id="rulesView" class="view-section">
                 <div class="card">
                     <h3><i class="fa-solid fa-sliders"></i> Exam Rules & Customization Settings</h3>
-                    <p style="font-size: 13px; color: #6b7280; margin-bottom: 20px;">विभिन्न परीक्षाओं (जैसे BSF HCM, SSC CGL) के अनुसार मूल्यांकन और गलती गणना के नियम कस्टमाइज करें[cite: 2].</p>
+                    <p style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">जिस परीक्षा के नियम आप बदलना चाहते हैं, पहले उसे सेलेक्ट करें:</p>
                     
+                    <div class="form-group" style="margin-bottom: 20px; background: #eef2ff; padding: 12px; border-radius: 6px;">
+                        <label style="color:#1e3a8a; font-size:14px;"><i class="fa-solid fa-graduation-cap"></i> Select Course / Exam to Customize Rules:</label>
+                        <select id="ruleCourseSelect" onchange="loadExamRulesForCourse()" style="margin-top:5px; font-weight:bold;">
+                            <option value="BSF HCM Typing Test">BSF HCM Typing Test Series</option>
+                            <option value="SSC CGL Typing Test">SSC CGL Typing Test Series</option>
+                            <option value="General Practice">General Practice Series</option>
+                        </select>
+                    </div>
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div class="form-group">
                             <label>Ignored Mistake Allowance (%):</label>
                             <input type="number" id="ruleAllowance" value="5" step="0.5" min="0" max="20">
-                            <small style="color:#6b7280;">कुल टाइप शब्दों का कितना प्रतिशत माफ़ होगा[cite: 2].</small>
+                            <small style="color:#6b7280;">कुल टाइप शब्दों का कितना प्रतिशत माफ़ होगा।</small>
                         </div>
 
                         <div class="form-group">
                             <label>Penalty Words Per Extra Mistake:</label>
                             <input type="number" id="rulePenalty" value="10" min="0" max="50">
-                            <small style="color:#6b7280;">सीमा से अधिक प्रत्येक गलती पर पेनल्टी शब्द[cite: 2].</small>
+                            <small style="color:#6b7280;">सीमा से अधिक प्रत्येक गलती पर पेनल्टी शब्द।</small>
                         </div>
 
                         <div class="form-group">
                             <label>Required Minimum Net Speed (WPM):</label>
                             <input type="number" id="ruleMinWpm" value="35" min="20" max="60">
-                            <small style="color:#6b7280;">पास होने के लिए न्यूनतम नेट स्पीड[cite: 2].</small>
+                            <small style="color:#6b7280;">पास होने के लिए न्यूनतम नेट स्पीड।</small>
                         </div>
 
                         <div class="form-group">
                             <label>Required Minimum Keystrokes:</label>
                             <input type="number" id="ruleMinKeystrokes" value="1750" min="500" max="5000">
-                            <small style="color:#6b7280;">न्यूनतम की-स्ट्रोक्स की आवश्यकता[cite: 2].</small>
+                            <small style="color:#6b7280;">न्यूनतम की-स्ट्रोक्स की आवश्यकता।</small>
                         </div>
 
                         <div class="form-group">
                             <label>Required Minimum Accuracy (%):</label>
                             <input type="number" id="ruleMinAcc" value="85" min="50" max="100">
-                            <small style="color:#6b7280;">क्वालीफाई होने के लिए न्यूनतम शुद्धता प्रतिशत[cite: 2].</small>
+                            <small style="color:#6b7280;">क्वालीफाई होने के लिए न्यूनतम शुद्धता प्रतिशत।</small>
                         </div>
 
                         <div class="form-group">
@@ -587,11 +598,11 @@
                                 <option value="full">Full Mistake (1.0 Error)</option>
                                 <option value="ignore">Ignore Punctuation Mistakes</option>
                             </select>
-                            <small style="color:#6b7280;">एसएससी परीक्षा नियमों के अनुसार कॉमा/अर्धविराम की गणना[cite: 2].</small>
+                            <small style="color:#6b7280;">परीक्षा नियमों के अनुसार कॉमा/अर्धविराम की गणना।</small>
                         </div>
                     </div>
 
-                    <button class="start-btn" style="width: auto; padding: 10px 25px; margin-top: 15px;" onclick="saveExamRules()"><i class="fa-solid fa-save"></i> Save Rules</button>
+                    <button class="start-btn" style="width: auto; padding: 10px 25px; margin-top: 15px;" onclick="saveExamRules()"><i class="fa-solid fa-save"></i> Save Rules for Selected Exam</button>
                 </div>
             </div>
 
@@ -599,7 +610,7 @@
             <div id="adminView" class="view-section">
                 <div class="card">
                     <h3>📥 नया टेस्ट / पैराग्राफ अपलोड करें</h3>
-                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">यहाँ से आप नया टेस्ट सीधे अपनी वेबसाइट में जोड़ सकते हैं[cite: 2].</p>
+                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">यहाँ से आप नया टेस्ट सीधे अपनी वेबसाइट में जोड़ सकते हैं।</p>
                     
                     <div class="form-group">
                         <label>किस कोर्स/परीक्षा में जोड़ना है?</label>
@@ -623,10 +634,10 @@
                     <button class="start-btn" style="width:auto; padding:10px 25px;" onclick="addNewTestToPortal()">Upload & Save Test</button>
                 </div>
 
-                <!-- ADDED: DELETE / REMOVE TEST PANEL FOR ADMIN -->
+                <!-- DELETE / REMOVE TEST PANEL FOR ADMIN -->
                 <div class="card" style="margin-top:20px; border-left:4px solid #dc2626;">
                     <h3>🗑️ पुराना टेस्ट / पैराग्राफ हटाएं (Delete Test)</h3>
-                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">किसी भी कोर्स से अवांछित टेस्ट यहाँ सेलेक्ट करके डिलीट करें[cite: 2].</p>
+                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">किसी भी कोर्स से अवांछित टेस्ट यहाँ सेलेक्ट करके डिलीट करें।</p>
 
                     <div class="form-group">
                         <label>कोर्स चुनें:</label>
@@ -679,7 +690,7 @@
             <div id="resultsHistoryView" class="view-section">
                 <div class="card">
                     <h3>My Test Results History</h3>
-                    <p style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">अपने पिछले किसी भी टेस्ट का विस्तृत रिजल्ट देखने के लिए 'View' पर क्लिक करें[cite: 2].</p>
+                    <p style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">अपने पिछले किसी भी टेस्ट का विस्तृत रिजल्ट देखने के लिए 'View' पर क्लिक करें।</p>
                     <table class="results-table">
                         <thead>
                             <tr>
@@ -706,7 +717,7 @@
                 
                 <div class="card">
                     <h2>Result Summary</h2>
-                    <p style="font-size:13px; color:#6b7280; margin-bottom: 15px;">Speed, accuracy, mistakes, and shareable result details for this attempt[cite: 2].</p>
+                    <p style="font-size:13px; color:#6b7280; margin-bottom: 15px;">Speed, accuracy, mistakes, and shareable result details for this attempt.</p>
                     
                     <div class="summary-grid">
                         <table class="summary-table">
@@ -766,7 +777,7 @@
             <div id="learnView" class="view-section">
                 <div class="card">
                     <h3>Learn Typing Lessons</h3>
-                    <p>Practice home row, top row, and bottom row key lessons here[cite: 2].</p>
+                    <p>Practice home row, top row, and bottom row key lessons here.</p>
                 </div>
             </div>
 
@@ -781,11 +792,16 @@ let timeLeft = 300;
 let timerInterval = null;
 let isTimerStarted = false;
 let backspaceCount = 0;
-let demoTimeSec = 1200; // 20 Minutes Demo Timer
-let demoTimerInterval = null;
 
 let testHistory = JSON.parse(localStorage.getItem('tm_history')) || [];
 let loggedInUserEmail = localStorage.getItem('tm_user_email') || null;
+
+// Default Exam Rules Config
+let examRulesConfig = JSON.parse(localStorage.getItem('tm_exam_rules_config')) || {
+    "BSF HCM Typing Test": { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, punctRule: "half" },
+    "SSC CGL Typing Test": { allowance: 5, penalty: 10, minWpm: 27, minKeystrokes: 1500, minAcc: 80, punctRule: "half" },
+    "General Practice": { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1000, minAcc: 80, punctRule: "full" }
+};
 
 let typingData = JSON.parse(localStorage.getItem('tm_custom_typing_data')) || {
     "BSF HCM Typing Test": [
@@ -823,6 +839,7 @@ function checkAdminAccess(viewId) {
     if (enteredPwd === "Saurabh@2003") {
         switchTab(viewId, document.getElementById(viewId === 'adminView' ? 'adminSidebarMenu' : 'rulesSidebarMenu'));
         if(viewId === 'adminView') loadDeleteTestOptions();
+        if(viewId === 'rulesView') loadExamRulesForCourse();
     } else if (enteredPwd !== null) {
         alert("गलत पासवर्ड!");
     }
@@ -832,10 +849,13 @@ function checkAdminAccess(viewId) {
 window.onload = function() {
     if (loggedInUserEmail) {
         document.getElementById('currentUserName').innerText = loggedInUserEmail;
-        document.getElementById('demoTimerBadge').innerText = "Logged In";
+        document.getElementById('headerAuthBtn').innerText = "Logout";
+        document.getElementById('headerAuthBtn').onclick = logoutUser;
     } else {
-        openLoginModal();
-        startDemoCountdown();
+        document.getElementById('currentUserName').innerText = "Guest User";
+        document.getElementById('headerAuthBtn').innerText = "Login / Signup";
+        document.getElementById('headerAuthBtn').onclick = openLoginModal;
+        openLoginModal(); // Open modal on first load if not logged in
     }
     loadTestOptions();
     updateResultsHistoryTable();
@@ -844,6 +864,10 @@ window.onload = function() {
 
 function openLoginModal() {
     document.getElementById('loginModal').classList.remove('hidden');
+}
+
+function closeLoginModal() {
+    document.getElementById('loginModal').classList.add('hidden');
 }
 
 function switchAuthTab(type) {
@@ -858,28 +882,6 @@ function switchAuthTab(type) {
         document.getElementById('tabSignupBtn').classList.add('active');
         document.getElementById('tabLoginBtn').classList.remove('active');
     }
-}
-
-function startFreeDemoSession() {
-    document.getElementById('loginModal').classList.add('hidden');
-}
-
-function startDemoCountdown() {
-    if(demoTimerInterval) clearInterval(demoTimerInterval);
-    demoTimerInterval = setInterval(() => {
-        if (!loggedInUserEmail) {
-            demoTimeSec--;
-            let m = Math.floor(demoTimeSec / 60);
-            let s = demoTimeSec % 60;
-            let badge = document.getElementById('demoTimerBadge');
-            if(badge) badge.innerText = `Demo: ${m}:${s < 10 ? '0' : ''}${s}`;
-
-            if (demoTimeSec <= 0) {
-                clearInterval(demoTimerInterval);
-                openLoginModal();
-            }
-        }
-    }, 1000);
 }
 
 function handleUserSignup() {
@@ -908,10 +910,10 @@ function handleUserSignup() {
     loggedInUserEmail = email;
     localStorage.setItem('tm_user_email', loggedInUserEmail);
     document.getElementById('currentUserName').innerText = loggedInUserEmail;
-    document.getElementById('demoTimerBadge').innerText = "Logged In";
-    document.getElementById('loginModal').classList.add('hidden');
-    if(demoTimerInterval) clearInterval(demoTimerInterval);
-    alert("साइन-अप और रजिस्ट्रेशन सफल रहा!");
+    document.getElementById('headerAuthBtn').innerText = "Logout";
+    document.getElementById('headerAuthBtn').onclick = logoutUser;
+    closeLoginModal();
+    alert("साइन-अप सफल रहा! आप पोर्टल में लॉगिन हो चुके हैं।");
 }
 
 function handleUserLogin() {
@@ -929,12 +931,12 @@ function handleUserLogin() {
         loggedInUserEmail = email;
         localStorage.setItem('tm_user_email', loggedInUserEmail);
         document.getElementById('currentUserName').innerText = loggedInUserEmail;
-        document.getElementById('demoTimerBadge').innerText = "Logged In";
-        document.getElementById('loginModal').classList.add('hidden');
-        if(demoTimerInterval) clearInterval(demoTimerInterval);
+        document.getElementById('headerAuthBtn').innerText = "Logout";
+        document.getElementById('headerAuthBtn').onclick = logoutUser;
+        closeLoginModal();
         alert("लॉगिन सफल रहा!");
     } else {
-        alert("गलत ईमेल या पासवर्ड! कृपया पहले साइन-अप करें.");
+        alert("गलत ईमेल या पासवर्ड! कृपया पहले साइन-अप करें।");
     }
 }
 
@@ -965,9 +967,8 @@ function switchTab(tabId, clickedElement) {
     menuItems.forEach(item => item.classList.remove('active'));
     if (clickedElement) clickedElement.classList.add('active');
     
-    if(tabId === 'adminView') {
-        loadDeleteTestOptions();
-    }
+    if(tabId === 'adminView') loadDeleteTestOptions();
+    if(tabId === 'rulesView') loadExamRulesForCourse();
 }
 
 function applyFontSize() {
@@ -1017,8 +1018,36 @@ function loadDeleteTestOptions() {
     }
 }
 
+function loadExamRulesForCourse() {
+    let courseSelect = document.getElementById('ruleCourseSelect');
+    if(!courseSelect) return;
+    let selectedCourse = courseSelect.value;
+    let rules = examRulesConfig[selectedCourse] || { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, punctRule: "half" };
+
+    document.getElementById('ruleAllowance').value = rules.allowance;
+    document.getElementById('rulePenalty').value = rules.penalty;
+    document.getElementById('ruleMinWpm').value = rules.minWpm;
+    document.getElementById('ruleMinKeystrokes').value = rules.minKeystrokes;
+    document.getElementById('ruleMinAcc').value = rules.minAcc;
+    document.getElementById('rulePunctuationRule').value = rules.punctRule;
+}
+
 function saveExamRules() {
-    alert("परीक्षा के नियम सफलतापूर्वक सहेज लिए गए हैं!");
+    let courseSelect = document.getElementById('ruleCourseSelect');
+    if(!courseSelect) return;
+    let selectedCourse = courseSelect.value;
+
+    examRulesConfig[selectedCourse] = {
+        allowance: parseFloat(document.getElementById('ruleAllowance').value),
+        penalty: parseFloat(document.getElementById('rulePenalty').value),
+        minWpm: parseFloat(document.getElementById('ruleMinWpm').value),
+        minKeystrokes: parseInt(document.getElementById('ruleMinKeystrokes').value),
+        minAcc: parseFloat(document.getElementById('ruleMinAcc').value),
+        punctRule: document.getElementById('rulePunctuationRule').value
+    };
+
+    localStorage.setItem('tm_exam_rules_config', JSON.stringify(examRulesConfig));
+    alert(`नियम '${selectedCourse}' के लिए सफलतापूर्वक सहेज लिए गए हैं!`);
 }
 
 function addNewTestToPortal() {
@@ -1218,11 +1247,20 @@ function finishTest() {
     let sidebar = document.getElementById('sidebar');
     if (sidebar) sidebar.classList.remove('collapsed');
 
-    let allowPct = parseFloat(document.getElementById('ruleAllowance').value) / 100;
-    let penaltyMultiplier = parseFloat(document.getElementById('rulePenalty').value);
-    let minNetWpmReq = parseFloat(document.getElementById('ruleMinWpm').value);
-    let minKeysReq = parseInt(document.getElementById('ruleMinKeystrokes').value);
-    let minAccReq = parseFloat(document.getElementById('ruleMinAcc').value);
+    let courseEl = document.getElementById('courseSelect');
+    let testEl = document.getElementById('testSelect');
+    let course = courseEl ? courseEl.value : 'General Practice';
+    let testIdx = testEl ? testEl.value : '';
+    let testName = (typingData[course] && typingData[course][testIdx]) ? typingData[course][testIdx].title : "Typing Test Set";
+
+    // Dynamic Rules by Selected Course
+    let rules = examRulesConfig[course] || { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, punctRule: "half" };
+
+    let allowPct = rules.allowance / 100;
+    let penaltyMultiplier = rules.penalty;
+    let minNetWpmReq = rules.minWpm;
+    let minKeysReq = rules.minKeystrokes;
+    let minAccReq = rules.minAcc;
 
     let timeSpentSec = totalTimeSec - timeLeft;
     let timeSpentMin = timeSpentSec / 60;
@@ -1269,12 +1307,6 @@ function finishTest() {
     let formattedDate = now.getDate() + " " + now.toLocaleString('en-US', { month: 'short' }) + " " + now.getFullYear() + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     let randomId = Math.random().toString(36).substring(2, 10).toUpperCase();
-
-    let courseEl = document.getElementById('courseSelect');
-    let testEl = document.getElementById('testSelect');
-    let course = courseEl ? courseEl.value : '';
-    let testIdx = testEl ? testEl.value : '';
-    let testName = (typingData[course] && typingData[course][testIdx]) ? typingData[course][testIdx].title : "Typing Test Set";
 
     let durationStr = Math.floor(totalTimeSec / 60) + " mins : 00 seconds";
     let timeTakenStr = Math.floor(timeSpentSec / 60) + " mins : " + (timeSpentSec % 60) + " seconds";
