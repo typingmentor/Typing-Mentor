@@ -852,7 +852,6 @@ async function handleGoogleLogout() {
 async function fetchCloudData() {
     try {
         if (window.db && window.getDocs) {
-            // 1. Fetch Tests uploaded by Admin
             let snap = await window.getDocs(window.collection(window.db, "typingTests"));
             snap.forEach(docSnap => {
                 let data = docSnap.data();
@@ -865,7 +864,6 @@ async function fetchCloudData() {
             });
             loadTestOptions();
 
-            // 2. Fetch User Specific Test History from Firestore
             if (window.loggedInUserEmail) {
                 let q = window.query(window.collection(window.db, "userResults"), window.where("email", "==", window.loggedInUserEmail));
                 let userSnap = await window.getDocs(q);
@@ -1320,7 +1318,6 @@ async function finishTest() {
         typedText: typed
     };
 
-    // Save Result to Firestore Cloud Database
     try {
         if(window.db && window.addDoc && window.collection && window.loggedInUserEmail) {
             await window.addDoc(window.collection(window.db, "userResults"), resultObj);
