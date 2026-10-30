@@ -392,8 +392,8 @@
     <div class="top-header">
         <div class="header-left">
             <button class="toggle-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
-            <!-- Logo Image -->
-            <img id="portalLogoImg" src="21097.png" alt="Logo" class="portal-logo" onerror="this.onerror=null; this.src='21078.png';">
+            <!-- Logo using your uploaded file 21097 (supports png, jpg, jpeg) -->
+            <img src="21097.png" onerror="this.onerror=null; this.src='21097.jpg';" alt="Logo" class="portal-logo">
             <span class="brand-name">Typing Mentor</span>
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
@@ -414,14 +414,12 @@
                 <li class="menu-item" id="menu-choose" onclick="switchTab('chooseView', this)">
                     <i class="fa-solid fa-file-signature"></i> Choose & Start Test
                 </li>
-                <!-- EXAM RULES MENU ITEM (HIDDEN UNTIL SECRET SHORTCUT & PASSWORD) -->
                 <li class="menu-item hidden" id="rulesSidebarMenu" onclick="checkAdminAccess('rulesView')">
                     <i class="fa-solid fa-gear"></i> Exam Rules & Customization
                 </li>
                 <li class="menu-item" onclick="switchTab('examsView', this)">
                     <i class="fa-solid fa-list-check"></i> All Typing Exams
                 </li>
-                <!-- ADMIN MENU ITEM (HIDDEN UNTIL SECRET SHORTCUT & PASSWORD) -->
                 <li class="menu-item hidden" id="adminSidebarMenu" onclick="checkAdminAccess('adminView')">
                     <i class="fa-solid fa-user-shield"></i> Admin & Test Uploader
                 </li>
@@ -469,8 +467,8 @@
                         <i class="fa-solid fa-hand-holding-dollar" style="font-size:35px; color:#16a34a; margin-bottom:8px;"></i>
                         <h4 style="margin-bottom:5px;">Query for Support & Donate</h4>
                         <p style="font-size:12px; color:#64748b; margin-bottom:10px;">पोर्टल को निःशुल्क और बेहतर बनाए रखने के लिए स्वेच्छा से सहयोग करें।</p>
-                        <!-- QR Code Image -->
-                        <img id="supportQrImg" src="21079.png" alt="Support QR Code" style="width:130px; height:130px; object-fit:contain; border:1px solid #cbd5e1; border-radius:6px; padding:4px; background:#fff;" onerror="this.onerror=null; this.src='21079_3.png';">
+                        <!-- QR Code using your uploaded file 21079 (supports png, jpg, jpeg) -->
+                        <img src="21079.png" onerror="this.onerror=null; this.src='21079.jpg';" alt="Support QR Code" style="width:130px; height:130px; object-fit:contain; border:1px solid #cbd5e1; border-radius:6px; padding:4px; background:#fff;">
                         <p style="font-size:11px; color:#94a3b8; margin-top:5px;">Scan & Support Typing Mentor</p>
                     </div>
                 </div>
@@ -855,7 +853,7 @@ window.onload = function() {
         document.getElementById('currentUserName').innerText = "Guest User";
         document.getElementById('headerAuthBtn').innerText = "Login / Signup";
         document.getElementById('headerAuthBtn').onclick = openLoginModal;
-        openLoginModal(); // Open modal on first load if not logged in
+        openLoginModal();
     }
     loadTestOptions();
     updateResultsHistoryTable();
