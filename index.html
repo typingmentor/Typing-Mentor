@@ -11,7 +11,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDN6wecthuH2oIcHHpuSzseSjMWb6R8gow",
@@ -28,6 +28,8 @@
             window.auth = getAuth(app);
             window.googleProvider = new GoogleAuthProvider();
             window.signInWithPopup = signInWithPopup;
+            window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+            window.signInWithEmailAndPassword = signInWithEmailAndPassword;
             window.signOut = signOut;
             window.collection = collection;
             window.addDoc = addDoc;
@@ -38,29 +40,16 @@
             onAuthStateChanged(window.auth, (user) => {
                 if (user) {
                     window.loggedInUserEmail = user.email;
-                    window.loggedInUserName = user.displayName || user.email;
+                    window.loggedInUserName = user.displayName || user.email.split('@')[0];
                     localStorage.setItem('tm_user_email', user.email);
                     localStorage.setItem('tm_user_name', window.loggedInUserName);
-                    
-                    let nameEl = document.getElementById('currentUserName');
-                    if(nameEl) nameEl.innerText = window.loggedInUserName;
-                    let authBtn = document.getElementById('headerAuthBtn');
-                    if(authBtn) { 
-                        authBtn.innerText = "Logout"; 
-                        authBtn.onclick = handleGoogleLogout; 
-                    }
+                    updateHeaderUserUI();
                     closeLoginModal();
                     if(typeof fetchCloudData === 'function') fetchCloudData();
                 } else {
                     window.loggedInUserEmail = null;
                     window.loggedInUserName = "Guest User";
-                    let nameEl = document.getElementById('currentUserName');
-                    if(nameEl) nameEl.innerText = "Guest User";
-                    let authBtn = document.getElementById('headerAuthBtn');
-                    if(authBtn) { 
-                        authBtn.innerText = "Login / Signup"; 
-                        authBtn.onclick = openLoginModal; 
-                    }
+                    updateHeaderUserUI();
                 }
             });
         } catch(e) { console.log("Firebase Init Error:", e); }
@@ -95,7 +84,7 @@
         .support-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; text-align: center; }
 
         .test-setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .form-group { margin-bottom: 15px; }
+        .form-group { margin-bottom: 12px; }
         .form-group label { display: block; font-weight: 600; margin-bottom: 4px; color: #374151; font-size: 13px; }
         .form-group select, .form-group input, .form-group textarea { width: 100%; padding: 9px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; }
 
@@ -108,7 +97,8 @@
         input:checked + .slider:before { transform: translateX(22px); }
 
         .start-btn { background: linear-gradient(90deg, #2563eb, #16a34a); color: white; border: none; padding: 12px 20px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 10px; }
-        .google-btn { background: #db4437; color: white; border: none; padding: 12px 20px; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
+        .google-btn { background: #db4437; color: white; border: none; padding: 11px 15px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
+        .manual-btn { background: #2563eb; color: white; border: none; padding: 11px 15px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 8px; }
 
         .live-header { display: flex; justify-content: space-between; background: #1e293b; color: white; padding: 12px 20px; border-radius: 6px; margin-bottom: 15px; }
         .text-display { height: 180px; overflow-y: auto; border: 1px solid #d1d5db; padding: 15px; background: #ffffff; line-height: 1.8; border-radius: 6px; margin-bottom: 15px; scroll-behavior: smooth; }
@@ -135,20 +125,38 @@
         .summary-table td.value { text-align: right; font-weight: bold; color: #0f172a; }
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-card { background: #ffffff; padding: 25px; border-radius: 10px; width: 380px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative; }
+        .modal-card { background: #ffffff; padding: 25px; border-radius: 10px; width: 400px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative; }
         .close-modal-btn { position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; color: #64748b; border: none; background: none; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <!-- USER GOOGLE LOGIN MODAL -->
+    <!-- USER LOGIN / SIGNUP MODAL (Google + Manual Email/Password) -->
     <div id="loginModal" class="modal-overlay hidden">
         <div class="modal-card">
             <button class="close-modal-btn" onclick="closeLoginModal()">&times;</button>
-            <h3 style="margin-bottom: 15px;">Typing Mentor Login</h3>
-            <p style="font-size: 13px; color:#64748b; margin-bottom: 20px;">पोर्टल पर लॉगिन करने के लिए अपने गूगल अकाउंट का उपयोग करें।</p>
+            <h3 style="margin-bottom: 10px;">Typing Mentor Login</h3>
+            <p style="font-size: 12px; color:#64748b; margin-bottom: 15px;">गूगल से लॉगिन करें या अपनी ईमेल-पासवर्ड से मैन्युअल साइन-अप करें।</p>
+            
             <button class="google-btn" onclick="handleGoogleLogin()"><i class="fa-brands fa-google"></i> Sign in with Google</button>
+            
+            <div style="margin: 15px 0; border-bottom: 1px solid #e5e7eb; position: relative;">
+                <span style="background: white; padding: 0 10px; color: #94a3b8; font-size: 12px; position: relative; top: -8px;">OR MANUAL</span>
+            </div>
+
+            <div class="form-group" style="text-align: left;">
+                <label>Email Address:</label>
+                <input type="email" id="manualEmail" placeholder="yourermail@gmail.com">
+            </div>
+            <div class="form-group" style="text-align: left;">
+                <label>Password:</label>
+                <input type="password" id="manualPassword" placeholder="Minimum 6 characters">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="manual-btn" style="flex:1; background:#16a34a;" onclick="handleManualSignUp()">Sign Up</button>
+                <button class="manual-btn" style="flex:1;" onclick="handleManualLogin()">Login</button>
+            </div>
         </div>
     </div>
 
@@ -159,9 +167,15 @@
             <img src="21097.png" onerror="this.onerror=null; this.src='21097.jpg'; this.onerror=function(){this.src='21097.jpeg';};" alt="Logo" class="portal-logo">
             <span class="brand-name">Typing Mentor</span>
         </div>
-        <div style="display:flex; align-items:center; gap:12px;">
-            <button class="start-btn" id="headerAuthBtn" style="margin:0; padding:5px 12px; font-size:13px; background:#16a34a;" onclick="openLoginModal()">Login / Signup</button>
-            <span id="headerUserDisplay" style="cursor:pointer; font-size:14px;" onclick="openLoginModal()"><i class="fa-solid fa-user-circle"></i> <span id="currentUserName">Guest User</span></span>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <button class="start-btn" id="headerAuthBtn" style="margin:0; padding:6px 14px; font-size:13px; background:#16a34a;" onclick="openLoginModal()">Login / Signup</button>
+            <div id="headerUserDisplay" style="cursor:pointer; font-size:14px; display:flex; align-items:center; gap:8px;" onclick="openLoginModal()">
+                <i class="fa-solid fa-user-circle" style="font-size:18px;"></i>
+                <div style="text-align:right; line-height:1.2;">
+                    <div id="currentUserName" style="font-weight:bold; font-size:13px;">Guest User</div>
+                    <div id="currentUserEmail" style="font-size:11px; color:#e0e7ff;">Not logged in</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -501,6 +515,7 @@ let backspaceCount = 0;
 
 let testHistory = [];
 let loggedInUserEmail = localStorage.getItem('tm_user_email') || null;
+let loggedInUserName = localStorage.getItem('tm_user_name') || "Guest User";
 
 let examRulesConfig = JSON.parse(localStorage.getItem('tm_exam_rules_config')) || {
     "BSF HCM Typing Test": { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, punctRule: "half" },
@@ -523,23 +538,74 @@ let typingData = {
 
 let masterTestList = [];
 
+// Google Login
 async function handleGoogleLogin() {
     try {
         let result = await window.signInWithPopup(window.auth, window.googleProvider);
         window.loggedInUserEmail = result.user.email;
-        window.loggedInUserName = result.user.displayName || result.user.email;
-        
-        localStorage.setItem('tm_user_email', window.loggedInUserEmail);
-        localStorage.setItem('tm_user_name', window.loggedInUserName);
-        
-        document.getElementById('currentUserName').innerText = window.loggedInUserName;
-        document.getElementById('headerAuthBtn').innerText = "Logout";
-        document.getElementById('headerAuthBtn').onclick = logoutUser;
-        closeLoginModal();
-        fetchCloudData();
+        window.loggedInUserName = result.user.displayName || result.user.email.split('@')[0];
+        saveUserSession();
     } catch (error) {
         if (error.code !== "auth/popup-closed-by-user") {
             alert("Google Login Error: " + error.message);
+        }
+    }
+}
+
+// Manual Sign Up
+async function handleManualSignUp() {
+    let email = document.getElementById('manualEmail').value.trim();
+    let pwd = document.getElementById('manualPassword').value.trim();
+    if(!email || !pwd) { alert("कृपया ईमेल और पासवर्ड दर्ज करें!"); return; }
+    try {
+        let res = await window.createUserWithEmailAndPassword(window.auth, email, pwd);
+        window.loggedInUserEmail = res.user.email;
+        window.loggedInUserName = email.split('@')[0];
+        saveUserSession();
+        alert("साइन-अप सफल रहा!");
+    } catch(e) { alert("Sign Up Error: " + e.message); }
+}
+
+// Manual Login
+async function handleManualLogin() {
+    let email = document.getElementById('manualEmail').value.trim();
+    let pwd = document.getElementById('manualPassword').value.trim();
+    if(!email || !pwd) { alert("कृपया ईमेल और पासवर्ड दर्ज करें!"); return; }
+    try {
+        let res = await window.signInWithEmailAndPassword(window.auth, email, pwd);
+        window.loggedInUserEmail = res.user.email;
+        window.loggedInUserName = email.split('@')[0];
+        saveUserSession();
+        alert("लॉगिन सफल रहा!");
+    } catch(e) { alert("Login Error: " + e.message); }
+}
+
+function saveUserSession() {
+    localStorage.setItem('tm_user_email', window.loggedInUserEmail);
+    localStorage.setItem('tm_user_name', window.loggedInUserName);
+    updateHeaderUserUI();
+    closeLoginModal();
+    fetchCloudData();
+}
+
+function updateHeaderUserUI() {
+    let nameEl = document.getElementById('currentUserName');
+    let emailEl = document.getElementById('currentUserEmail');
+    let authBtn = document.getElementById('headerAuthBtn');
+
+    if (window.loggedInUserEmail) {
+        if(nameEl) nameEl.innerText = window.loggedInUserName;
+        if(emailEl) emailEl.innerText = window.loggedInUserEmail;
+        if(authBtn) { 
+            authBtn.innerText = "Logout"; 
+            authBtn.onclick = logoutUser; 
+        }
+    } else {
+        if(nameEl) nameEl.innerText = "Guest User";
+        if(emailEl) emailEl.innerText = "Not logged in";
+        if(authBtn) { 
+            authBtn.innerText = "Login / Signup"; 
+            authBtn.onclick = openLoginModal; 
         }
     }
 }
@@ -551,6 +617,7 @@ async function handleGoogleLogout() {
     window.loggedInUserEmail = null;
     window.loggedInUserName = "Guest User";
     testHistory = [];
+    updateHeaderUserUI();
     location.reload();
 }
 
@@ -614,16 +681,9 @@ window.onload = function() {
     let savedName = localStorage.getItem('tm_user_name');
     if (savedEmail) {
         window.loggedInUserEmail = savedEmail;
-        window.loggedInUserName = savedName || savedEmail;
-        document.getElementById('currentUserName').innerText = window.loggedInUserName;
-        document.getElementById('headerAuthBtn').innerText = "Logout";
-        document.getElementById('headerAuthBtn').onclick = logoutUser;
-    } else {
-        document.getElementById('currentUserName').innerText = "Guest User";
-        document.getElementById('headerAuthBtn').innerText = "Login / Signup";
-        document.getElementById('headerAuthBtn').onclick = openLoginModal;
-        openLoginModal();
+        window.loggedInUserName = savedName || savedEmail.split('@')[0];
     }
+    updateHeaderUserUI();
     fetchCloudData();
     loadTestOptions();
     switchTab('homeView', document.getElementById('menu-home'));
@@ -866,6 +926,7 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+// SMART AUTO-SCROLL FIX: Scroll only when reaching 3rd/4th line (middle of view)
 document.addEventListener('input', function(e) {
     if (e.target && e.target.id === 'typingInput') {
         if (!isTimerStarted && e.target.value.length > 0) {
@@ -903,14 +964,17 @@ document.addEventListener('input', function(e) {
         let liveAcc = Math.round((correctLive / totalTypedSoFar) * 100);
         document.getElementById('accuracyDisplay').innerText = (liveAcc > 100 ? 100 : liveAcc) + "%";
 
+        // Smart Scroll logic: scroll only when active word moves down by lines
         let autoScrollEl = document.getElementById('setAutoScroll');
         if (autoScrollEl && autoScrollEl.checked) {
             let currentSpan = document.getElementById(`w-${activeIdx}`);
             let pBox = document.getElementById('paragraphBox');
             if (currentSpan && pBox) {
-                let currentTop = currentSpan.offsetTop;
-                let boxHeight = pBox.clientHeight;
-                pBox.scrollTop = currentTop - (boxHeight / 3);
+                let spanTop = currentSpan.offsetTop - pBox.offsetTop;
+                let scrollThreshold = pBox.clientHeight * 0.4; // Scroll when past 40% height of view
+                if (spanTop > scrollThreshold) {
+                    pBox.scrollTop = spanTop - 60; // Keep active line comfortably in view
+                }
             }
         }
     }
