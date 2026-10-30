@@ -67,330 +67,76 @@
     </script>
 
     <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            background-color: #ffffff;
-            color: #333333;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { background-color: #ffffff; color: #333333; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        /* HEADER */
-        .top-header {
-            height: 60px;
-            background-color: #2563eb;
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            z-index: 100;
-        }
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .portal-logo {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid white;
-            background: #ffffff;
-        }
-        .toggle-btn {
-            font-size: 22px;
-            cursor: pointer;
-            color: white;
-            background: none;
-            border: none;
-        }
-        .brand-name {
-            font-size: 20px;
-            font-weight: bold;
-        }
+        .top-header { height: 60px; background-color: #2563eb; color: #ffffff; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 100; }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .portal-logo { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid white; background: #ffffff; }
+        .toggle-btn { font-size: 22px; cursor: pointer; color: white; background: none; border: none; }
+        .brand-name { font-size: 20px; font-weight: bold; }
 
-        /* MAIN WRAPPER */
-        .app-container {
-            display: flex;
-            flex: 1;
-            height: calc(100vh - 60px);
-            position: relative;
-        }
+        .app-container { display: flex; flex: 1; height: calc(100vh - 60px); position: relative; }
+        .sidebar { width: 260px; background-color: #ffffff; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; transition: all 0.3s ease; z-index: 90; }
+        .sidebar.collapsed { margin-left: -260px; }
+        .menu-list { list-style: none; padding: 15px 10px; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; margin-bottom: 5px; border-radius: 6px; cursor: pointer; color: #4b5563; font-weight: 500; font-size: 15px; transition: background 0.2s, color 0.2s; }
+        .menu-item:hover, .menu-item.active { background-color: #e0e7ff; color: #1d4ed8; border-left: 4px solid #16a34a; }
+        .menu-item i { font-size: 18px; width: 22px; text-align: center; }
 
-        /* SIDEBAR */
-        .sidebar {
-            width: 260px;
-            background-color: #ffffff;
-            border-right: 1px solid #e5e7eb;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease;
-            z-index: 90;
-        }
-        .sidebar.collapsed {
-            margin-left: -260px;
-        }
-        .menu-list {
-            list-style: none;
-            padding: 15px 10px;
-        }
-        .menu-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 15px;
-            margin-bottom: 5px;
-            border-radius: 6px;
-            cursor: pointer;
-            color: #4b5563;
-            font-weight: 500;
-            font-size: 15px;
-            transition: background 0.2s, color 0.2s;
-        }
-        .menu-item:hover, .menu-item.active {
-            background-color: #e0e7ff;
-            color: #1d4ed8;
-            border-left: 4px solid #16a34a;
-        }
-        .menu-item i {
-            font-size: 18px;
-            width: 22px;
-            text-align: center;
-        }
-
-        /* MAIN CONTENT AREA */
-        .main-content {
-            flex: 1;
-            padding: 25px;
-            overflow-y: auto;
-            background-color: #f9fafb;
-        }
-
-        .card {
-            background: #ffffff;
-            border-radius: 8px;
-            padding: 25px;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-
+        .main-content { flex: 1; padding: 25px; overflow-y: auto; background-color: #f9fafb; }
+        .card { background: #ffffff; border-radius: 8px; padding: 25px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .view-section { display: none; }
         .view-section.active { display: block; }
 
-        /* HOME SCREEN STYLES */
-        .stats-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .stat-card {
-            background: #f3f4f6;
-            padding: 15px;
-            border-radius: 6px;
-            border-left: 4px solid #2563eb;
-        }
-        .home-widgets {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        .support-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-        }
+        .stats-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: #f3f4f6; padding: 15px; border-radius: 6px; border-left: 4px solid #2563eb; }
+        .home-widgets { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .support-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; text-align: center; }
 
-        /* CHOOSE TEST & SETTINGS LAYOUT */
-        .test-setup-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: #374151;
-            font-size: 13px;
-        }
-        .form-group select, .form-group input, .form-group textarea {
-            width: 100%;
-            padding: 9px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 14px;
-        }
+        .test-setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 4px; color: #374151; font-size: 13px; }
+        .form-group select, .form-group input, .form-group textarea { width: 100%; padding: 9px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; }
 
-        .switch-group {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 1px dashed #e5e7eb;
-        }
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 22px;
-        }
+        .switch-group { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px dashed #e5e7eb; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc; transition: .4s; border-radius: 22px;
-        }
-        .slider:before {
-            position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
-            background-color: white; transition: .4s; border-radius: 50%;
-        }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 22px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: #16a34a; }
         input:checked + .slider:before { transform: translateX(22px); }
 
-        .start-btn {
-            background: linear-gradient(90deg, #2563eb, #16a34a);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-        }
+        .start-btn { background: linear-gradient(90deg, #2563eb, #16a34a); color: white; border: none; padding: 12px 20px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 10px; }
+        .google-btn { background: #db4437; color: white; border: none; padding: 12px 20px; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
 
-        .google-btn {
-            background: #db4437; color: white; border: none; padding: 12px 20px; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px;
-        }
-
-        /* LIVE TEST AREA */
-        .live-header {
-            display: flex;
-            justify-content: space-between;
-            background: #1e293b;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-        }
-        .text-display {
-            height: 180px;
-            overflow-y: auto;
-            border: 1px solid #d1d5db;
-            padding: 15px;
-            background: #ffffff;
-            line-height: 1.8;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            scroll-behavior: smooth;
-        }
+        .live-header { display: flex; justify-content: space-between; background: #1e293b; color: white; padding: 12px 20px; border-radius: 6px; margin-bottom: 15px; }
+        .text-display { height: 180px; overflow-y: auto; border: 1px solid #d1d5db; padding: 15px; background: #ffffff; line-height: 1.8; border-radius: 6px; margin-bottom: 15px; scroll-behavior: smooth; }
         .text-display span.correct { color: #16a34a; background: #dcfce7; }
         .text-display span.incorrect { color: #dc2626; background: #fee2e2; }
         .text-display span.current { background: #bae6fd; text-decoration: underline; font-weight: normal !important; }
 
-        textarea.type-area {
-            width: 100%;
-            height: 120px;
-            padding: 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            resize: none;
-            outline: none;
-        }
+        textarea.type-area { width: 100%; height: 120px; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; resize: none; outline: none; }
 
-        /* RESULTS TABLE & VIEW BUTTON */
-        table.results-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        table.results-table th, table.results-table td {
-            border: 1px solid #e5e7eb;
-            padding: 10px 12px;
-            text-align: left;
-            font-size: 14px;
-        }
+        table.results-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        table.results-table th, table.results-table td { border: 1px solid #e5e7eb; padding: 10px 12px; text-align: left; font-size: 14px; }
         table.results-table th { background-color: #f3f4f6; }
         .status-qualified { color: #16a34a; font-weight: bold; }
         .status-nonqualified { color: #dc2626; font-weight: bold; }
 
-        .btn-view-result {
-            background-color: #2563eb;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-        }
-        .btn-view-result:hover {
-            background-color: #1d4ed8;
-        }
+        .btn-view-result { background-color: #2563eb; color: white; padding: 5px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: bold; cursor: pointer; border: none; }
+        .btn-view-result:hover { background-color: #1d4ed8; }
 
-        /* SUMMARY TABLE */
-        .summary-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 15px;
-            background: #eef2ff;
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #cbd5e1;
-        }
-        .summary-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .summary-table th {
-            text-align: left;
-            padding: 8px 12px;
-            font-size: 13px;
-            color: #334155;
-            text-transform: uppercase;
-            border-bottom: 2px solid #cbd5e1;
-        }
-        .summary-table td {
-            padding: 8px 12px;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 14px;
-        }
+        .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px; background: #eef2ff; padding: 15px; border-radius: 6px; border: 1px solid #cbd5e1; }
+        .summary-table { width: 100%; border-collapse: collapse; }
+        .summary-table th { text-align: left; padding: 8px 12px; font-size: 13px; color: #334155; text-transform: uppercase; border-bottom: 2px solid #cbd5e1; }
+        .summary-table td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
         .summary-table td.label { font-weight: 600; color: #334155; }
         .summary-table td.value { text-align: right; font-weight: bold; color: #0f172a; }
 
-        /* MODAL OVERLAY FOR GOOGLE LOGIN */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000;
-        }
-        .modal-card {
-            background: #ffffff; padding: 25px; border-radius: 10px; width: 380px; text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            position: relative;
-        }
-        .close-modal-btn {
-            position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; color: #64748b; border: none; background: none;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-card { background: #ffffff; padding: 25px; border-radius: 10px; width: 380px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative; }
+        .close-modal-btn { position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; color: #64748b; border: none; background: none; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -506,7 +252,6 @@
                 <div class="card">
                     <h3>Choose & Start Test</h3>
                     <div class="test-setup-grid" style="margin-top: 15px;">
-                        
                         <div>
                             <div class="form-group">
                                 <label><i class="fa-solid fa-graduation-cap"></i> Select Course:</label>
@@ -538,33 +283,27 @@
 
                         <div style="background: #f9fafb; padding: 15px; border-radius: 6px; border: 1px solid #e5e7eb;">
                             <h4 style="margin-bottom: 15px;"><i class="fa-solid fa-sliders"></i> Test Settings</h4>
-                            
                             <div class="switch-group">
                                 <span>Highlight Typing Words</span>
                                 <label class="switch"><input type="checkbox" id="setHighlight" checked><span class="slider"></span></label>
                             </div>
-
                             <div class="switch-group">
                                 <span>Auto Scroll Paragraph</span>
                                 <label class="switch"><input type="checkbox" id="setAutoScroll" checked><span class="slider"></span></label>
                             </div>
-
                             <div class="switch-group">
                                 <span>Allow Backspace Key</span>
                                 <label class="switch"><input type="checkbox" id="setBackspace" checked><span class="slider"></span></label>
                             </div>
-
                             <div class="switch-group">
                                 <span>Full Screen Mode</span>
                                 <label class="switch"><input type="checkbox" id="setFullScreen" checked><span class="slider"></span></label>
                             </div>
-
                             <div class="form-group" style="margin-top: 10px;">
                                 <label>Default Font Size (px):</label>
                                 <input type="number" id="setFontSize" value="18" min="14" max="28" onchange="applyFontSize()">
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -588,44 +327,32 @@
                         <div class="form-group">
                             <label>Ignored Mistake Allowance (%):</label>
                             <input type="number" id="ruleAllowance" value="5" step="0.5" min="0" max="20">
-                            <small style="color:#6b7280;">कुल टाइप शब्दों का कितना प्रतिशत माफ़ होगा।</small>
                         </div>
-
                         <div class="form-group">
                             <label>Penalty Words Per Extra Mistake:</label>
                             <input type="number" id="rulePenalty" value="10" min="0" max="50">
-                            <small style="color:#6b7280;">सीमा से अधिक प्रत्येक गलती पर पेनल्टी शब्द।</small>
                         </div>
-
                         <div class="form-group">
                             <label>Required Minimum Net Speed (WPM):</label>
                             <input type="number" id="ruleMinWpm" value="35" min="20" max="60">
-                            <small style="color:#6b7280;">पास होने के लिए न्यूनतम नेट स्पीड।</small>
                         </div>
-
                         <div class="form-group">
                             <label>Required Minimum Keystrokes:</label>
                             <input type="number" id="ruleMinKeystrokes" value="1750" min="500" max="5000">
-                            <small style="color:#6b7280;">न्यूनतम की-स्ट्रोक्स की आवश्यकता।</small>
                         </div>
-
                         <div class="form-group">
                             <label>Required Minimum Accuracy (%):</label>
                             <input type="number" id="ruleMinAcc" value="85" min="50" max="100">
-                            <small style="color:#6b7280;">क्वालीफाई होने के लिए न्यूनतम शुद्धता प्रतिशत।</small>
                         </div>
-
                         <div class="form-group">
                             <label>Punctuation / Comma Mistake Calculation:</label>
                             <select id="rulePunctuationRule">
-                                <option value="half">Half Mistake (0.5 Error for Comma/Punctuation)</option>
+                                <option value="half">Half Mistake (0.5 Error)</option>
                                 <option value="full">Full Mistake (1.0 Error)</option>
                                 <option value="ignore">Ignore Punctuation Mistakes</option>
                             </select>
-                            <small style="color:#6b7280;">परीक्षा नियमों के अनुसार कॉमा/अर्धविराम की गणना।</small>
                         </div>
                     </div>
-
                     <button class="start-btn" style="width: auto; padding: 10px 25px; margin-top: 15px;" onclick="saveExamRules()"><i class="fa-solid fa-save"></i> Save Rules for Selected Exam</button>
                 </div>
             </div>
@@ -634,7 +361,7 @@
             <div id="adminView" class="view-section">
                 <div class="card">
                     <h3>📥 नया टेस्ट / पैराग्राफ अपलोड करें (Cloud Sync Live)</h3>
-                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">यहाँ से आप जो भी टेस्ट अपलोड करेंगे, वह तुरंत सीधे क्लाउड डेटाबेस पर जाएगा और सभी यूज़र्स के पोर्टल पर दिखेगा।</p>
+                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">यहाँ से आप जो भी टेस्ट अपलोड करेंगे, वह सीधे क्लाउड डेटाबेस पर सेव होगा और सभी यूज़र्स के लिए लाइव हो जाएगा।</p>
                     
                     <div class="form-group">
                         <label>किस कोर्स/परीक्षा में जोड़ना है?</label>
@@ -669,9 +396,7 @@
                     </div>
 
                     <div class="text-display" id="paragraphBox"></div>
-
                     <textarea class="type-area" id="typingInput" placeholder="Start typing here..."></textarea>
-
                     <button class="start-btn" style="background: #16a34a; margin-top: 15px;" onclick="finishTest()">Submit Test</button>
                 </div>
             </div>
@@ -719,59 +444,39 @@
                 
                 <div class="card">
                     <h2>Result Summary</h2>
-                    <p style="font-size:13px; color:#6b7280; margin-bottom: 15px;">Speed, accuracy, mistakes, and shareable result details for this attempt.</p>
-                    
                     <div class="summary-grid">
                         <table class="summary-table">
-                            <thead>
-                                <tr><th>DESCRIPTION</th><th style="text-align:right;">RESULT</th></tr>
-                            </thead>
+                            <thead><tr><th>DESCRIPTION</th><th style="text-align:right;">RESULT</th></tr></thead>
                             <tbody>
-                                <tr><td class="label">Result Link / ID</td><td class="value" id="resLink" style="color:#2563eb;">-</td></tr>
+                                <tr><td class="label">Result ID</td><td class="value" id="resLink" style="color:#2563eb;">-</td></tr>
                                 <tr><td class="label">Test Duration</td><td class="value" id="resDuration">-</td></tr>
                                 <tr><td class="label">Time Taken</td><td class="value" id="resTimeTaken">-</td></tr>
                                 <tr><td class="label">Total Key Strokes Given</td><td class="value" id="resTotalKeystrokes">0</td></tr>
                                 <tr><td class="label">Total Words</td><td class="value" id="resTotalWords">0</td></tr>
                                 <tr><td class="label">Typed Key Strokes</td><td class="value" id="resTypedKeystrokes">0</td></tr>
                                 <tr><td class="label">Total Typed Words</td><td class="value" id="resTypedWords">0</td></tr>
-                                <tr><td class="label">Correct Key Strokes</td><td class="value" id="resCorrectKeystrokes">0</td></tr>
                                 <tr><td class="label">Correct Words</td><td class="value" id="resCorrectWords">0</td></tr>
                                 <tr><td class="label">Incorrect Words</td><td class="value" id="resIncorrectWords">0</td></tr>
                             </tbody>
                         </table>
 
                         <table class="summary-table">
-                            <thead>
-                                <tr><th>DESCRIPTION</th><th style="text-align:right;">RESULT</th></tr>
-                            </thead>
+                            <thead><tr><th>DESCRIPTION</th><th style="text-align:right;">RESULT</th></tr></thead>
                             <tbody>
                                 <tr><td class="label">Gross Speed (WPM)</td><td class="value" id="resGross">0 WPM</td></tr>
-                                <tr><td class="label">Ignored Mistakes</td><td class="value" id="resAllowedMistakes">0</td></tr>
+                                <tr><td class="label">Allowed Mistakes</td><td class="value" id="resAllowedMistakes">0</td></tr>
                                 <tr><td class="label">Penalty</td><td class="value" id="resPenalty">0</td></tr>
                                 <tr><td class="label">Net Speed (WPM)</td><td class="value" id="resNet" style="font-size:16px;">0 WPM</td></tr>
                                 <tr><td class="label">Backspace Count</td><td class="value" id="resBackspaceCount">0</td></tr>
                                 <tr><td class="label">Accuracy (%)</td><td class="value" id="resAccuracy">0%</td></tr>
                                 <tr><td class="label">Status</td><td class="value" id="resStatus">-</td></tr>
                                 <tr><td class="label">Qualifying Formula</td><td class="value" id="resFormula" style="font-size:12px; font-weight:normal; color:#475569;">-</td></tr>
-                                <tr><td class="label">Test Details</td><td class="value" id="resDetails" style="font-size:12px; font-weight:normal; color:#475569;">-</td></tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Differences & Mistakes Breakdown:</h4>
-                    <p style="font-size:12px; color:#6b7280; margin-top:3px;"><span style="color:blue; font-weight:bold;">मूल शब्द (Blue):</span> छूटे हुए/मूल शब्द | <span style="background:#dcfce7; color:#16a34a; font-weight:bold; padding:0 3px;">हल्का हरा (Light Green):</span> सही टाइप किया गया शब्द | <span style="color:red; font-weight:bold; text-decoration:line-through;">लाल (Red):</span> गलत टाइप किया गया शब्द</p>
+                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown:</h4>
                     <div class="text-display" id="differencesBox" style="height: 140px; margin-top: 8px; font-size: 14px; background:#ffffff;"></div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
-                        <div>
-                            <h4>Your Typed Text:</h4>
-                            <div class="text-display" id="userTypedTextBox" style="height: 120px; background:#f9fafb; font-size: 14px;"></div>
-                        </div>
-                        <div>
-                            <h4>Original Passage:</h4>
-                            <div class="text-display" id="originalTextBox" style="height: 120px; background:#f9fafb; font-size: 14px;"></div>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -1319,7 +1024,7 @@ async function finishTest() {
     };
 
     try {
-        if(window.db && window.addDoc && window.collection && window.loggedInUserEmail) {
+        if(window.db && window.addDoc && window.collection) {
             await window.addDoc(window.collection(window.db, "userResults"), resultObj);
         }
     } catch(e) { console.log("Save Result Error:", e); }
@@ -1342,7 +1047,7 @@ function updateResultsHistoryTable() {
     if (!tbody) return;
 
     if (testHistory.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No test attempts found for this user.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No test attempts found yet.</td></tr>`;
         return;
     }
 
@@ -1403,7 +1108,6 @@ function viewSingleResult(index) {
     setVal('resTotalWords', res.totalWords);
     setVal('resTypedKeystrokes', res.typedKeystrokes);
     setVal('resTypedWords', res.typedWordsCount);
-    setVal('resCorrectKeystrokes', res.correctKeystrokes);
     setVal('resCorrectWords', res.correctWords);
     setVal('resIncorrectWords', res.incorrectWords);
 
@@ -1435,12 +1139,6 @@ function viewSingleResult(index) {
 
     let diffBox = document.getElementById('differencesBox');
     if (diffBox) diffBox.innerHTML = diffHtml;
-
-    let typedBox = document.getElementById('userTypedTextBox');
-    if (typedBox) typedBox.innerText = res.typedText;
-
-    let originalBox = document.getElementById('originalTextBox');
-    if (originalBox) originalBox.innerText = res.activeWords.join(' ');
 
     switchTab('singleResultView');
 }
