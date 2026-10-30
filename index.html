@@ -393,7 +393,7 @@
         <div class="header-left">
             <button class="toggle-btn" onclick="toggleSidebar()"><i class="fa-solid fa-bars"></i></button>
             <!-- Logo using your uploaded file 21097 (supports png, jpg, jpeg) -->
-            <img src="21097.png" onerror="this.onerror=null; this.src='21097.jpg';" alt="Logo" class="portal-logo">
+            <img src="21097.png" onerror="this.onerror=null; this.src='21097.jpg'; this.onerror=function(){this.src='21097.jpeg';};" alt="Logo" class="portal-logo">
             <span class="brand-name">Typing Mentor</span>
         </div>
         <div style="display:flex; align-items:center; gap:12px;">
@@ -442,6 +442,19 @@
             <div id="homeView" class="view-section active">
                 <div class="card">
                     <h3>Your Dashboard Overview</h3>
+                    
+                    <!-- Highest Performance & Motivation Banner -->
+                    <div style="background: linear-gradient(135deg, #eff6ff, #dbeafe); border-left: 5px solid #2563eb; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                        <h4 style="color: #1e40af; margin-bottom: 5px;"><i class="fa-solid fa-trophy"></i> All-Time Highest Performance Record</h4>
+                        <p style="font-size: 14px; color: #334155; margin-bottom: 8px;">
+                            Net Speed: <b id="bestSpeedDisplay" style="color: #16a34a;">0 WPM</b> | 
+                            Accuracy: <b id="bestAccDisplay" style="color: #2563eb;">0%</b>
+                        </p>
+                        <p style="font-style: italic; font-size: 13px; color: #475569;" id="motivationQuote">
+                            "सफलता एक दिन में नहीं मिलती, लेकिन ठान लो तो एक दिन जरूर मिलती है! निरंतर अभ्यास ही सफलता की चाबी है।"
+                        </p>
+                    </div>
+
                     <div class="stats-cards" style="margin-top:15px;">
                         <div class="stat-card">
                             <h4>Total Tests Given</h4>
@@ -468,7 +481,7 @@
                         <h4 style="margin-bottom:5px;">Query for Support & Donate</h4>
                         <p style="font-size:12px; color:#64748b; margin-bottom:10px;">पोर्टल को निःशुल्क और बेहतर बनाए रखने के लिए स्वेच्छा से सहयोग करें।</p>
                         <!-- QR Code using your uploaded file 21079 (supports png, jpg, jpeg) -->
-                        <img src="21079.png" onerror="this.onerror=null; this.src='21079.jpg';" alt="Support QR Code" style="width:130px; height:130px; object-fit:contain; border:1px solid #cbd5e1; border-radius:6px; padding:4px; background:#fff;">
+                        <img src="21079.png" onerror="this.onerror=null; this.src='21079.jpg'; this.onerror=function(){this.src='21079.jpeg';};" alt="Support QR Code" style="width:130px; height:130px; object-fit:contain; border:1px solid #cbd5e1; border-radius:6px; padding:4px; background:#fff;">
                         <p style="font-size:11px; color:#94a3b8; margin-top:5px;">Scan & Support Typing Mentor</p>
                     </div>
                 </div>
@@ -484,6 +497,8 @@
                         <div>
                             <div class="form-group">
                                 <label><i class="fa-solid fa-graduation-cap"></i> Select Course:</label>
+                                <!-- Search filter for courses -->
+                                <input type="text" id="courseSearchInput" placeholder="कोर्स सर्च करें (जैसे: BSF)..." oninput="filterCourseOptions()" style="margin-bottom: 6px;">
                                 <select id="courseSelect" onchange="loadTestOptions()">
                                     <option value="BSF HCM Typing Test">BSF HCM Typing Test Series</option>
                                     <option value="SSC CGL Typing Test">SSC CGL Typing Test Series</option>
@@ -493,7 +508,9 @@
 
                             <div class="form-group">
                                 <label><i class="fa-solid fa-file-lines"></i> Select Test:</label>
-                                <select id="testSelect"></select>
+                                <!-- Search filter for tests -->
+                                <input type="text" id="testSearchInput" placeholder="टेस्ट सर्च करें (जैसे: Test 101)..." oninput="filterTestOptions()" style="margin-bottom: 6px;">
+                                <select id="testSelect" size="5" style="height: 130px;"></select>
                             </div>
 
                             <div class="form-group">
@@ -814,7 +831,7 @@ let typingData = JSON.parse(localStorage.getItem('tm_custom_typing_data')) || {
     ]
 };
 
-// Secret Keyboard Shortcut for Admin (Ctrl + Shift + A) with Password Prompt
+// Secret Keyboard Shortcut for Admin (Ctrl + Shift + A) with Password Prompt (No popups on success)
 document.addEventListener('keydown', function(e) {
     if (e.ctrlKey && e.shiftKey && e.key === 'A') {
         let enteredPwd = prompt("🔐 एडमिन पासवर्ड दर्ज करें:");
@@ -824,7 +841,6 @@ document.addEventListener('keydown', function(e) {
             if (adminItem && rulesItem) {
                 adminItem.classList.toggle('hidden');
                 rulesItem.classList.toggle('hidden');
-                alert("🔐 एडमिन मोड सक्रिय हो गया है!");
             }
         } else if (enteredPwd !== null) {
             alert("गलत पासवर्ड!");
@@ -857,6 +873,7 @@ window.onload = function() {
     }
     loadTestOptions();
     updateResultsHistoryTable();
+    updateBestPerformance();
     switchTab('homeView', document.getElementById('menu-home'));
 };
 
@@ -911,7 +928,6 @@ function handleUserSignup() {
     document.getElementById('headerAuthBtn').innerText = "Logout";
     document.getElementById('headerAuthBtn').onclick = logoutUser;
     closeLoginModal();
-    alert("साइन-अप सफल रहा! आप पोर्टल में लॉगिन हो चुके हैं।");
 }
 
 function handleUserLogin() {
@@ -932,7 +948,6 @@ function handleUserLogin() {
         document.getElementById('headerAuthBtn').innerText = "Logout";
         document.getElementById('headerAuthBtn').onclick = logoutUser;
         closeLoginModal();
-        alert("लॉगिन सफल रहा!");
     } else {
         alert("गलत ईमेल या पासवर्ड! कृपया पहले साइन-अप करें।");
     }
@@ -967,6 +982,7 @@ function switchTab(tabId, clickedElement) {
     
     if(tabId === 'adminView') loadDeleteTestOptions();
     if(tabId === 'rulesView') loadExamRulesForCourse();
+    if(tabId === 'homeView') updateBestPerformance();
 }
 
 function applyFontSize() {
@@ -995,6 +1011,28 @@ function loadTestOptions() {
             opt.textContent = item.title;
             testEl.appendChild(opt);
         });
+    }
+}
+
+// Filter Course Options dynamically via search input
+function filterCourseOptions() {
+    let filter = document.getElementById('courseSearchInput').value.toLowerCase();
+    let select = document.getElementById('courseSelect');
+    let options = select.options;
+    for (let i = 0; i < options.length; i++) {
+        let txt = options[i].text.toLowerCase();
+        options[i].style.display = txt.includes(filter) ? "" : "none";
+    }
+}
+
+// Filter Test Options dynamically via search input
+function filterTestOptions() {
+    let filter = document.getElementById('testSearchInput').value.toLowerCase();
+    let select = document.getElementById('testSelect');
+    let options = select.options;
+    for (let i = 0; i < options.length; i++) {
+        let txt = options[i].text.toLowerCase();
+        options[i].style.display = txt.includes(filter) ? "" : "none";
     }
 }
 
@@ -1341,6 +1379,7 @@ function finishTest() {
     testHistory.unshift(resultObj);
     localStorage.setItem('tm_history', JSON.stringify(testHistory));
     updateResultsHistoryTable();
+    updateBestPerformance();
     viewSingleResult(0);
 }
 
@@ -1370,6 +1409,37 @@ function updateResultsHistoryTable() {
             <td><button class="btn-view-result" onclick="viewSingleResult(${index})"><i class="fa-solid fa-eye"></i> View</button></td>
         </tr>
     `).join('');
+}
+
+// Update All-Time Highest Performance Record on Dashboard
+function updateBestPerformance() {
+    let bestSpeed = 0;
+    let bestAcc = 0;
+    
+    if (testHistory.length > 0) {
+        testHistory.forEach(h => {
+            if (h.netWpm > bestSpeed) {
+                bestSpeed = h.netWpm;
+                bestAcc = h.accuracy;
+            }
+        });
+    }
+
+    let speedEl = document.getElementById('bestSpeedDisplay');
+    let accEl = document.getElementById('bestAccDisplay');
+    if(speedEl) speedEl.innerText = bestSpeed + " WPM";
+    if(accEl) accEl.innerText = bestAcc + "%";
+
+    // Dynamic motivation quotes rotation or selection
+    let quotes = [
+        "\"सफलता एक दिन में नहीं मिलती, लेकिन ठान लो तो एक दिन जरूर मिलती है! निरंतर अभ्यास ही सफलता की चाबी है।\"",
+        "\"मुश्किलें दिल के इरादे आजमाती हैं, स्वप्न के पर्दे निगाहों से हटाती हैं, हौसला मत हार गिर कर ऐ मुसाफिर, ठोकरें इंसान को चलना सिखाती हैं!\"",
+        "\"आज की मेहनत कल की जीत है, अपनी उंगलियों की रफ्तार और सटीकता को हर दिन बेहतर बनाओ!\"",
+        "\"लक्ष्य पर नजर और उंगलियों में फुर्ती हो, तो दुनिया की कोई भी टाइपिंग परीक्षा नामुमकिन नहीं!\""
+    ];
+    let randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    let quoteEl = document.getElementById('motivationQuote');
+    if(quoteEl) quoteEl.innerText = randomQuote;
 }
 
 function viewSingleResult(index) {
