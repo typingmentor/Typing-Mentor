@@ -122,12 +122,12 @@
         .summary-table td.label { font-weight: 600; color: #334155; }
         .summary-table td.value { text-align: right; font-weight: bold; color: #0f172a; }
 
-        .no-scroll-breakdown { height: auto !important; max-height: none !important; overflow: visible !important; border: 1px solid #cbd5e1; padding: 18px; background: #ffffff; line-height: 2.2; font-size: 15px; border-radius: 6px; }
+        .no-scroll-breakdown { height: auto !important; max-height: none !important; overflow: visible !important; border: 1px solid #cbd5e1; padding: 18px; background: #ffffff; line-height: 2.4; font-size: 15px; border-radius: 6px; }
         
         .word-normal { color: #333333; font-weight: normal; margin-right: 6px; display: inline-block; }
         .word-orig-blue-line { color: #2563eb; text-decoration: underline; font-weight: 600; margin-right: 4px; display: inline-block; }
         .word-wrong-red { color: #dc2626; font-weight: bold; margin-right: 6px; display: inline-block; }
-        .word-untyped-blue { color: #2563eb; margin-right: 6px; display: inline-block; }
+        .word-untyped-blue { color: #2563eb; text-decoration: underline; font-weight: 600; margin-right: 6px; display: inline-block; background: #eff6ff; padding: 0 3px; border-radius: 3px; }
 
         .legend-box { display: flex; gap: 15px; margin-top: 15px; margin-bottom: 10px; font-size: 13px; align-items: center; background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #e2e8f0; flex-wrap: wrap; }
         .legend-item { display: flex; align-items: center; gap: 6px; font-weight: 600; }
@@ -535,13 +535,13 @@
                         </table>
                     </div>
 
-                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown (Strict Index-by-Index Alignment):</h4>
+                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown (True Levenshtein Alignment):</h4>
                     
                     <div class="legend-box">
                         <div class="legend-item"><span class="word-normal">Word</span> Correct Typed (Normal)</div>
                         <div class="legend-item"><span class="word-orig-blue-line">Word</span> Original Word (Should be typed)</div>
                         <div class="legend-item"><span class="word-wrong-red">Word</span> Your Wrong Typed Word</div>
-                        <div class="legend-item"><span class="word-untyped-blue">Word</span> Untyped / Skipped Passage</div>
+                        <div class="legend-item"><span class="word-untyped-blue">Word</span> Untyped / Skipped Passage Block</div>
                     </div>
 
                     <div class="no-scroll-breakdown" id="differencesBox"></div>
@@ -1533,59 +1533,77 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// STRICT INDEX-BY-INDEX ALGORITHM (PREVENTS MISMATCH SPREADING WHEN A WORD/PUNCTUATION IS MISSED)
-function computeStrictIndexDiff(origWords, typedWords) {
+// TRUE LEVENSHTEIN / LCS ALIGNMENT FOR PRECISE WORD & OMISSION BLOCK MATCHING
+function computeLevenshteinDiff(origWords, typedWords) {
+    let n = origWords.length;
+    let m = typedWords.length;
+    let dp = Array(n + 1).fill(null).map(() => Array(m + 1).fill(0));
+
+    for (let i = 0; i <= n; i++) dp[i][0] = i;
+    for (let j = 0; j <= m; j++) dp[0][j] = j;
+
+    let cleanOrig = origWords.map(w => w.replace(/[,.;:!?]/g, '').toLowerCase());
+    let cleanTyped = typedWords.map(w => w.replace(/[,.;:!?]/g, '').toLowerCase());
+
+    for (let i = 1; i <= n; i++) {
+        for (let j = 1; j <= m; j++) {
+            if (cleanOrig[i - 1] === cleanTyped[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1];
+            } else {
+                dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+            }
+        }
+    }
+
+    let i = n, j = m;
+    let trace = [];
+    while (i > 0 || j > 0) {
+        if (i > 0 && j > 0 && cleanOrig[i - 1] === cleanTyped[j - 1]) {
+            trace.push({ type: 'match', origIdx: i - 1, typedIdx: j - 1 });
+            i--; j--;
+        } else {
+            let delCost = i > 0 ? dp[i - 1][j] : Infinity;
+            let insCost = j > 0 ? dp[i][j - 1] : Infinity;
+            let subCost = (i > 0 && j > 0) ? dp[i - 1][j - 1] : Infinity;
+
+            if (delCost <= insCost && delCost <= subCost) {
+                trace.push({ type: 'deletion', origIdx: i - 1 });
+                i--;
+            } else if (insCost <= delCost && insCost <= subCost) {
+                trace.push({ type: 'insertion', typedIdx: j - 1 });
+                j--;
+            } else {
+                trace.push({ type: 'substitution', origIdx: i - 1, typedIdx: j - 1 });
+                i--; j--;
+            }
+        }
+    }
+    trace.reverse();
+
     let diffList = [];
     let correctCount = 0;
     let mistakesCount = 0;
 
-    let i = 0, j = 0;
-    while (i < origWords.length || j < typedWords.length) {
-        let origWord = origWords[i] || "";
-        let typedWord = typedWords[j] || "";
-
-        if (i < origWords.length && j < typedWords.length) {
-            let cleanOrig = origWord.replace(/[,.;:!?]/g, '').toLowerCase();
-            let cleanTyped = typedWord.replace(/[,.;:!?]/g, '').toLowerCase();
-
-            if (cleanOrig === cleanTyped) {
-                // Exact word match. Check punctuation exactness
-                if (origWord === typedWord) {
-                    diffList.push({ type: 'correct', word: origWord });
-                    correctCount++;
-                } else {
-                    // Word is right, but punctuation (like dot/comma) differs
-                    diffList.push({ type: 'typo', origWord: origWord, userWord: typedWord });
-                    mistakesCount++;
-                }
-                i++;
-                j++;
+    for (let t of trace) {
+        if (t.type === 'match') {
+            let origW = origWords[t.origIdx];
+            let typedW = typedWords[t.typedIdx];
+            if (origW === typedW) {
+                diffList.push({ type: 'correct', word: origW });
+                correctCount++;
             } else {
-                // Mismatch: Check if user skipped this original word (omission)
-                // Look 1 step ahead in typed to see if next typed matches current orig
-                let nextTyped = typedWords[j + 1] ? typedWords[j + 1].replace(/[,.;:!?]/g, '').toLowerCase() : "";
-                if (nextTyped === cleanOrig) {
-                    // User typed an extra word before orig
-                    diffList.push({ type: 'typo', origWord: origWord, userWord: typedWord });
-                    mistakesCount++;
-                    j++; // skip extra typed word
-                } else {
-                    // Treat current orig word as skipped/omitted
-                    diffList.push({ type: 'omitted_line', origWord: origWord });
-                    mistakesCount++;
-                    i++; // move orig forward, keep typed for next check
-                }
+                diffList.push({ type: 'typo', origWord: origW, userWord: typedW });
+                mistakesCount++;
             }
-        } else if (i < origWords.length) {
-            // Remaining original words are untyped/omitted
-            diffList.push({ type: 'untyped_end', word: origWords[i] });
+        } else if (t.type === 'deletion') {
+            diffList.push({ type: 'omitted_line', origWord: origWords[t.origIdx] });
             mistakesCount++;
-            i++;
-        } else {
-            // Extra typed words at the end
-            diffList.push({ type: 'typo', origWord: "", userWord: typedWord });
+        } else if (t.type === 'insertion') {
+            diffList.push({ type: 'typo', origWord: "", userWord: typedWords[t.typedIdx] });
             mistakesCount++;
-            j++;
+        } else if (t.type === 'substitution') {
+            diffList.push({ type: 'typo', origWord: origWords[t.origIdx], userWord: typedWords[t.typedIdx] });
+            mistakesCount++;
         }
     }
 
@@ -1637,7 +1655,7 @@ async function finishTest() {
     
     let typedWordsArray = typed.trim() ? typed.trim().split(/\s+/) : [];
 
-    let { diffList, correctCount, mistakesCount } = computeStrictIndexDiff(activeWords, typedWordsArray);
+    let { diffList, correctCount, mistakesCount } = computeLevenshteinDiff(activeWords, typedWordsArray);
 
     let correctKeystrokesCount = Math.round(correctCount * 5);
     let correctWordsNum = Math.round((correctKeystrokesCount / 5) * 10) / 10;
@@ -1773,7 +1791,7 @@ function viewSingleResult(index) {
     if (!res) return;
 
     if (!res.diffList && res.activeWords && res.typedWordsArray) {
-        let evaluated = computeStrictIndexDiff(res.activeWords, res.typedWordsArray);
+        let evaluated = computeLevenshteinDiff(res.activeWords, res.typedWordsArray);
         res.diffList = evaluated.diffList;
     }
 
@@ -1819,11 +1837,11 @@ function viewSingleResult(index) {
             if (item.type === 'correct') {
                 return `<span class="word-normal">${item.word}</span>`;
             } else if (item.type === 'omitted_line') {
-                return `<span class="word-orig-blue-line">${item.origWord}</span>`;
+                return `<span class="word-untyped-blue">${item.origWord}</span>`;
             } else if (item.type === 'typo') {
-                return `<span class="word-orig-blue-line">${item.origWord}</span><span class="word-wrong-red">${item.userWord}</span>`;
-            } else if (item.type === 'untyped_end') {
-                return `<span class="word-untyped-blue">${item.word}</span>`;
+                let origPart = item.origWord ? `<span class="word-orig-blue-line">${item.origWord}</span>` : "";
+                let userPart = item.userWord ? `<span class="word-wrong-red">${item.userWord}</span>` : "";
+                return origPart + userPart;
             }
         }).join(' ');
     } else if (res.activeWords) {
