@@ -125,7 +125,7 @@
         .summary-table td.label { font-weight: 600; color: #334155; }
         .summary-table td.value { text-align: right; font-weight: bold; color: #0f172a; }
 
-        /* EXACT CUSTOM MISTAKES BREAKDOWN STYLES (NO SCROLL, CLEAN NORMAL CORRECT WORDS) */
+        /* MISTAKES BREAKDOWN STYLES (NO SCROLL, NORMAL CORRECT WORDS) */
         .no-scroll-breakdown { height: auto !important; max-height: none !important; overflow: visible !important; border: 1px solid #cbd5e1; padding: 18px; background: #ffffff; line-height: 2.2; font-size: 16px; border-radius: 6px; }
         
         .word-normal { color: #333333; font-weight: normal; margin-right: 6px; display: inline-block; }
@@ -135,6 +135,12 @@
 
         .legend-box { display: flex; gap: 15px; margin-top: 15px; margin-bottom: 10px; font-size: 13px; align-items: center; background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #e2e8f0; flex-wrap: wrap; }
         .legend-item { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+
+        /* VIRTUAL KEYBOARD FOR LEARN TYPING */
+        .virtual-keyboard { display: flex; flex-direction: column; gap: 6px; background: #1e293b; padding: 15px; border-radius: 8px; margin-top: 20px; align-items: center; }
+        .keyboard-row { display: flex; gap: 5px; }
+        .key-cap { background: #334155; color: white; padding: 10px 14px; border-radius: 4px; font-size: 13px; font-weight: bold; min-width: 35px; text-align: center; }
+        .key-cap.active-key { background: #16a34a !important; transform: scale(1.05); }
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .modal-card { background: #ffffff; padding: 25px; border-radius: 10px; width: 380px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative; }
@@ -522,10 +528,8 @@
                         <div class="legend-item"><span class="word-untyped-blue">Word</span> Untyped / Skipped Passage</div>
                     </div>
 
-                    <!-- NO SCROLL FULL MISTAKES BREAKDOWN BOX -->
                     <div class="no-scroll-breakdown" id="differencesBox"></div>
 
-                    <!-- NO SCROLL YOUR TYPED TEXT VS ORIGINAL TEXT COMPARISON -->
                     <div style="margin-top: 20px;">
                         <h4 style="margin-bottom: 8px; color: #1e293b;"><i class="fa-solid fa-keyboard"></i> Your Typed Passage:</h4>
                         <div id="yourTypedPassageBox" class="no-scroll-breakdown" style="font-size: 15px; color: #334155;"></div>
@@ -536,11 +540,29 @@
                 </div>
             </div>
 
-            <!-- 7. LEARN TYPING -->
+            <!-- 7. LEARN TYPING (WITH INTERACTIVE VIRTUAL KEYBOARD & FINGER VISUALS) -->
             <div id="learnView" class="view-section">
                 <div class="card">
-                    <h3>Learn Typing Lessons</h3>
-                    <p>Practice home row, top row, and bottom row key lessons here.</p>
+                    <h3><i class="fa-solid fa-book-open"></i> Learn Typing & Interactive Visuals</h3>
+                    <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">होम रो, टॉप रो और फिंगर प्लेसमेंट सीखने के लिए नीचे अभ्यास करें।</p>
+                    
+                    <div style="background: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h4 style="margin-bottom: 8px; font-size: 15px;">Practice Box:</h4>
+                        <input type="text" id="learnInputBox" placeholder="यहाँ टाइप करना शुरू करें..." oninput="handleLearnTypingInput(event)" style="width: 100%; padding: 10px; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    </div>
+
+                    <!-- Virtual Keyboard Finger Guide -->
+                    <div class="virtual-keyboard">
+                        <div class="keyboard-row">
+                            <span class="key-cap" id="key-q">Q</span><span class="key-cap" id="key-w">W</span><span class="key-cap" id="key-e">E</span><span class="key-cap" id="key-r">R</span><span class="key-cap" id="key-t">T</span><span class="key-cap" id="key-y">Y</span><span class="key-cap" id="key-u">U</span><span class="key-cap" id="key-i">I</span><span class="key-cap" id="key-o">O</span><span class="key-cap" id="key-p">P</span>
+                        </div>
+                        <div class="keyboard-row">
+                            <span class="key-cap" id="key-a">A</span><span class="key-cap" id="key-s">S</span><span class="key-cap" id="key-d">D</span><span class="key-cap" id="key-f">F</span><span class="key-cap" id="key-g">G</span><span class="key-cap" id="key-h">H</span><span class="key-cap" id="key-j">J</span><span class="key-cap" id="key-k">K</span><span class="key-cap" id="key-l">L</span>
+                        </div>
+                        <div class="keyboard-row">
+                            <span class="key-cap" id="key-z">Z</span><span class="key-cap" id="key-x">X</span><span class="key-cap" id="key-c">C</span><span class="key-cap" id="key-v">V</span><span class="key-cap" id="key-b">B</span><span class="key-cap" id="key-n">N</span><span class="key-cap" id="key-m">M</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -615,7 +637,7 @@ function updateHeaderUserUI() {
         }
     } else {
         if(nameEl) nameEl.innerText = "Guest User";
-        if(emailEl) emailEl.innerText = "Not logged in";
+        if(emailEl) nameEl.innerText = "Not logged in";
         if(authBtn) { 
             authBtn.innerText = "Login / Signup"; 
             authBtn.onclick = openLoginModal; 
@@ -817,7 +839,7 @@ function createNewCustomExamRule() {
     refreshCourseDropdowns();
     document.getElementById('ruleCourseSelect').value = newExamName;
     loadExamRulesForCourse();
-    alert(`नियम '${newExamName}' सफलतापूर्वक जोड़ दिया गया है!`);
+    alert(`नया नियम '${newExamName}' सफलतापूर्वक जोड़ दिया गया है!`);
 }
 
 function onCourseChanged() {
@@ -985,6 +1007,7 @@ function loadExamRulesForCourse() {
     document.getElementById('ruleAccuracyMandatory').value = rules.accMandatory || "mandatory";
 }
 
+// RETROACTIVE RULE RE-EVALUATION FOR ALL PAST & PRESENT RESULTS
 function saveExamRules() {
     let courseSelect = document.getElementById('ruleCourseSelect');
     if(!courseSelect) return;
@@ -1000,7 +1023,50 @@ function saveExamRules() {
     };
 
     localStorage.setItem('tm_exam_rules_config', JSON.stringify(examRulesConfig));
-    alert(`नियम '${selectedCourse}' के लिए सफलतापूर्वक सहेज लिए गए हैं!`);
+
+    // Re-evaluate past test history results with new rules
+    let rules = examRulesConfig[selectedCourse];
+    let allowPct = rules.allowance / 100;
+    let penaltyMultiplier = rules.penalty;
+    let minNetWpmReq = rules.minWpm;
+    let minKeysReq = rules.minKeystrokes;
+    let minAccReq = rules.minAcc;
+    let accMandatory = rules.accMandatory || "mandatory";
+
+    testHistory.forEach(h => {
+        if ((h.course || "General Practice") === selectedCourse && h.typedWordsArray && h.activeWords) {
+            let totalTypedWordsNum = h.typedWordsCount || 0;
+            let mistakesCount = h.incorrectWords || 0;
+            let timeSpentMin = 10; 
+            if (h.timeTaken) {
+                let parts = h.timeTaken.split(' ');
+                if (parts.length > 0) timeSpentMin = parseFloat(parts[0]) / 60 || 10;
+            }
+
+            let grossWords = (h.typedKeystrokes || 0) / 5;
+            let allowedMistakes = Math.round((totalTypedWordsNum * allowPct) * 10) / 10;
+            let extraMistakes = Math.max(0, mistakesCount - allowedMistakes);
+            let penaltyWords = Math.round((extraMistakes * penaltyMultiplier) * 10) / 10;
+            
+            let netWords = Math.max(0, grossWords - penaltyWords);
+            let netWpm = Math.round((netWords / timeSpentMin) * 10) / 10;
+
+            let isQualified = netWpm >= minNetWpmReq && (h.typedKeystrokes || 0) >= minKeysReq;
+            if (accMandatory === "mandatory" && (h.accuracy || 0) < minAccReq) {
+                isQualified = false;
+            }
+
+            h.allowedMistakes = allowedMistakes;
+            h.penalty = penaltyWords;
+            h.netWpm = netWpm;
+            h.status = isQualified ? "Qualified" : "Non Qualified";
+            h.formula = `Net speed >= ${minNetWpmReq} WPM${accMandatory === "mandatory" ? `, Acc >= ${minAccReq}%` : ''} (${Math.round(allowPct*100)}% allowance)`;
+        }
+    });
+
+    updateResultsHistoryTable();
+    updateBestPerformance();
+    alert(`नियम '${selectedCourse}' के लिए सफलतापूर्वक सहेज लिए गए हैं और पुराने रिजल्ट्स पर भी लागू कर दिए गए हैं!`);
 }
 
 async function addNewTestToPortal() {
@@ -1229,7 +1295,22 @@ document.addEventListener('input', function(e) {
     }
 });
 
-// ACCURATE DIFFERENCE ALGORITHM WITH DYNAMIC RULES RE-EVALUATION FOR OLD RESULTS
+// LEARN TYPING VIRTUAL KEYBOARD INTERACTIVE FINGER GUIDE
+function handleLearnTypingInput(e) {
+    let val = e.target.value;
+    if (val.length === 0) return;
+    let lastChar = val.slice(-1).toLowerCase();
+    
+    // Reset all keys
+    document.querySelectorAll('.key-cap').forEach(el => el.classList.remove('active-key'));
+    
+    let targetKeyEl = document.getElementById('key-' + lastChar);
+    if (targetKeyEl) {
+        targetKeyEl.classList.add('active-key');
+        setTimeout(() => targetKeyEl.classList.remove('active-key'), 400);
+    }
+}
+
 function computeCustomDiffForText(origWords, typedWords) {
     let cleanOrig = origWords.map(w => w.replace(/[,.;:!?]/g, '').toLowerCase());
     let cleanTyped = typedWords.map(w => w.replace(/[,.;:!?]/g, '').toLowerCase());
@@ -1457,10 +1538,7 @@ function viewSingleResult(index) {
     let res = testHistory[index];
     if (!res) return;
 
-    // Dynamically re-evaluate old results with current course rules if needed
     let courseName = res.course || "General Practice";
-    let rules = examRulesConfig[courseName] || { allowance: 5, penalty: 10, minWpm: 35, minKeys: 1750, minAcc: 85, accMandatory: "mandatory" };
-
     if (!res.diffList && res.activeWords && res.typedWordsArray) {
         let evaluated = computeCustomDiffForText(res.activeWords, res.typedWordsArray);
         res.diffList = evaluated.diffList;
@@ -1502,7 +1580,6 @@ function viewSingleResult(index) {
         statusEl.style.color = res.status === 'Qualified' ? '#16a34a' : '#dc2626';
     }
 
-    // Render Mistakes Breakdown with Normal Correct Words
     let diffHtml = "";
     if (res.diffList && res.diffList.length > 0) {
         diffHtml = res.diffList.map(item => {
@@ -1523,7 +1600,6 @@ function viewSingleResult(index) {
     let diffBox = document.getElementById('differencesBox');
     if (diffBox) diffBox.innerHTML = diffHtml;
 
-    // Populate No-Scroll Side-by-side or separate text boxes
     let typedPassageEl = document.getElementById('yourTypedPassageBox');
     let origPassageEl = document.getElementById('originalPassageBox');
     if (typedPassageEl) typedPassageEl.innerText = res.typedText || (res.typedWordsArray ? res.typedWordsArray.join(' ') : "");
