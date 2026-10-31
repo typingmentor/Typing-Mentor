@@ -136,17 +136,23 @@
         .legend-box { display: flex; gap: 15px; margin-top: 15px; margin-bottom: 10px; font-size: 13px; align-items: center; background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #e2e8f0; flex-wrap: wrap; }
         .legend-item { display: flex; align-items: center; gap: 6px; font-weight: 600; }
 
-        /* ADVANCED VIRTUAL KEYBOARD FOR LEARN TYPING */
+        /* EDCLUB STYLE LEARN TYPING MODULE */
         .learn-container { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
-        .lessons-sidebar { width: 280px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; max-height: 550px; overflow-y: auto; }
+        .lessons-sidebar { width: 300px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; max-height: 580px; overflow-y: auto; }
         .lesson-btn { display: block; width: 100%; text-align: left; padding: 10px 12px; margin-bottom: 6px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; color: #334155; transition: 0.2s; }
         .lesson-btn:hover, .lesson-btn.active-lesson { background: #e0e7ff; color: #1d4ed8; border-color: #2563eb; }
 
         .learn-workspace { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 320px; }
+        .edclub-practice-box { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px; text-align: center; }
+        .edclub-text-row { font-size: 26px; font-family: monospace; letter-spacing: 4px; color: #334155; margin-bottom: 15px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .ed-char-box { padding: 8px 12px; border-bottom: 3px solid #cbd5e1; min-width: 40px; display: inline-block; }
+        .ed-char-box.current-char { border-bottom-color: #2563eb; color: #2563eb; font-weight: bold; background: #eff6ff; }
+        .ed-char-box.done-char { color: #16a34a; border-bottom-color: #16a34a; }
+
         .virtual-keyboard { display: flex; flex-direction: column; gap: 6px; background: #1e293b; padding: 18px; border-radius: 8px; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         .keyboard-row { display: flex; gap: 5px; }
         .key-cap { background: #334155; color: white; padding: 10px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; min-width: 34px; text-align: center; transition: 0.1s; }
-        .key-cap.active-key { background: #dc2626 !important; transform: scale(1.08); box-shadow: 0 0 10px #dc2626; }
+        .key-cap.active-key { background: #2563eb !important; transform: scale(1.1); box-shadow: 0 0 12px #38bdf8; }
 
         .hands-visual-box { display: flex; justify-content: center; gap: 40px; background: #f1f5f9; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: bold; font-size: 13px; color: #475569; }
 
@@ -548,11 +554,11 @@
                 </div>
             </div>
 
-            <!-- 7. LEARN TYPING (10-20 EXTENSIVE LESSONS & VIRTUAL KEYBOARD VISUALS) -->
+            <!-- 7. LEARN TYPING (EDCLUB STYLE INTERACTIVE LESSONS & FINGER VISUALS) -->
             <div id="learnView" class="view-section">
                 <div class="card">
-                    <h3><i class="fa-solid fa-book-open"></i> Learn Typing & Interactive Visual Lessons</h3>
-                    <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">नीचे दिए गए लेसंन्स में से अपनी पसंद का पाठ चुनें और फिंगर गाइड के साथ अभ्यास करें।</p>
+                    <h3><i class="fa-solid fa-book-open"></i> Learn Typing & Interactive Visual Lessons (EdClub Style)</h3>
+                    <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">बाईं तरफ से अपना पाठ चुनें, स्क्रीन पर दिए गए कैरेक्टर को देखकर टाइप करें और फिंगर गाइड व वर्चुअल कीबोर्ड की मदद लें।</p>
                     
                     <div class="learn-container">
                         <!-- Lessons Sidebar -->
@@ -560,20 +566,24 @@
 
                         <!-- Workspace & Keyboard -->
                         <div class="learn-workspace">
-                            <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 15px;">
-                                <h4 id="activeLessonTitleDisplay" style="margin-bottom: 6px; font-size: 15px; color:#1e293b;">Lesson 1: Home Row Basics</h4>
-                                <p id="activeLessonTextDisplay" style="font-size: 15px; color: #334155; line-height: 1.6; margin-bottom: 12px; background: white; padding: 10px; border: 1px solid #e2e8f0; border-radius: 4px;"></p>
-                                <input type="text" id="learnInputBox" placeholder="यहाँ टाइप करना शुरू करें..." oninput="handleLearnTypingInput(event)" style="width: 100%; padding: 12px; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 6px; outline:none;">
+                            <div class="edclub-practice-box">
+                                <h4 id="activeLessonTitleDisplay" style="margin-bottom: 12px; font-size: 16px; color:#1e293b; text-align: left;"><i class="fa-solid fa-graduation-cap"></i> Lesson 1</h4>
+                                
+                                <!-- EdClub Style Character Box Row -->
+                                <div class="edclub-text-row" id="edclubTextRowContainer"></div>
+
+                                <input type="text" id="learnInputBox" placeholder="यहाँ टाइप करना शुरू करें..." oninput="handleLearnTypingInput(event)" style="opacity: 0; position: absolute; pointer-events: none;" autofocus>
+                                <div style="font-size: 12px; color: #64748b; margin-top: 5px;">(कीबोर्ड पर क्लिक करें या यहाँ टाइप करना शुरू करें)</div>
                             </div>
 
                             <!-- Hands Placement Visual -->
                             <div class="hands-visual-box">
-                                <div><i class="fa-solid faleft-hand"></i> Left Hand Fingers: ASDF</div>
-                                <div><i class="fa-solid fari-hand"></i> Right Hand Fingers: JKL;</div>
+                                <div><i class="fa-solid fa-hand"></i> Left Hand Fingers: A S D F</div>
+                                <div><i class="fa-solid fa-hand"></i> Right Hand Fingers: J K L ;</div>
                             </div>
 
                             <!-- Virtual Full Keyboard -->
-                            <div class="virtual-keyboard">
+                            <div class="virtual-keyboard" onclick="document.getElementById('learnInputBox').focus()">
                                 <div class="keyboard-row">
                                     <span class="key-cap" id="key-`">~</span><span class="key-cap" id="key-1">1</span><span class="key-cap" id="key-2">2</span><span class="key-cap" id="key-3">3</span><span class="key-cap" id="key-4">4</span><span class="key-cap" id="key-5">5</span><span class="key-cap" id="key-6">6</span><span class="key-cap" id="key-7">7</span><span class="key-cap" id="key-8">8</span><span class="key-cap" id="key-9">9</span><span class="key-cap" id="key-0">0</span><span class="key-cap" id="key--">-</span><span class="key-cap" id="key-=">=</span>
                                 </div>
@@ -611,20 +621,29 @@ let testHistory = [];
 let loggedInUserEmail = localStorage.getItem('tm_user_email') || null;
 let loggedInUserName = localStorage.getItem('tm_user_name') || "Guest User";
 
-// 10-20 EXTENSIVE LESSONS FOR LEARN TYPING
+// EDCLUB STYLE 10-20 EXTENSIVE LESSONS FOR LEARN TYPING
 let learnLessonsList = [
-    { title: "Lesson 1: Home Row (ASDF GHJKL)", text: "asdfg hjkl; asdfg hjkl; aaa sss ddd fff jjj kkk lll asdf ghjkl asdfghjkl asdfg hjkl; asdfg hjkl; aaa sss ddd fff jjj kkk lll asdf ghjkl asdfghjkl" },
-    { title: "Lesson 2: Home Row Words", text: "dad fad sad lad gall hall flask glass fall dall sag lag gas alas alas fall gall flask glass dad fad sad lad" },
-    { title: "Lesson 3: Top Row Basics (QWERTY)", text: "qwert yuiop qwert yuiop qq ww ee rr tt yy uu ii oo pp qwerty uiop qwert yuiop qq ww ee rr tt yy uu ii oo pp qwerty uiop" },
-    { title: "Lesson 4: Top Row Practice Words", text: "power route quiet quite tower router writer treaty power route quiet quite tower router writer treaty power route quiet" },
-    { title: "Lesson 5: Bottom Row Basics (ZXCVBNM)", text: "zxcvb nm,./ zxcvb nm,./ zz xx cc vv bb nn mm zxcvb nm,./ zxcvb nm,./ zz xx cc vv bb nn mm zxcvb nm,./ zxcvb nm,./" },
-    { title: "Lesson 6: Bottom Row Practice Words", text: "zebra civic excel bravo cabin maximize cabin zebra civic excel bravo cabin maximize cabin zebra civic excel bravo cabin" },
-    { title: "Lesson 7: Number Row (1-0 Numbers)", text: "12345 67890 1234567890 1 2 3 4 5 6 7 8 9 0 12345 67890 1234567890 1 2 3 4 5 6 7 8 9 0 12345 67890 1234567890" },
-    { title: "Lesson 8: Shift & Special Symbols (!@#$)", text: "!@#$% ^&*() !@#$%^&*() QWE! ASD@ ZXC# RTY$ FGH% UI^ JKL& VBN* M( )!@#$% ^&*() !@#$%^&*() QWE! ASD@ ZXC# RTY$ FGH% UI^ JKL&" },
-    { title: "Lesson 9: Advanced Alt Codes & Special Dashes", text: "– — alt 0151 alt 0150 special symbols em-dash en-dash quote hyphen underscore – — alt 0151 alt 0150 special symbols em-dash" },
-    { title: "Lesson 10: Full Keyboard Mixed Speed Drill", text: "The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. Sphinx of black quartz, judge my vow." }
+    { title: "Lesson 1: Home Row (f & j)", text: "f j f j j f j f fff jjj f j f j j f j f" },
+    { title: "Lesson 2: Home Row (d & k)", text: "d k d k k d k d ddd kkk d k d k k d k d" },
+    { title: "Lesson 3: Home Row (s & l)", text: "s l s l l s l s sss lll s l s l l s l s" },
+    { title: "Lesson 4: Home Row (a & ;)", text: "a ; a ; ; a ; a aaa ;;; a ; a ; ; a ; a" },
+    { title: "Lesson 5: Home Row Complete Review", text: "asdfghjkl; asdf ghjkl; dad fad sad lad gall hall flask glass" },
+    { title: "Lesson 6: Top Row (r & u)", text: "r u r u u r u r rrr uuu r u r u u r u r" },
+    { title: "Lesson 7: Top Row (e & i)", text: "e i e i i e i e eee iii e i e i i e i e" },
+    { title: "Lesson 8: Top Row (w & o)", text: "w o w o o w o w www ooo w o w o o w o w" },
+    { title: "Lesson 9: Top Row (q & p)", text: "q p q p p q p q qqq ppp q p q p p q p q" },
+    { title: "Lesson 10: Top Row Complete Review", text: "qwertyuiop qwerty uiop power route quiet quite tower router writer" },
+    { title: "Lesson 11: Bottom Row (v & m)", text: "v m v m m v m v vvv mmm v m v m m v m v" },
+    { title: "Lesson 12: Bottom Row (c & ,)", text: "c , c , , c , c ccc ,, c , c , , c , c" },
+    { title: "Lesson 13: Bottom Row (x & .)", text: "x . x . . x . x xxx ... x . x . . x . x" },
+    { title: "Lesson 14: Bottom Row (z & /)", text: "z / z / / z / z zzz /// z / z / / z / z" },
+    { title: "Lesson 15: Number Row Practice", text: "1 2 3 4 5 6 7 8 9 0 1234567890 12345 67890" },
+    { title: "Lesson 16: Shift & Special Symbols", text: "! @ # $ % ^ & * ( ) !@#$% ^&*()" },
+    { title: "Lesson 17: Special Symbols & Alt Codes (– —)", text: "– — alt 0151 alt 0150 special symbols em-dash en-dash" },
+    { title: "Lesson 18: Advanced Paragraph Speed Drill", text: "if you want your typing speed to increase you must first focus on your accuracy." }
 ];
 let activeLessonIndex = 0;
+let currentLessonTypedIndex = 0;
 
 let examRulesConfig = JSON.parse(localStorage.getItem('tm_exam_rules_config')) || {
     "BSF HCM Typing Test": { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, accMandatory: "mandatory" },
@@ -1340,7 +1359,7 @@ document.addEventListener('input', function(e) {
     }
 });
 
-// LEARN TYPING LESSONS SIDEBAR & VIRTUAL KEYBOARD INTERACTIVE FINGER GUIDE
+// EDCLUB STYLE LEARN TYPING LESSONS & INTERACTIVE VISUALS
 function renderLearnLessonsSidebar() {
     let sidebar = document.getElementById('lessonsSidebarList');
     if (!sidebar) return;
@@ -1356,34 +1375,92 @@ function renderLearnLessonsSidebar() {
 
 function loadLearnLesson(idx) {
     activeLessonIndex = idx;
+    currentLessonTypedIndex = 0;
     renderLearnLessonsSidebar();
     let lesson = learnLessonsList[idx];
+    
     let titleEl = document.getElementById('activeLessonTitleDisplay');
-    let textEl = document.getElementById('activeLessonTextDisplay');
-    let inputEl = document.getElementById('learnInputBox');
+    if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-graduation-cap"></i> ${lesson.title}`;
 
-    if (titleEl) titleEl.innerText = lesson.title;
-    if (textEl) textEl.innerText = lesson.text;
+    renderEdClubLessonBoxes();
+    highlightNextEdClubKey();
+
+    let inputEl = document.getElementById('learnInputBox');
     if (inputEl) {
         inputEl.value = "";
         inputEl.focus();
     }
 }
 
-function handleLearnTypingInput(e) {
-    let val = e.target.value;
-    if (val.length === 0) return;
-    let lastChar = val.slice(-1).toLowerCase();
-    
-    document.querySelectorAll('.key-cap').forEach(el => el.classList.remove('active-key'));
-    
-    let keyId = lastChar === ' ' ? 'key-space' : 'key-' + lastChar;
-    let targetKeyEl = document.getElementById(keyId);
-    if (targetKeyEl) {
-        targetKeyEl.classList.add('active-key');
-        setTimeout(() => targetKeyEl.classList.remove('active-key'), 400);
+function renderEdClubLessonBoxes() {
+    let container = document.getElementById('edclubTextRowContainer');
+    if (!container) return;
+    let text = learnLessonsList[activeLessonIndex].text;
+    container.innerHTML = "";
+
+    for (let i = 0; i < text.length; i++) {
+        let span = document.createElement('span');
+        span.className = 'ed-char-box';
+        if (i < currentLessonTypedIndex) {
+            span.classList.add('done-char');
+        } else if (i === currentLessonTypedIndex) {
+            span.classList.add('current-char');
+        }
+        span.innerText = text[i] === ' ' ? '␣' : text[i];
+        container.appendChild(span);
     }
 }
+
+function highlightNextEdClubKey() {
+    document.querySelectorAll('.key-cap').forEach(el => el.classList.remove('active-key'));
+    let text = learnLessonsList[activeLessonIndex].text;
+    if (currentLessonTypedIndex < text.length) {
+        let nextChar = text[currentLessonTypedIndex].toLowerCase();
+        let keyId = nextChar === ' ' ? 'key-space' : 'key-' + nextChar;
+        let targetKeyEl = document.getElementById(keyId);
+        if (targetKeyEl) {
+            targetKeyEl.classList.add('active-key');
+        }
+    }
+}
+
+function handleLearnTypingInput(e) {
+    let text = learnLessonsList[activeLessonIndex].text;
+    let inputVal = e.target.value;
+    if (inputVal.length === 0) return;
+    
+    let typedChar = inputVal.slice(-1);
+    let expectedChar = text[currentLessonTypedIndex];
+
+    if (typedChar === expectedChar) {
+        currentLessonTypedIndex++;
+        renderEdClubLessonBoxes();
+        highlightNextEdClubKey();
+
+        if (currentLessonTypedIndex >= text.length) {
+            alert("🎉 बधाई हो! आपने यह लेसन सफलताપूर्वक पूरा कर लिया है!");
+            if (activeLessonIndex < learnLessonsList.length - 1) {
+                loadLearnLesson(activeLessonIndex + 1);
+            } else {
+                currentLessonTypedIndex = 0;
+                loadLearnLesson(0);
+            }
+        }
+    }
+    e.target.value = "";
+}
+
+document.addEventListener('keydown', function(e) {
+    let learnView = document.getElementById('learnView');
+    if (learnView && learnView.classList.contains('active')) {
+        let inputEl = document.getElementById('learnInputBox');
+        if (inputEl) {
+            inputEl.focus();
+            let fakeEvent = { target: { value: e.key } };
+            handleLearnTypingInput(fakeEvent);
+        }
+    }
+});
 
 function computeCustomDiffForText(origWords, typedWords) {
     let cleanOrig = origWords.map(w => w.replace(/[,.;:!?]/g, '').toLowerCase());
