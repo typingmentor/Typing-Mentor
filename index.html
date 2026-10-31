@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Google Search Console Verification Tag -->
     <meta name="google-site-verification" content="xz-L7mPwkpVz6ayZ3bNurIePxjCg7LEmZMI1WHBh1Yw" />
     <title>Professional Typing Test Portal - Typing Mentor</title>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -125,7 +122,6 @@
         .summary-table td.label { font-weight: 600; color: #334155; }
         .summary-table td.value { text-align: right; font-weight: bold; color: #0f172a; }
 
-        /* MISTAKES BREAKDOWN STYLES (NO SCROLL, NORMAL CORRECT WORDS) */
         .no-scroll-breakdown { height: auto !important; max-height: none !important; overflow: visible !important; border: 1px solid #cbd5e1; padding: 18px; background: #ffffff; line-height: 2.2; font-size: 16px; border-radius: 6px; }
         
         .word-normal { color: #333333; font-weight: normal; margin-right: 6px; display: inline-block; }
@@ -136,25 +132,25 @@
         .legend-box { display: flex; gap: 15px; margin-top: 15px; margin-bottom: 10px; font-size: 13px; align-items: center; background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #e2e8f0; flex-wrap: wrap; }
         .legend-item { display: flex; align-items: center; gap: 6px; font-weight: 600; }
 
-        /* EDCLUB STYLE LEARN TYPING MODULE */
+        /* LEARN TYPING INTERACTIVE MODULE STYLES */
         .learn-container { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
-        .lessons-sidebar { width: 300px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; max-height: 580px; overflow-y: auto; }
+        .lessons-sidebar { width: 310px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; max-height: 600px; overflow-y: auto; }
         .lesson-btn { display: block; width: 100%; text-align: left; padding: 10px 12px; margin-bottom: 6px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; color: #334155; transition: 0.2s; }
         .lesson-btn:hover, .lesson-btn.active-lesson { background: #e0e7ff; color: #1d4ed8; border-color: #2563eb; }
 
         .learn-workspace { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 320px; }
         .edclub-practice-box { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px; text-align: center; }
-        .edclub-text-row { font-size: 26px; font-family: monospace; letter-spacing: 4px; color: #334155; margin-bottom: 15px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
-        .ed-char-box { padding: 8px 12px; border-bottom: 3px solid #cbd5e1; min-width: 40px; display: inline-block; }
+        .edclub-text-row { font-size: 26px; font-family: monospace; letter-spacing: 4px; color: #334155; margin-bottom: 15px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+        .ed-char-box { padding: 8px 12px; border-bottom: 3px solid #cbd5e1; min-width: 38px; display: inline-block; }
         .ed-char-box.current-char { border-bottom-color: #2563eb; color: #2563eb; font-weight: bold; background: #eff6ff; }
         .ed-char-box.done-char { color: #16a34a; border-bottom-color: #16a34a; }
 
         .virtual-keyboard { display: flex; flex-direction: column; gap: 6px; background: #1e293b; padding: 18px; border-radius: 8px; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         .keyboard-row { display: flex; gap: 5px; }
         .key-cap { background: #334155; color: white; padding: 10px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; min-width: 34px; text-align: center; transition: 0.1s; }
-        .key-cap.active-key { background: #2563eb !important; transform: scale(1.1); box-shadow: 0 0 12px #38bdf8; }
+        .key-cap.active-key { background: #dc2626 !important; transform: scale(1.1); box-shadow: 0 0 12px #dc2626; }
 
-        .hands-visual-box { display: flex; justify-content: center; gap: 40px; background: #f1f5f9; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: bold; font-size: 13px; color: #475569; }
+        .finger-instruction-banner { background: #e0f2fe; border: 1px solid #0284c7; padding: 12px 18px; border-radius: 6px; font-weight: bold; color: #0369a1; text-align: center; font-size: 15px; }
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .modal-card { background: #ffffff; padding: 25px; border-radius: 10px; width: 380px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative; }
@@ -534,7 +530,6 @@
 
                     <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown:</h4>
                     
-                    <!-- Color Guide Legend -->
                     <div class="legend-box">
                         <div class="legend-item"><span class="word-normal">Word</span> Correct Typed (Normal)</div>
                         <div class="legend-item"><span class="word-orig-blue-line">Word</span> Original Word (Should be typed)</div>
@@ -554,11 +549,11 @@
                 </div>
             </div>
 
-            <!-- 7. LEARN TYPING (EDCLUB STYLE INTERACTIVE LESSONS & FINGER VISUALS) -->
+            <!-- 7. LEARN TYPING (EDCLUB STYLE INTERACTIVE LESSONS & FINGER INSTRUCTIONS) -->
             <div id="learnView" class="view-section">
                 <div class="card">
-                    <h3><i class="fa-solid fa-book-open"></i> Learn Typing & Interactive Visual Lessons (EdClub Style)</h3>
-                    <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">बाईं तरफ से अपना पाठ चुनें, स्क्रीन पर दिए गए कैरेक्टर को देखकर टाइप करें और फिंगर गाइड व वर्चुअल कीबोर्ड की मदद लें।</p>
+                    <h3><i class="fa-solid fa-book-open"></i> Learn Typing & Finger Placement Guide</h3>
+                    <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">बाईं तरफ से पाठ चुनें। अगला अक्षर टाइप करने के लिए नीचे दी गई उंगली का प्रयोग करें।</p>
                     
                     <div class="learn-container">
                         <!-- Lessons Sidebar -->
@@ -569,20 +564,17 @@
                             <div class="edclub-practice-box">
                                 <h4 id="activeLessonTitleDisplay" style="margin-bottom: 12px; font-size: 16px; color:#1e293b; text-align: left;"><i class="fa-solid fa-graduation-cap"></i> Lesson 1</h4>
                                 
-                                <!-- EdClub Style Character Box Row -->
                                 <div class="edclub-text-row" id="edclubTextRowContainer"></div>
 
                                 <input type="text" id="learnInputBox" placeholder="यहाँ टाइप करना शुरू करें..." oninput="handleLearnTypingInput(event)" style="opacity: 0; position: absolute; pointer-events: none;" autofocus>
-                                <div style="font-size: 12px; color: #64748b; margin-top: 5px;">(कीबोर्ड पर क्लिक करें या यहाँ टाइप करना शुरू करें)</div>
                             </div>
 
-                            <!-- Hands Placement Visual -->
-                            <div class="hands-visual-box">
-                                <div><i class="fa-solid fa-hand"></i> Left Hand Fingers: A S D F</div>
-                                <div><i class="fa-solid fa-hand"></i> Right Hand Fingers: J K L ;</div>
+                            <!-- Dynamic Finger Instruction Banner -->
+                            <div class="finger-instruction-banner" id="fingerInstructionBanner">
+                                <i class="fa-solid fa-hand-pointer"></i> <span id="fingerInstructionText">टाइप करना शुरू करने के लिए कुंजी दबाएं...</span>
                             </div>
 
-                            <!-- Virtual Full Keyboard -->
+                            <!-- Virtual Keyboard Visualizer -->
                             <div class="virtual-keyboard" onclick="document.getElementById('learnInputBox').focus()">
                                 <div class="keyboard-row">
                                     <span class="key-cap" id="key-`">~</span><span class="key-cap" id="key-1">1</span><span class="key-cap" id="key-2">2</span><span class="key-cap" id="key-3">3</span><span class="key-cap" id="key-4">4</span><span class="key-cap" id="key-5">5</span><span class="key-cap" id="key-6">6</span><span class="key-cap" id="key-7">7</span><span class="key-cap" id="key-8">8</span><span class="key-cap" id="key-9">9</span><span class="key-cap" id="key-0">0</span><span class="key-cap" id="key--">-</span><span class="key-cap" id="key-=">=</span>
@@ -621,7 +613,52 @@ let testHistory = [];
 let loggedInUserEmail = localStorage.getItem('tm_user_email') || null;
 let loggedInUserName = localStorage.getItem('tm_user_name') || "Guest User";
 
-// EDCLUB STYLE 10-20 EXTENSIVE LESSONS FOR LEARN TYPING
+// MAP FOR EXACT FINGER INSTRUCTION
+const fingerMapping = {
+    'q': "Left Pinky (बाएं हाथ की कनिष्ठिका / छोटी उंगली)",
+    'a': "Left Pinky (बाएं हाथ की कनिष्ठिका / छोटी उंगली)",
+    'z': "Left Pinky (बाएं हाथ की कनिष्ठिका / छोटी उंगली)",
+    '1': "Left Pinky (बाएं हाथ की छोटी उंगली)",
+    'w': "Left Ring Finger (बाएं हाथ की अनामिका उंगली)",
+    's': "Left Ring Finger (बाएं हाथ की अनामिका उंगली)",
+    'x': "Left Ring Finger (बाएं हाथ की अनामिका उंगली)",
+    '2': "Left Ring Finger (बाएं हाथ की अनामिका उंगली)",
+    'e': "Left Middle Finger (बाएं हाथ की मध्यमा / बीच वाली उंगली)",
+    'd': "Left Middle Finger (बाएं हाथ की मध्यमा / बीच वाली उंगली)",
+    'c': "Left Middle Finger (बाएं हाथ की मध्यमा / बीच वाली उंगली)",
+    '3': "Left Middle Finger (बाएं हाथ की बीच वाली उंगली)",
+    'r': "Left Index Finger (बाएं हाथ की तर्जनी / अंगूठे के बगल वाली उंगली)",
+    'f': "Left Index Finger (बाएं हाथ की तर्जनी उंगली)",
+    'v': "Left Index Finger (बाएं हाथ की तर्जनी उंगली)",
+    't': "Left Index Finger (बाएं हाथ की तर्जनी उंगली)",
+    'g': "Left Index Finger (बाएं हाथ की तर्जनी उंगली)",
+    'b': "Left Index Finger (बाएं हाथ की तर्जनी उंगली)",
+    '4': "Left Index Finger (बाएं हाथ की तर्जनी उंगली)",
+    '5': "Left Index Finger (बाएं हाथ की तर्जनी उंगली)",
+    'y': "Right Index Finger (दाएं हाथ की तर्जनी / अंगूठे के बगल वाली उंगली)",
+    'h': "Right Index Finger (दाएं हाथ की तर्जनी उंगली)",
+    'n': "Right Index Finger (दाएं हाथ की तर्जनी उंगली)",
+    'u': "Right Index Finger (दाएं हाथ की तर्जनी उंगली)",
+    'j': "Right Index Finger (दाएं हाथ की तर्जनी उंगली)",
+    'm': "Right Index Finger (दाएं हाथ की तर्जनी उंगली)",
+    '6': "Right Index Finger (दाएं हाथ की तर्जनी उंगली)",
+    '7': "Right Index Finger (दाएं हाथ की तर्जनी उंगली)",
+    'i': "Right Middle Finger (दाएं हाथ की मध्यमा / बीच वाली उंगली)",
+    'k': "Right Middle Finger (दाएं हाथ की मध्यमा / बीच वाली उंगली)",
+    ',': "Right Middle Finger (दाएं हाथ की मध्यमा / बीच वाली उंगली)",
+    '8': "Right Middle Finger (दाएं हाथ की बीच वाली उंगली)",
+    'o': "Right Ring Finger (दाएं हाथ की अनामिका उंगली)",
+    'l': "Right Ring Finger (दाएं हाथ की अनामिका उंगली)",
+    '.': "Right Ring Finger (दाएं हाथ की अनामिका उंगली)",
+    '9': "Right Ring Finger (दाएं हाथ की अनामिका उंगली)",
+    'p': "Right Pinky (दाएं हाथ की कनिष्ठिका / छोटी उंगली)",
+    ';': "Right Pinky (दाएं हाथ की कनिष्ठिका / छोटी उंगली)",
+    '/': "Right Pinky (दाएं हाथ की कनिष्ठिका / छोटी उंगली)",
+    '0': "Right Pinky (दाएं हाथ की छोटी उंगली)",
+    ' ': "Thumb (दोनों हाथों में से किसी भी अंगूठे का उपयोग करें)"
+};
+
+// 10-20 EXTENSIVE LESSONS FOR LEARN TYPING (INCLUDING MIXED COMBINATION SETS)
 let learnLessonsList = [
     { title: "Lesson 1: Home Row (f & j)", text: "f j f j j f j f fff jjj f j f j j f j f" },
     { title: "Lesson 2: Home Row (d & k)", text: "d k d k k d k d ddd kkk d k d k k d k d" },
@@ -638,9 +675,18 @@ let learnLessonsList = [
     { title: "Lesson 13: Bottom Row (x & .)", text: "x . x . . x . x xxx ... x . x . . x . x" },
     { title: "Lesson 14: Bottom Row (z & /)", text: "z / z / / z / z zzz /// z / z / / z / z" },
     { title: "Lesson 15: Number Row Practice", text: "1 2 3 4 5 6 7 8 9 0 1234567890 12345 67890" },
-    { title: "Lesson 16: Shift & Special Symbols", text: "! @ # $ % ^ & * ( ) !@#$% ^&*()" },
-    { title: "Lesson 17: Special Symbols & Alt Codes (– —)", text: "– — alt 0151 alt 0150 special symbols em-dash en-dash" },
-    { title: "Lesson 18: Advanced Paragraph Speed Drill", text: "if you want your typing speed to increase you must first focus on your accuracy." }
+    
+    // 10 MIXED COMBINATION PRACTICE LESSONS FOR QUICK RHYTHM MASTERY
+    { title: "Combo Drill 1: Home & Top Row Mix", text: "sad red fed kid jar oak dark lake park safe high free gear" },
+    { title: "Combo Drill 2: Home & Bottom Row Mix", text: "van cab max lab zinc scan jam dam back glass mask calm" },
+    { title: "Combo Drill 3: All Letters Rhythm Drill", text: "the quick brown fox jumps over the lazy dog and runs fast" },
+    { title: "Combo Drill 4: Numbers & Home Row", text: "asdf1 2345 hjkl6 7890 12345asdf 67890hjkl" },
+    { title: "Combo Drill 5: Words & Punctuation", text: "hello, world. fast typing, high accuracy. practice everyday!" },
+    { title: "Combo Drill 6: Common English Words", text: "have with this form from line have with this form from line" },
+    { title: "Combo Drill 7: Key Dexterity Drill", text: "quip word zoom task view flex bold quit apex size jump" },
+    { title: "Combo Drill 8: Real Sentence Practice 1", text: "if you want your typing speed to increase you must focus on accuracy." },
+    { title: "Combo Drill 9: Real Sentence Practice 2", text: "consistent practice helps in clearing government typing speed tests." },
+    { title: "Combo Drill 10: Full Keyboard Master Challenge", text: "pack my box with five dozen liquor jugs 1234567890." }
 ];
 let activeLessonIndex = 0;
 let currentLessonTypedIndex = 0;
@@ -1072,7 +1118,6 @@ function loadExamRulesForCourse() {
     document.getElementById('ruleAccuracyMandatory').value = rules.accMandatory || "mandatory";
 }
 
-// RETROACTIVE RULE RE-EVALUATION FOR ALL PAST & PRESENT RESULTS
 function saveExamRules() {
     let courseSelect = document.getElementById('ruleCourseSelect');
     if(!courseSelect) return;
@@ -1359,7 +1404,7 @@ document.addEventListener('input', function(e) {
     }
 });
 
-// EDCLUB STYLE LEARN TYPING LESSONS & INTERACTIVE VISUALS
+// LEARN TYPING ENGINE WITH EXACT FINGER INSTRUCTIONS & CLEAN SPACE DISPLAY
 function renderLearnLessonsSidebar() {
     let sidebar = document.getElementById('lessonsSidebarList');
     if (!sidebar) return;
@@ -1406,7 +1451,8 @@ function renderEdClubLessonBoxes() {
         } else if (i === currentLessonTypedIndex) {
             span.classList.add('current-char');
         }
-        span.innerText = text[i] === ' ' ? '␣' : text[i];
+        // Removed symbol for space: Empty space displayed cleanly
+        span.innerText = text[i] === ' ' ? ' ' : text[i];
         container.appendChild(span);
     }
 }
@@ -1414,12 +1460,20 @@ function renderEdClubLessonBoxes() {
 function highlightNextEdClubKey() {
     document.querySelectorAll('.key-cap').forEach(el => el.classList.remove('active-key'));
     let text = learnLessonsList[activeLessonIndex].text;
+    
     if (currentLessonTypedIndex < text.length) {
         let nextChar = text[currentLessonTypedIndex].toLowerCase();
         let keyId = nextChar === ' ' ? 'key-space' : 'key-' + nextChar;
         let targetKeyEl = document.getElementById(keyId);
         if (targetKeyEl) {
             targetKeyEl.classList.add('active-key');
+        }
+
+        // Update exact finger instruction text
+        let instructionText = fingerMapping[nextChar] || `Press key '${nextChar.toUpperCase()}'`;
+        let bannerTextEl = document.getElementById('fingerInstructionText');
+        if (bannerTextEl) {
+            bannerTextEl.innerHTML = `अगला बटन <b>'${nextChar === ' ' ? 'SPACE' : nextChar.toUpperCase()}'</b> के लिए: <u>${instructionText}</u>`;
         }
     }
 }
@@ -1438,7 +1492,7 @@ function handleLearnTypingInput(e) {
         highlightNextEdClubKey();
 
         if (currentLessonTypedIndex >= text.length) {
-            alert("🎉 बधाई हो! आपने यह लेसन सफलताપूर्वक पूरा कर लिया है!");
+            alert("🎉 बधाई हो! आपने यह अभ्यास सफलतापूर्वक पूरा कर लिया है!");
             if (activeLessonIndex < learnLessonsList.length - 1) {
                 loadLearnLesson(activeLessonIndex + 1);
             } else {
