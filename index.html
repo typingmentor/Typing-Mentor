@@ -12,7 +12,7 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -36,6 +36,8 @@
             window.collection = collection;
             window.addDoc = addDoc;
             window.getDocs = getDocs;
+            window.deleteDoc = deleteDoc;
+            window.doc = doc;
             window.query = query;
             window.where = where;
 
@@ -102,7 +104,7 @@
         .google-btn { background: #db4437; color: white; border: none; padding: 11px 15px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
         .manual-btn { background: #2563eb; color: white; border: none; padding: 11px 15px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 8px; }
 
-        .live-header { display: flex; justify-content: space-between; background: #1e293b; color: white; padding: 12px 20px; border-radius: 6px; margin-bottom: 15px; }
+        .live-header { display: flex; justify-content: space-between; background: #1e293b; color: white; padding: 12px 20px; border-radius: 6px; margin-bottom: 15px; align-items: center; }
         .text-display { height: 180px; overflow-y: auto; border: 1px solid #d1d5db; padding: 15px; background: #ffffff; line-height: 1.8; border-radius: 6px; margin-bottom: 15px; scroll-behavior: smooth; }
         .text-display span.correct { color: #16a34a; background: #dcfce7; }
         .text-display span.incorrect { color: #dc2626; background: #fee2e2; }
@@ -128,6 +130,14 @@
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .modal-card { background: #ffffff; padding: 25px; border-radius: 10px; width: 400px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative; }
+        
+        /* TEST SELECT POPUP MODAL */
+        .test-modal-card { background: #ffffff; padding: 25px; border-radius: 10px; width: 750px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.3); position: relative; }
+        .test-grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; overflow-y: auto; max-height: 50vh; padding: 5px; margin-top: 15px; }
+        .test-card-item { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; cursor: pointer; text-align: left; transition: all 0.2s; position: relative; }
+        .test-card-item:hover { background: #e0e7ff; border-color: #2563eb; }
+        .test-card-item.attempted { border-left: 4px solid #16a34a; }
+
         .close-modal-btn { position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; color: #64748b; border: none; background: none; }
         .hidden { display: none !important; }
     </style>
@@ -159,6 +169,24 @@
                 <button class="manual-btn" style="flex:1; background:#16a34a;" onclick="handleManualSignUp()">Sign Up</button>
                 <button class="manual-btn" style="flex:1;" onclick="handleManualLogin()">Login</button>
             </div>
+        </div>
+    </div>
+
+    <!-- TEST SELECT MODAL POPUP -->
+    <div id="testSelectModal" class="modal-overlay hidden">
+        <div class="test-modal-card">
+            <button class="close-modal-btn" onclick="closeTestModal()">&times;</button>
+            <h3 style="margin-bottom: 5px;"><i class="fa-solid fa-file-lines"></i> Select a Test</h3>
+            <p style="font-size: 12px; color: #64748b; margin-bottom: 10px;">नीचे दिए गए टेस्ट्स में से अपना अभ्यास टेस्ट चुनें। (जो टेस्ट दे चुके हैं उन पर ✔ टिक लगा है)</p>
+            
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
+                <input type="text" id="modalSearchInput" placeholder="टेस्ट सर्च करें (जैसे: 1 या BSF)..." oninput="renderTestCardsModal()" style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600;">
+                    <input type="checkbox" id="unattemptedOnlyCheck" onchange="renderTestCardsModal()" style="width: 16px; height: 16px;"> Unattempted Only
+                </label>
+            </div>
+
+            <div id="testModalGrid" class="test-grid-container"></div>
         </div>
     </div>
 
@@ -271,13 +299,16 @@
                         <div>
                             <div class="form-group">
                                 <label><i class="fa-solid fa-graduation-cap"></i> Select Course / Test Series:</label>
-                                <select id="courseSelect" onchange="loadTestOptions()"></select>
+                                <select id="courseSelect" onchange="onCourseChanged()"></select>
                             </div>
 
                             <div class="form-group">
-                                <label><i class="fa-solid fa-file-lines"></i> Select Test (Type to filter):</label>
-                                <input type="text" id="testSearchInput" placeholder="टेस्ट सर्च करें (जैसे: 1 या BSF)..." oninput="filterTestDropdown()" style="margin-bottom:6px;">
-                                <select id="testSelect" size="6" style="height: 140px;"></select>
+                                <label><i class="fa-solid fa-file-lines"></i> Select Test:</label>
+                                <div style="display: flex; gap: 8px;">
+                                    <input type="text" id="selectedTestDisplayBox" readonly placeholder="यहाँ क्लिक करके टेस्ट चुनें..." style="background:#fff; cursor:pointer;" onclick="openTestModal()">
+                                    <button class="btn-view-result" type="button" onclick="openTestModal()" style="padding: 0 15px;"><i class="fa-solid fa-folder-open"></i> Browse</button>
+                                </div>
+                                <input type="hidden" id="testSelectHiddenIndex" value="0">
                             </div>
 
                             <div class="form-group">
@@ -306,6 +337,10 @@
                             <div class="switch-group">
                                 <span>Allow Backspace Key</span>
                                 <label class="switch"><input type="checkbox" id="setBackspace" checked><span class="slider"></span></label>
+                            </div>
+                            <div class="switch-group">
+                                <span>Paper Mode (Offline Practice)</span>
+                                <label class="switch"><input type="checkbox" id="setPaperMode"><span class="slider"></span></label>
                             </div>
                             <div class="switch-group">
                                 <span>Full Screen Mode</span>
@@ -353,11 +388,10 @@
                             <input type="number" id="ruleMinAcc" value="85" min="50" max="100">
                         </div>
                         <div class="form-group">
-                            <label>Punctuation / Comma Mistake Calculation:</label>
-                            <select id="rulePunctuationRule">
-                                <option value="half">Half Mistake (0.5 Error)</option>
-                                <option value="full">Full Mistake (1.0 Error)</option>
-                                <option value="ignore">Ignore Punctuation Mistakes</option>
+                            <label>Accuracy Requirement Type:</label>
+                            <select id="ruleAccuracyMandatory">
+                                <option value="mandatory">Mandatory (Fail if below min accuracy)</option>
+                                <option value="optional">Non-Mandatory (Penalize mistakes only, no fail)</option>
                             </select>
                         </div>
                     </div>
@@ -406,6 +440,7 @@
                 <div class="card" id="testContainer">
                     <div class="live-header">
                         <div>Time Left: <b id="timerDisplay">10:00</b></div>
+                        <div>Test Name: <b id="liveTestTitleDisplay" style="color:#38bdf8;">-</b></div>
                         <div>Gross Speed: <b id="grossDisplay">0 WPM</b></div>
                         <div>Accuracy: <b id="accuracyDisplay">100%</b></div>
                     </div>
@@ -459,7 +494,7 @@
                         <table class="summary-table">
                             <thead><tr><th>DESCRIPTION</th><th style="text-align:right;">RESULT</th></tr></thead>
                             <tbody>
-                                <tr><td class="label">Result ID</td><td class="value" id="resLink" style="color:#2563eb;">-</td></tr>
+                                <tr><td class="label">Result ID / Share Link</td><td class="value"><a href="#" id="resLinkShare" onclick="copyResultShareLink(event)" style="color:#2563eb; text-decoration:underline; cursor:pointer;" title="Click to copy shareable link">-</a></td></tr>
                                 <tr><td class="label">Test Duration</td><td class="value" id="resDuration">-</td></tr>
                                 <tr><td class="label">Time Taken</td><td class="value" id="resTimeTaken">-</td></tr>
                                 <tr><td class="label">Total Key Strokes Given</td><td class="value" id="resTotalKeystrokes">0</td></tr>
@@ -509,16 +544,16 @@ let timeLeft = 300;
 let timerInterval = null;
 let isTimerStarted = false;
 let backspaceCount = 0;
-let isAdminLoggedIn = false; // एडमिन सेशन याद रखने के लिए
+let isAdminLoggedIn = false;
 
 let testHistory = [];
 let loggedInUserEmail = localStorage.getItem('tm_user_email') || null;
 let loggedInUserName = localStorage.getItem('tm_user_name') || "Guest User";
 
 let examRulesConfig = JSON.parse(localStorage.getItem('tm_exam_rules_config')) || {
-    "BSF HCM Typing Test": { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, punctRule: "half" },
-    "SSC CGL Typing Test": { allowance: 5, penalty: 10, minWpm: 27, minKeystrokes: 1500, minAcc: 80, punctRule: "half" },
-    "General Practice": { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1000, minAcc: 80, punctRule: "full" }
+    "BSF HCM Typing Test": { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, accMandatory: "mandatory" },
+    "SSC CGL Typing Test": { allowance: 5, penalty: 10, minWpm: 27, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory" },
+    "General Practice": { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1000, minAcc: 80, accMandatory: "optional" }
 };
 
 let typingData = JSON.parse(localStorage.getItem('tm_typing_data_custom')) || {
@@ -628,20 +663,20 @@ async function fetchCloudData() {
                 if (data.course && data.title && data.text) {
                     if (!typingData[data.course]) typingData[data.course] = [];
                     if (!typingData[data.course].some(t => t.title === data.title)) {
-                        typingData[data.course].push({ title: data.title, text: data.text });
+                        typingData[data.course].push({ id: docSnap.id, title: data.title, text: data.text });
                     }
                 }
             });
             localStorage.setItem('tm_typing_data_custom', JSON.stringify(typingData));
             refreshCourseDropdowns();
-            loadTestOptions();
+            onCourseChanged();
             updateAllExamsViewList();
 
             if (window.loggedInUserEmail) {
                 let q = window.query(window.collection(window.db, "userResults"), window.where("email", "==", window.loggedInUserEmail));
                 let userSnap = await window.getDocs(q);
                 testHistory = [];
-                userSnap.forEach(d => testHistory.push(d.data()));
+                userSnap.forEach(d => testHistory.push({ docId: d.id, ...d.data() }));
                 testHistory.sort((a,b) => new Date(b.rawTimestamp) - new Date(a.rawTimestamp));
                 updateResultsHistoryTable();
                 updateBestPerformance();
@@ -711,9 +746,17 @@ window.onload = function() {
     updateHeaderUserUI();
     refreshCourseDropdowns();
     fetchCloudData();
-    loadTestOptions();
+    onCourseChanged();
     updateAllExamsViewList();
-    switchTab('homeView', document.getElementById('menu-home'));
+
+    // Check if URL has shareable result ID query
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedId = urlParams.get('resultId');
+    if (sharedId) {
+        loadSharedResult(sharedId);
+    } else {
+        switchTab('homeView', document.getElementById('menu-home'));
+    }
 };
 
 function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
@@ -782,47 +825,83 @@ function refreshCourseDropdowns() {
     renderAdminDeleteList();
 }
 
-function loadTestOptions() {
+function onCourseChanged() {
     let courseEl = document.getElementById('courseSelect');
-    let testEl = document.getElementById('testSelect');
-    if (!courseEl || !testEl) return;
-
+    if (!courseEl) return;
     let course = courseEl.value;
-    testEl.innerHTML = "";
-    masterTestList = [];
-
-    if (typingData[course]) {
-        // क्रमवार (1, 2, 3...) सॉर्टिंग
-        let sortedList = [...typingData[course]].sort((a, b) => {
-            return a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' });
-        });
-
-        sortedList.forEach((item, index) => {
-            masterTestList.push({ index: index, title: item.title });
-            let opt = document.createElement('option');
-            opt.value = index;
-            opt.textContent = item.title;
-            testEl.appendChild(opt);
-        });
+    
+    if (typingData[course] && typingData[course].length > 0) {
+        // Default to first test
+        document.getElementById('testSelectHiddenIndex').value = "0";
+        document.getElementById('selectedTestDisplayBox').value = typingData[course][0].title + " (1 / " + typingData[course].length + ")";
+    } else {
+        document.getElementById('testSelectHiddenIndex').value = "";
+        document.getElementById('selectedTestDisplayBox').value = "No tests available";
     }
-    let searchInput = document.getElementById('testSearchInput');
-    if(searchInput) searchInput.value = "";
 }
 
-function filterTestDropdown() {
-    let query = document.getElementById('testSearchInput').value.trim().toLowerCase();
-    let testEl = document.getElementById('testSelect');
-    if (!testEl) return;
+// TEST SELECT MODAL POPUP LOGIC
+function openTestModal() {
+    document.getElementById('testSelectModal').classList.remove('hidden');
+    document.getElementById('modalSearchInput').value = "";
+    document.getElementById('unattemptedOnlyCheck').checked = false;
+    renderTestCardsModal();
+}
 
-    testEl.innerHTML = "";
-    let filtered = masterTestList.filter(item => item.title.toLowerCase().includes(query));
+function closeTestModal() {
+    document.getElementById('testSelectModal').classList.add('hidden');
+}
 
-    filtered.forEach(item => {
-        let opt = document.createElement('option');
-        opt.value = item.index;
-        opt.textContent = item.title;
-        testEl.appendChild(opt);
+function renderTestCardsModal() {
+    let courseEl = document.getElementById('courseSelect');
+    let gridContainer = document.getElementById('testModalGrid');
+    if (!courseEl || !gridContainer) return;
+    
+    let course = courseEl.value;
+    let query = document.getElementById('modalSearchInput').value.trim().toLowerCase();
+    let unattemptedOnly = document.getElementById('unattemptedOnlyCheck').checked;
+    
+    gridContainer.innerHTML = "";
+    
+    if (!typingData[course] || typingData[course].length === 0) {
+        gridContainer.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color:#94a3b8; padding:20px;">कोई टेस्ट उपलब्ध नहीं है।</p>`;
+        return;
+    }
+
+    let sortedList = [...typingData[course]].map((item, originalIndex) => ({ ...item, originalIndex })).sort((a, b) => {
+        return a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' });
     });
+
+    let attemptedTestNames = new Set(testHistory.map(h => h.name));
+
+    let countShown = 0;
+    sortedList.forEach(item => {
+        let isAttempted = attemptedTestNames.has(item.title);
+        
+        if (query && !item.title.toLowerCase().includes(query)) return;
+        if (unattemptedOnly && isAttempted) return;
+
+        countShown++;
+        let card = document.createElement('div');
+        card.className = `test-card-item ${isAttempted ? 'attempted' : ''}`;
+        card.innerHTML = `
+            <div style="font-weight: bold; font-size: 14px; color: #1e293b; display: flex; justify-content: space-between; align-items: center;">
+                ${item.title}
+                ${isAttempted ? '<span style="color: #16a34a; font-size: 16px;" title="Attempted">✔</span>' : ''}
+            </div>
+            <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Words: ~${item.text.trim().split(/\s+/).length}</div>
+        `;
+        card.onclick = function() {
+            document.getElementById('testSelectHiddenIndex').value = item.originalIndex;
+            document.getElementById('selectedTestDisplayBox').value = item.title;
+            closeTestModal();
+        };
+        gridContainer.appendChild(card);
+    });
+
+    if (countShown === 0) {
+        gridContainer.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color:#94a3b8; padding:20px;">कोई मैचिंग टेस्ट नहीं मिला।</p>`;
+    }
 }
 
 function renderAdminDeleteList() {
@@ -848,23 +927,40 @@ function renderAdminDeleteList() {
     }
 }
 
-function deleteTestFromCourse(course, index) {
-    if (confirm(`क्या आप वाकई '${typingData[course][index].title}' को हटाना चाहते हैं?`)) {
+async function deleteTestFromCourse(course, index) {
+    let testObj = typingData[course][index];
+    if (confirm(`क्या आप वाकई '${testObj.title}' को हटाना चाहते हैं?`)) {
+        try {
+            if (testObj.id && window.db && window.deleteDoc && window.doc) {
+                await window.deleteDoc(window.doc(window.db, "typingTests", testObj.id));
+            }
+        } catch(e) { console.log("Cloud Delete Error:", e); }
+
         typingData[course].splice(index, 1);
         localStorage.setItem('tm_typing_data_custom', JSON.stringify(typingData));
         alert("टेस्ट सफलतापूर्वक हटा दिया गया है!");
-        loadTestOptions();
+        onCourseChanged();
         renderAdminDeleteList();
         updateAllExamsViewList();
     }
 }
 
-function deleteEntireCourse() {
+async function deleteEntireCourse() {
     let courseEl = document.getElementById('uploadCourseCategory');
     if (!courseEl) return;
     let course = courseEl.value;
 
     if (confirm(`⚠️ चेतावनी: क्या आप पूरा कोर्स '${course}' और उसके अंदर के सभी टेस्ट्स को हमेशा के लिए हटाना चाहते हैं?`)) {
+        try {
+            if (typingData[course]) {
+                for (let testObj of typingData[course]) {
+                    if (testObj.id && window.db && window.deleteDoc && window.doc) {
+                        await window.deleteDoc(window.doc(window.db, "typingTests", testObj.id));
+                    }
+                }
+            }
+        } catch(e) { console.log("Cloud Course Delete Error:", e); }
+
         delete typingData[course];
         if(examRulesConfig[course]) delete examRulesConfig[course];
         
@@ -873,7 +969,7 @@ function deleteEntireCourse() {
         
         alert("कोर्स सफलतापूर्वक हटा दिया गया है!");
         refreshCourseDropdowns();
-        loadTestOptions();
+        onCourseChanged();
         updateAllExamsViewList();
     }
 }
@@ -884,7 +980,7 @@ function loadExamRulesForCourse() {
     let selectedCourse = courseSelect.value;
     
     if(!examRulesConfig[selectedCourse]) {
-        examRulesConfig[selectedCourse] = { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1500, minAcc: 80, punctRule: "half" };
+        examRulesConfig[selectedCourse] = { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory" };
     }
 
     let rules = examRulesConfig[selectedCourse];
@@ -893,7 +989,7 @@ function loadExamRulesForCourse() {
     document.getElementById('ruleMinWpm').value = rules.minWpm;
     document.getElementById('ruleMinKeystrokes').value = rules.minKeystrokes;
     document.getElementById('ruleMinAcc').value = rules.minAcc;
-    document.getElementById('rulePunctuationRule').value = rules.punctRule;
+    document.getElementById('ruleAccuracyMandatory').value = rules.accMandatory || "mandatory";
 }
 
 function saveExamRules() {
@@ -907,7 +1003,7 @@ function saveExamRules() {
         minWpm: parseFloat(document.getElementById('ruleMinWpm').value),
         minKeystrokes: parseInt(document.getElementById('ruleMinKeystrokes').value),
         minAcc: parseFloat(document.getElementById('ruleMinAcc').value),
-        punctRule: document.getElementById('rulePunctuationRule').value
+        accMandatory: document.getElementById('ruleAccuracyMandatory').value
     };
 
     localStorage.setItem('tm_exam_rules_config', JSON.stringify(examRulesConfig));
@@ -927,21 +1023,23 @@ async function addNewTestToPortal() {
         return;
     }
 
+    let docRefId = null;
     try {
         if(window.db && window.addDoc && window.collection) {
-            await window.addDoc(window.collection(window.db, "typingTests"), {
+            let docRef = await window.addDoc(window.collection(window.db, "typingTests"), {
                 course: course,
                 title: title,
                 text: content,
                 uploadedAt: new Date().toISOString()
             });
+            docRefId = docRef.id;
         }
     } catch(e) {
         console.log("Cloud Upload Warning:", e);
     }
 
     if(!typingData[course]) typingData[course] = [];
-    typingData[course].push({ title: title, text: content });
+    typingData[course].push({ id: docRefId, title: title, text: content });
     
     localStorage.setItem('tm_typing_data_custom', JSON.stringify(typingData));
     
@@ -951,7 +1049,7 @@ async function addNewTestToPortal() {
     document.getElementById('uploadNewCourseInput').value = "";
     
     refreshCourseDropdowns();
-    loadTestOptions();
+    onCourseChanged();
     updateAllExamsViewList();
     renderAdminDeleteList();
 }
@@ -985,21 +1083,38 @@ function startLiveTest() {
     applyFontSize();
 
     let courseEl = document.getElementById('courseSelect');
-    let testEl = document.getElementById('testSelect');
-    if (!courseEl || !testEl) return;
+    let testIdxInput = document.getElementById('testSelectHiddenIndex');
+    if (!courseEl || !testIdxInput) return;
 
     let course = courseEl.value;
-    let testIdx = testEl.value;
-    if (!typingData[course] || !typingData[course][testIdx]) return;
+    let testIdx = parseInt(testIdxInput.value);
+    if (!typingData[course] || !typingData[course][testIdx]) {
+        alert("कृपया पहले वैध टेस्ट चुनें!");
+        switchTab('chooseView', document.getElementById('menu-choose'));
+        return;
+    }
 
-    let text = typingData[course][testIdx].text;
+    let testObj = typingData[course][testIdx];
+    let text = testObj.text;
     activeWords = text.trim().split(/\s+/);
     
+    let titleDisplay = document.getElementById('liveTestTitleDisplay');
+    if(titleDisplay) titleDisplay.innerText = testObj.title;
+
     let pBox = document.getElementById('paragraphBox');
+    let paperModeToggle = document.getElementById('setPaperMode');
+    let isPaperMode = paperModeToggle ? paperModeToggle.checked : false;
+
     if (pBox) {
-        pBox.innerHTML = activeWords.map((w, i) => `<span id="w-${i}">${w}</span>`).join(' ');
-        let firstSpan = document.getElementById('w-0');
-        if (firstSpan) firstSpan.classList.add('current');
+        if (isPaperMode) {
+            // Paper Mode: Show only first line (approx 8-10 words) as reference
+            let firstLineWords = activeWords.slice(0, 9).join(' ');
+            pBox.innerHTML = `<div style="font-weight:bold; color:#1e293b; margin-bottom:5px; font-size:15px;"><i class="fa-solid fa-file-lines"></i> ${testObj.title} (Paper Mode)</div><div style="font-size:17px; color:#334155; line-height:1.6;">${firstLineWords} ...</div>`;
+        } else {
+            pBox.innerHTML = activeWords.map((w, i) => `<span id="w-${i}">${w}</span>`).join(' ');
+            let firstSpan = document.getElementById('w-0');
+            if (firstSpan) firstSpan.classList.add('current');
+        }
     }
     
     let timeSelectEl = document.getElementById('timeSelect');
@@ -1062,7 +1177,7 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// SMART AUTO-SCROLL FIX
+// SMART AUTO-SCROLL & WORD-BY-WORD PUNCTUATION CHECK
 document.addEventListener('input', function(e) {
     if (e.target && e.target.id === 'typingInput') {
         if (!isTimerStarted && e.target.value.length > 0) {
@@ -1077,31 +1192,39 @@ document.addEventListener('input', function(e) {
 
         let highlightEl = document.getElementById('setHighlight');
         let highlight = highlightEl ? highlightEl.checked : true;
+        let paperModeToggle = document.getElementById('setPaperMode');
+        let isPaperMode = paperModeToggle ? paperModeToggle.checked : false;
 
-        activeWords.forEach((word, idx) => {
-            let span = document.getElementById(`w-${idx}`);
-            if (!span) return;
-            span.className = '';
+        if (!isPaperMode) {
+            activeWords.forEach((word, idx) => {
+                let span = document.getElementById(`w-${idx}`);
+                if (!span) return;
+                span.className = '';
 
-            if (highlight) {
-                if (idx < typedWords.length - 1) {
-                    span.classList.add(typedWords[idx] === word ? 'correct' : 'incorrect');
-                } else if (idx === activeIdx) {
-                    span.classList.add('current');
+                if (highlight) {
+                    if (idx < typedWords.length - 1) {
+                        let cleanUserW = typedWords[idx].replace(/[,.;:!?]/g, '');
+                        let cleanOrigW = word.replace(/[,.;:!?]/g, '');
+                        span.classList.add(cleanUserW === cleanOrigW ? 'correct' : 'incorrect');
+                    } else if (idx === activeIdx) {
+                        span.classList.add('current');
+                    }
                 }
-            }
-        });
+            });
+        }
 
         let correctLive = 0;
         for(let i=0; i<typedWords.length - 1; i++) {
-            if(typedWords[i] === activeWords[i]) correctLive++;
+            let cleanUserW = typedWords[i].replace(/[,.;:!?]/g, '');
+            let cleanOrigW = activeWords[i].replace(/[,.;:!?]/g, '');
+            if(cleanUserW === cleanOrigW) correctLive++;
         }
         let totalTypedSoFar = Math.max(1, typedWords.length - 1);
         let liveAcc = Math.round((correctLive / totalTypedSoFar) * 100);
         document.getElementById('accuracyDisplay').innerText = (liveAcc > 100 ? 100 : liveAcc) + "%";
 
         let autoScrollEl = document.getElementById('setAutoScroll');
-        if (autoScrollEl && autoScrollEl.checked) {
+        if (autoScrollEl && autoScrollEl.checked && !isPaperMode) {
             let currentSpan = document.getElementById(`w-${activeIdx}`);
             let pBox = document.getElementById('paragraphBox');
             if (currentSpan && pBox) {
@@ -1128,19 +1251,21 @@ async function finishTest() {
     if (sidebar) sidebar.classList.remove('collapsed');
 
     let courseEl = document.getElementById('courseSelect');
-    let testEl = document.getElementById('testSelect');
+    let testIdxInput = document.getElementById('testSelectHiddenIndex');
     let course = courseEl ? courseEl.value : 'General Practice';
-    let testIdx = testEl ? testEl.value : '';
+    let testIdx = testIdxInput ? parseInt(testIdxInput.value) : 0;
     if (!typingData[course] || !typingData[course][testIdx]) return;
-    let testName = typingData[course][testIdx].title;
+    let testObj = typingData[course][testIdx];
+    let testName = testObj.title;
 
-    let rules = examRulesConfig[course] || { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, punctRule: "half" };
+    let rules = examRulesConfig[course] || { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, accMandatory: "mandatory" };
 
     let allowPct = rules.allowance / 100;
     let penaltyMultiplier = rules.penalty;
     let minNetWpmReq = rules.minWpm;
     let minKeysReq = rules.minKeystrokes;
     let minAccReq = rules.minAcc;
+    let accMandatory = rules.accMandatory || "mandatory";
 
     let timeSpentSec = totalTimeSec - timeLeft;
     let timeSpentMin = timeSpentSec / 60;
@@ -1162,8 +1287,12 @@ async function finishTest() {
 
     activeWords.forEach((word, idx) => {
         let userW = typedWordsArray[idx] || "";
-        if (userW === word) {
+        let cleanUserW = userW.replace(/[,.;:!?]/g, '');
+        let cleanOrigW = word.replace(/[,.;:!?]/g, '');
+
+        if (cleanUserW === cleanOrigW) {
             correctKeystrokesCount += word.length + 1;
+            if (userW !== word) mistakes++; // Punctuation mismatch counted as minor mistake
         } else if (idx < typedWordsArray.length) {
             mistakes++;
         }
@@ -1181,7 +1310,10 @@ async function finishTest() {
     let accuracy = totalTypedWordsNum > 0 ? Math.round((correctWordsNum / totalTypedWordsNum) * 100 * 10) / 10 : 0;
     if (accuracy > 100) accuracy = 100;
 
-    let isQualified = netWpm >= minNetWpmReq && typedKeystrokes >= minKeysReq && accuracy >= minAccReq;
+    let isQualified = netWpm >= minNetWpmReq && typedKeystrokes >= minKeysReq;
+    if (accMandatory === "mandatory") {
+        if (accuracy < minAccReq) isQualified = false;
+    }
     
     let now = new Date();
     let formattedDate = now.getDate() + " " + now.toLocaleString('en-US', { month: 'short' }) + " " + now.getFullYear() + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -1191,7 +1323,7 @@ async function finishTest() {
     let durationStr = Math.floor(totalTimeSec / 60) + " mins : 00 seconds";
     let timeTakenStr = Math.floor(timeSpentSec / 60) + " mins : " + (timeSpentSec % 60) + " seconds";
     let detailsStr = Math.floor(totalTimeSec / 60) + " mins | english | " + testName + " | " + formattedDate + " | Email: " + (window.loggedInUserEmail || "Guest");
-    let formulaStr = `Net speed >= ${minNetWpmReq} WPM, Acc >= ${minAccReq}% (${Math.round(allowPct*100)}% allowance)`;
+    let formulaStr = `Net speed >= ${minNetWpmReq} WPM${accMandatory === "mandatory" ? `, Acc >= ${minAccReq}%` : ''} (${Math.round(allowPct*100)}% allowance)`;
 
     let resultObj = {
         id: randomId,
@@ -1224,7 +1356,8 @@ async function finishTest() {
 
     try {
         if(window.db && window.addDoc && window.collection) {
-            await window.addDoc(window.collection(window.db, "userResults"), resultObj);
+            let docRes = await window.addDoc(window.collection(window.db, "userResults"), resultObj);
+            resultObj.docId = docRes.id;
         }
     } catch(e) { console.log("Save Result Error:", e); }
 
@@ -1300,7 +1433,13 @@ function viewSingleResult(index) {
         if (el) el.innerText = val;
     };
 
-    setVal('resLink', res.id);
+    let shareLink = window.location.origin + window.location.pathname + "?resultId=" + (res.docId || res.id);
+    let linkEl = document.getElementById('resLinkShare');
+    if (linkEl) {
+        linkEl.innerText = res.id + " (Copy Link)";
+        linkEl.setAttribute('data-link', shareLink);
+    }
+
     setVal('resDuration', res.duration);
     setVal('resTimeTaken', res.timeTaken);
     setVal('resTotalKeystrokes', res.totalKeystrokes);
@@ -1340,6 +1479,43 @@ function viewSingleResult(index) {
     if (diffBox) diffBox.innerHTML = diffHtml;
 
     switchTab('singleResultView');
+}
+
+function copyResultShareLink(e) {
+    e.preventDefault();
+    let linkEl = document.getElementById('resLinkShare');
+    let shareLink = linkEl.getAttribute('data-link');
+    if (shareLink) {
+        navigator.clipboard.writeText(shareLink).then(() => {
+            alert("🔗 रिजल्ट शेयरिंग लिंक कॉपी हो गया है! आप इसे किसी को भी भेज सकते हैं।");
+        }).catch(err => {
+            alert("लिंक कॉपी करने में विफल: " + err);
+        });
+    }
+}
+
+async function loadSharedResult(docId) {
+    try {
+        if (window.db && window.getDocs) {
+            let snap = await window.getDocs(window.collection(window.db, "userResults"));
+            let foundResult = null;
+            snap.forEach(d => {
+                if (d.id === docId || d.data().id === docId) {
+                    foundResult = { docId: d.id, ...d.data() };
+                }
+            });
+            if (foundResult) {
+                activeWords = foundResult.activeWords || [];
+                testHistory = [foundResult];
+                viewSingleResult(0);
+            } else {
+                alert("रिजल्ट नहीं मिला या लिंक एक्सपायर हो गया है।");
+                switchTab('homeView', document.getElementById('menu-home'));
+            }
+        }
+    } catch(e) {
+        console.log("Load Shared Result Error:", e);
+    }
 }
 </script>
 
