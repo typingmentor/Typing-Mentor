@@ -124,10 +124,10 @@
 
         .no-scroll-breakdown { height: auto !important; max-height: none !important; overflow: visible !important; border: 1px solid #cbd5e1; padding: 18px; background: #ffffff; line-height: 2.4; font-size: 15px; border-radius: 6px; }
         
-        .word-normal { color: #333333; font-weight: normal; margin-right: 6px; display: inline-block; }
-        .word-orig-blue-line { color: #2563eb; text-decoration: underline; font-weight: 600; margin-right: 4px; display: inline-block; }
-        .word-wrong-red { color: #dc2626; font-weight: bold; margin-right: 6px; display: inline-block; }
-        .word-untyped-blue { color: #2563eb; text-decoration: underline; font-weight: 600; margin-right: 6px; display: inline-block; background: #eff6ff; padding: 0 3px; border-radius: 3px; }
+        .word-normal { color: #333333; font-weight: normal; margin-right: 6px; display: inline-block; background: transparent !important; }
+        .word-orig-blue-line { color: #2563eb; text-decoration: underline; font-weight: 600; margin-right: 4px; display: inline-block; background: transparent !important; }
+        .word-wrong-red { color: #dc2626; font-weight: bold; margin-right: 6px; display: inline-block; background: transparent !important; }
+        .word-untyped-blue { color: #2563eb; text-decoration: underline; font-weight: 600; margin-right: 6px; display: inline-block; background: transparent !important; }
 
         .legend-box { display: flex; gap: 15px; margin-top: 15px; margin-bottom: 10px; font-size: 13px; align-items: center; background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #e2e8f0; flex-wrap: wrap; }
         .legend-item { display: flex; align-items: center; gap: 6px; font-weight: 600; }
@@ -535,13 +535,13 @@
                         </table>
                     </div>
 
-                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown (True Levenshtein Alignment):</h4>
+                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown (Strict Punctuation & Clean Omission Match):</h4>
                     
                     <div class="legend-box">
                         <div class="legend-item"><span class="word-normal">Word</span> Correct Typed (Normal)</div>
                         <div class="legend-item"><span class="word-orig-blue-line">Word</span> Original Word (Should be typed)</div>
                         <div class="legend-item"><span class="word-wrong-red">Word</span> Your Wrong Typed Word</div>
-                        <div class="legend-item"><span class="word-untyped-blue">Word</span> Untyped / Skipped Passage Block</div>
+                        <div class="legend-item"><span class="word-untyped-blue">Word</span> Untyped / Skipped Passage Block (No Background Color)</div>
                     </div>
 
                     <div class="no-scroll-breakdown" id="differencesBox"></div>
@@ -1376,9 +1376,8 @@ document.addEventListener('input', function(e) {
 
                 if (highlight) {
                     if (idx < typedWords.length - 1) {
-                        let cleanUserW = typedWords[idx].replace(/[,.;:!?]/g, '');
-                        let cleanOrigW = word.replace(/[,.;:!?]/g, '');
-                        span.classList.add(cleanUserW === cleanOrigW ? 'correct' : 'incorrect');
+                        // Strict check including punctuation
+                        span.classList.add(typedWords[idx] === word ? 'correct' : 'incorrect');
                     } else if (idx === activeIdx) {
                         span.classList.add('current');
                     }
@@ -1388,9 +1387,7 @@ document.addEventListener('input', function(e) {
 
         let correctLive = 0;
         for(let i=0; i<typedWords.length - 1; i++) {
-            let cleanUserW = typedWords[i].replace(/[,.;:!?]/g, '');
-            let cleanOrigW = activeWords[i].replace(/[,.;:!?]/g, '');
-            if(cleanUserW === cleanOrigW) correctLive++;
+            if(typedWords[i] === activeWords[i]) correctLive++;
         }
         let totalTypedSoFar = Math.max(1, typedWords.length - 1);
         let liveAcc = Math.round((correctLive / totalTypedSoFar) * 100);
@@ -1533,8 +1530,8 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// TRUE LEVENSHTEIN / LCS ALIGNMENT FOR PRECISE WORD & OMISSION BLOCK MATCHING
-function computeLevenshteinDiff(origWords, typedWords) {
+// STRICT PUNCTUATION & CLEAN OMISSION ALIGNMENT (NO BACKGROUND COLOR ON SKIPPED WORDS)
+function computeStrictPunctuationDiff(origWords, typedWords) {
     let n = origWords.length;
     let m = typedWords.length;
     let dp = Array(n + 1).fill(null).map(() => Array(m + 1).fill(0));
@@ -1542,15 +1539,19 @@ function computeLevenshteinDiff(origWords, typedWords) {
     for (let i = 0; i <= n; i++) dp[i][0] = i;
     for (let j = 0; j <= m; j++) dp[0][j] = j;
 
-    let cleanOrig = origWords.map(w => w.replace(/[,.;:!?]/g, '').toLowerCase());
-    let cleanTyped = typedWords.map(w => w.replace(/[,.;:!?]/g, '').toLowerCase());
-
     for (let i = 1; i <= n; i++) {
         for (let j = 1; j <= m; j++) {
-            if (cleanOrig[i - 1] === cleanTyped[j - 1]) {
+            if (origWords[i - 1] === typedWords[j - 1]) {
                 dp[i][j] = dp[i - 1][j - 1];
             } else {
-                dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+                let cleanOrig = origWords[i - 1].replace(/[,.;:!?]/g, '').toLowerCase();
+                let cleanTyped = typedWords[j - 1].replace(/[,.;:!?]/g, '').toLowerCase();
+                let subCost = (cleanOrig === cleanTyped) ? 1 : 2; // Exact word match with different punctuation has low cost
+                dp[i][j] = Math.min(
+                    dp[i - 1][j] + 1,    // deletion (omission)
+                    dp[i][j - 1] + 1,    // insertion (extra word)
+                    dp[i - 1][j - 1] + subCost // substitution / typo
+                );
             }
         }
     }
@@ -1558,7 +1559,7 @@ function computeLevenshteinDiff(origWords, typedWords) {
     let i = n, j = m;
     let trace = [];
     while (i > 0 || j > 0) {
-        if (i > 0 && j > 0 && cleanOrig[i - 1] === cleanTyped[j - 1]) {
+        if (i > 0 && j > 0 && origWords[i - 1] === typedWords[j - 1]) {
             trace.push({ type: 'match', origIdx: i - 1, typedIdx: j - 1 });
             i--; j--;
         } else {
@@ -1566,15 +1567,15 @@ function computeLevenshteinDiff(origWords, typedWords) {
             let insCost = j > 0 ? dp[i][j - 1] : Infinity;
             let subCost = (i > 0 && j > 0) ? dp[i - 1][j - 1] : Infinity;
 
-            if (delCost <= insCost && delCost <= subCost) {
-                trace.push({ type: 'deletion', origIdx: i - 1 });
-                i--;
-            } else if (insCost <= delCost && insCost <= subCost) {
-                trace.push({ type: 'insertion', typedIdx: j - 1 });
-                j--;
-            } else {
+            if (subCost <= delCost && subCost <= insCost) {
                 trace.push({ type: 'substitution', origIdx: i - 1, typedIdx: j - 1 });
                 i--; j--;
+            } else if (delCost <= insCost) {
+                trace.push({ type: 'deletion', origIdx: i - 1 });
+                i--;
+            } else {
+                trace.push({ type: 'insertion', typedIdx: j - 1 });
+                j--;
             }
         }
     }
@@ -1586,6 +1587,9 @@ function computeLevenshteinDiff(origWords, typedWords) {
 
     for (let t of trace) {
         if (t.type === 'match') {
+            diffList.push({ type: 'correct', word: origWords[t.origIdx] });
+            correctCount++;
+        } else if (t.type === 'substitution') {
             let origW = origWords[t.origIdx];
             let typedW = typedWords[t.typedIdx];
             if (origW === typedW) {
@@ -1600,9 +1604,6 @@ function computeLevenshteinDiff(origWords, typedWords) {
             mistakesCount++;
         } else if (t.type === 'insertion') {
             diffList.push({ type: 'typo', origWord: "", userWord: typedWords[t.typedIdx] });
-            mistakesCount++;
-        } else if (t.type === 'substitution') {
-            diffList.push({ type: 'typo', origWord: origWords[t.origIdx], userWord: typedWords[t.typedIdx] });
             mistakesCount++;
         }
     }
@@ -1655,7 +1656,7 @@ async function finishTest() {
     
     let typedWordsArray = typed.trim() ? typed.trim().split(/\s+/) : [];
 
-    let { diffList, correctCount, mistakesCount } = computeLevenshteinDiff(activeWords, typedWordsArray);
+    let { diffList, correctCount, mistakesCount } = computeStrictPunctuationDiff(activeWords, typedWordsArray);
 
     let correctKeystrokesCount = Math.round(correctCount * 5);
     let correctWordsNum = Math.round((correctKeystrokesCount / 5) * 10) / 10;
@@ -1791,7 +1792,7 @@ function viewSingleResult(index) {
     if (!res) return;
 
     if (!res.diffList && res.activeWords && res.typedWordsArray) {
-        let evaluated = computeLevenshteinDiff(res.activeWords, res.typedWordsArray);
+        let evaluated = computeStrictPunctuationDiff(res.activeWords, res.typedWordsArray);
         res.diffList = evaluated.diffList;
     }
 
