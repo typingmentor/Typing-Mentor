@@ -136,11 +136,19 @@
         .legend-box { display: flex; gap: 15px; margin-top: 15px; margin-bottom: 10px; font-size: 13px; align-items: center; background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #e2e8f0; flex-wrap: wrap; }
         .legend-item { display: flex; align-items: center; gap: 6px; font-weight: 600; }
 
-        /* VIRTUAL KEYBOARD FOR LEARN TYPING */
-        .virtual-keyboard { display: flex; flex-direction: column; gap: 6px; background: #1e293b; padding: 15px; border-radius: 8px; margin-top: 20px; align-items: center; }
+        /* ADVANCED VIRTUAL KEYBOARD FOR LEARN TYPING */
+        .learn-container { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+        .lessons-sidebar { width: 280px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; max-height: 550px; overflow-y: auto; }
+        .lesson-btn { display: block; width: 100%; text-align: left; padding: 10px 12px; margin-bottom: 6px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; color: #334155; transition: 0.2s; }
+        .lesson-btn:hover, .lesson-btn.active-lesson { background: #e0e7ff; color: #1d4ed8; border-color: #2563eb; }
+
+        .learn-workspace { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 320px; }
+        .virtual-keyboard { display: flex; flex-direction: column; gap: 6px; background: #1e293b; padding: 18px; border-radius: 8px; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         .keyboard-row { display: flex; gap: 5px; }
-        .key-cap { background: #334155; color: white; padding: 10px 14px; border-radius: 4px; font-size: 13px; font-weight: bold; min-width: 35px; text-align: center; }
-        .key-cap.active-key { background: #16a34a !important; transform: scale(1.05); }
+        .key-cap { background: #334155; color: white; padding: 10px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; min-width: 34px; text-align: center; transition: 0.1s; }
+        .key-cap.active-key { background: #dc2626 !important; transform: scale(1.08); box-shadow: 0 0 10px #dc2626; }
+
+        .hands-visual-box { display: flex; justify-content: center; gap: 40px; background: #f1f5f9; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-weight: bold; font-size: 13px; color: #475569; }
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .modal-card { background: #ffffff; padding: 25px; border-radius: 10px; width: 380px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative; }
@@ -540,27 +548,48 @@
                 </div>
             </div>
 
-            <!-- 7. LEARN TYPING (WITH INTERACTIVE VIRTUAL KEYBOARD & FINGER VISUALS) -->
+            <!-- 7. LEARN TYPING (10-20 EXTENSIVE LESSONS & VIRTUAL KEYBOARD VISUALS) -->
             <div id="learnView" class="view-section">
                 <div class="card">
-                    <h3><i class="fa-solid fa-book-open"></i> Learn Typing & Interactive Visuals</h3>
-                    <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">होम रो, टॉप रो और फिंगर प्लेसमेंट सीखने के लिए नीचे अभ्यास करें।</p>
+                    <h3><i class="fa-solid fa-book-open"></i> Learn Typing & Interactive Visual Lessons</h3>
+                    <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">नीचे दिए गए लेसंन्स में से अपनी पसंद का पाठ चुनें और फिंगर गाइड के साथ अभ्यास करें।</p>
                     
-                    <div style="background: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                        <h4 style="margin-bottom: 8px; font-size: 15px;">Practice Box:</h4>
-                        <input type="text" id="learnInputBox" placeholder="यहाँ टाइप करना शुरू करें..." oninput="handleLearnTypingInput(event)" style="width: 100%; padding: 10px; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 6px;">
-                    </div>
+                    <div class="learn-container">
+                        <!-- Lessons Sidebar -->
+                        <div class="lessons-sidebar" id="lessonsSidebarList"></div>
 
-                    <!-- Virtual Keyboard Finger Guide -->
-                    <div class="virtual-keyboard">
-                        <div class="keyboard-row">
-                            <span class="key-cap" id="key-q">Q</span><span class="key-cap" id="key-w">W</span><span class="key-cap" id="key-e">E</span><span class="key-cap" id="key-r">R</span><span class="key-cap" id="key-t">T</span><span class="key-cap" id="key-y">Y</span><span class="key-cap" id="key-u">U</span><span class="key-cap" id="key-i">I</span><span class="key-cap" id="key-o">O</span><span class="key-cap" id="key-p">P</span>
-                        </div>
-                        <div class="keyboard-row">
-                            <span class="key-cap" id="key-a">A</span><span class="key-cap" id="key-s">S</span><span class="key-cap" id="key-d">D</span><span class="key-cap" id="key-f">F</span><span class="key-cap" id="key-g">G</span><span class="key-cap" id="key-h">H</span><span class="key-cap" id="key-j">J</span><span class="key-cap" id="key-k">K</span><span class="key-cap" id="key-l">L</span>
-                        </div>
-                        <div class="keyboard-row">
-                            <span class="key-cap" id="key-z">Z</span><span class="key-cap" id="key-x">X</span><span class="key-cap" id="key-c">C</span><span class="key-cap" id="key-v">V</span><span class="key-cap" id="key-b">B</span><span class="key-cap" id="key-n">N</span><span class="key-cap" id="key-m">M</span>
+                        <!-- Workspace & Keyboard -->
+                        <div class="learn-workspace">
+                            <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 15px;">
+                                <h4 id="activeLessonTitleDisplay" style="margin-bottom: 6px; font-size: 15px; color:#1e293b;">Lesson 1: Home Row Basics</h4>
+                                <p id="activeLessonTextDisplay" style="font-size: 15px; color: #334155; line-height: 1.6; margin-bottom: 12px; background: white; padding: 10px; border: 1px solid #e2e8f0; border-radius: 4px;"></p>
+                                <input type="text" id="learnInputBox" placeholder="यहाँ टाइप करना शुरू करें..." oninput="handleLearnTypingInput(event)" style="width: 100%; padding: 12px; font-size: 16px; border: 1px solid #cbd5e1; border-radius: 6px; outline:none;">
+                            </div>
+
+                            <!-- Hands Placement Visual -->
+                            <div class="hands-visual-box">
+                                <div><i class="fa-solid faleft-hand"></i> Left Hand Fingers: ASDF</div>
+                                <div><i class="fa-solid fari-hand"></i> Right Hand Fingers: JKL;</div>
+                            </div>
+
+                            <!-- Virtual Full Keyboard -->
+                            <div class="virtual-keyboard">
+                                <div class="keyboard-row">
+                                    <span class="key-cap" id="key-`">~</span><span class="key-cap" id="key-1">1</span><span class="key-cap" id="key-2">2</span><span class="key-cap" id="key-3">3</span><span class="key-cap" id="key-4">4</span><span class="key-cap" id="key-5">5</span><span class="key-cap" id="key-6">6</span><span class="key-cap" id="key-7">7</span><span class="key-cap" id="key-8">8</span><span class="key-cap" id="key-9">9</span><span class="key-cap" id="key-0">0</span><span class="key-cap" id="key--">-</span><span class="key-cap" id="key-=">=</span>
+                                </div>
+                                <div class="keyboard-row">
+                                    <span class="key-cap" id="key-q">Q</span><span class="key-cap" id="key-w">W</span><span class="key-cap" id="key-e">E</span><span class="key-cap" id="key-r">R</span><span class="key-cap" id="key-t">T</span><span class="key-cap" id="key-y">Y</span><span class="key-cap" id="key-u">U</span><span class="key-cap" id="key-i">I</span><span class="key-cap" id="key-o">O</span><span class="key-cap" id="key-p">P</span><span class="key-cap" id="key-[">[</span><span class="key-cap" id="key-]">]</span>
+                                </div>
+                                <div class="keyboard-row">
+                                    <span class="key-cap" id="key-a">A</span><span class="key-cap" id="key-s">S</span><span class="key-cap" id="key-d">D</span><span class="key-cap" id="key-f">F</span><span class="key-cap" id="key-g">G</span><span class="key-cap" id="key-h">H</span><span class="key-cap" id="key-j">J</span><span class="key-cap" id="key-k">K</span><span class="key-cap" id="key-l">L</span><span class="key-cap" id="key-;">;</span><span class="key-cap" id="key-'">'</span>
+                                </div>
+                                <div class="keyboard-row">
+                                    <span class="key-cap" id="key-z">Z</span><span class="key-cap" id="key-x">X</span><span class="key-cap" id="key-c">C</span><span class="key-cap" id="key-v">V</span><span class="key-cap" id="key-b">B</span><span class="key-cap" id="key-n">N</span><span class="key-cap" id="key-m">M</span><span class="key-cap" id="key-,">,</span><span class="key-cap" id="key-.">.</span><span class="key-cap" id="key-/">/</span>
+                                </div>
+                                <div class="keyboard-row">
+                                    <span class="key-cap" id="key-space" style="width: 250px;">SPACE BAR</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -581,6 +610,21 @@ let isAdminLoggedIn = false;
 let testHistory = [];
 let loggedInUserEmail = localStorage.getItem('tm_user_email') || null;
 let loggedInUserName = localStorage.getItem('tm_user_name') || "Guest User";
+
+// 10-20 EXTENSIVE LESSONS FOR LEARN TYPING
+let learnLessonsList = [
+    { title: "Lesson 1: Home Row (ASDF GHJKL)", text: "asdfg hjkl; asdfg hjkl; aaa sss ddd fff jjj kkk lll asdf ghjkl asdfghjkl asdfg hjkl; asdfg hjkl; aaa sss ddd fff jjj kkk lll asdf ghjkl asdfghjkl" },
+    { title: "Lesson 2: Home Row Words", text: "dad fad sad lad gall hall flask glass fall dall sag lag gas alas alas fall gall flask glass dad fad sad lad" },
+    { title: "Lesson 3: Top Row Basics (QWERTY)", text: "qwert yuiop qwert yuiop qq ww ee rr tt yy uu ii oo pp qwerty uiop qwert yuiop qq ww ee rr tt yy uu ii oo pp qwerty uiop" },
+    { title: "Lesson 4: Top Row Practice Words", text: "power route quiet quite tower router writer treaty power route quiet quite tower router writer treaty power route quiet" },
+    { title: "Lesson 5: Bottom Row Basics (ZXCVBNM)", text: "zxcvb nm,./ zxcvb nm,./ zz xx cc vv bb nn mm zxcvb nm,./ zxcvb nm,./ zz xx cc vv bb nn mm zxcvb nm,./ zxcvb nm,./" },
+    { title: "Lesson 6: Bottom Row Practice Words", text: "zebra civic excel bravo cabin maximize cabin zebra civic excel bravo cabin maximize cabin zebra civic excel bravo cabin" },
+    { title: "Lesson 7: Number Row (1-0 Numbers)", text: "12345 67890 1234567890 1 2 3 4 5 6 7 8 9 0 12345 67890 1234567890 1 2 3 4 5 6 7 8 9 0 12345 67890 1234567890" },
+    { title: "Lesson 8: Shift & Special Symbols (!@#$)", text: "!@#$% ^&*() !@#$%^&*() QWE! ASD@ ZXC# RTY$ FGH% UI^ JKL& VBN* M( )!@#$% ^&*() !@#$%^&*() QWE! ASD@ ZXC# RTY$ FGH% UI^ JKL&" },
+    { title: "Lesson 9: Advanced Alt Codes & Special Dashes", text: "– — alt 0151 alt 0150 special symbols em-dash en-dash quote hyphen underscore – — alt 0151 alt 0150 special symbols em-dash" },
+    { title: "Lesson 10: Full Keyboard Mixed Speed Drill", text: "The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs. Sphinx of black quartz, judge my vow." }
+];
+let activeLessonIndex = 0;
 
 let examRulesConfig = JSON.parse(localStorage.getItem('tm_exam_rules_config')) || {
     "BSF HCM Typing Test": { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, accMandatory: "mandatory" },
@@ -637,7 +681,7 @@ function updateHeaderUserUI() {
         }
     } else {
         if(nameEl) nameEl.innerText = "Guest User";
-        if(emailEl) nameEl.innerText = "Not logged in";
+        if(emailEl) emailEl.innerText = "Not logged in";
         if(authBtn) { 
             authBtn.innerText = "Login / Signup"; 
             authBtn.onclick = openLoginModal; 
@@ -750,6 +794,8 @@ window.onload = function() {
     fetchCloudData();
     onCourseChanged();
     updateAllExamsViewList();
+    renderLearnLessonsSidebar();
+    loadLearnLesson(0);
 
     const urlParams = new URLSearchParams(window.location.search);
     const sharedId = urlParams.get('resultId');
@@ -1024,7 +1070,6 @@ function saveExamRules() {
 
     localStorage.setItem('tm_exam_rules_config', JSON.stringify(examRulesConfig));
 
-    // Re-evaluate past test history results with new rules
     let rules = examRulesConfig[selectedCourse];
     let allowPct = rules.allowance / 100;
     let penaltyMultiplier = rules.penalty;
@@ -1295,16 +1340,45 @@ document.addEventListener('input', function(e) {
     }
 });
 
-// LEARN TYPING VIRTUAL KEYBOARD INTERACTIVE FINGER GUIDE
+// LEARN TYPING LESSONS SIDEBAR & VIRTUAL KEYBOARD INTERACTIVE FINGER GUIDE
+function renderLearnLessonsSidebar() {
+    let sidebar = document.getElementById('lessonsSidebarList');
+    if (!sidebar) return;
+    sidebar.innerHTML = "";
+    learnLessonsList.forEach((lesson, idx) => {
+        let btn = document.createElement('button');
+        btn.className = `lesson-btn ${idx === activeLessonIndex ? 'active-lesson' : ''}`;
+        btn.innerHTML = `<i class="fa-solid fa-book"></i> ${lesson.title}`;
+        btn.onclick = () => loadLearnLesson(idx);
+        sidebar.appendChild(btn);
+    });
+}
+
+function loadLearnLesson(idx) {
+    activeLessonIndex = idx;
+    renderLearnLessonsSidebar();
+    let lesson = learnLessonsList[idx];
+    let titleEl = document.getElementById('activeLessonTitleDisplay');
+    let textEl = document.getElementById('activeLessonTextDisplay');
+    let inputEl = document.getElementById('learnInputBox');
+
+    if (titleEl) titleEl.innerText = lesson.title;
+    if (textEl) textEl.innerText = lesson.text;
+    if (inputEl) {
+        inputEl.value = "";
+        inputEl.focus();
+    }
+}
+
 function handleLearnTypingInput(e) {
     let val = e.target.value;
     if (val.length === 0) return;
     let lastChar = val.slice(-1).toLowerCase();
     
-    // Reset all keys
     document.querySelectorAll('.key-cap').forEach(el => el.classList.remove('active-key'));
     
-    let targetKeyEl = document.getElementById('key-' + lastChar);
+    let keyId = lastChar === ' ' ? 'key-space' : 'key-' + lastChar;
+    let targetKeyEl = document.getElementById(keyId);
     if (targetKeyEl) {
         targetKeyEl.classList.add('active-key');
         setTimeout(() => targetKeyEl.classList.remove('active-key'), 400);
