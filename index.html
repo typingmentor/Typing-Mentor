@@ -122,7 +122,7 @@
         .summary-table td.label { font-weight: 600; color: #334155; }
         .summary-table td.value { text-align: right; font-weight: bold; color: #0f172a; }
 
-        .no-scroll-breakdown { height: auto !important; max-height: none !important; overflow: visible !important; border: 1px solid #cbd5e1; padding: 18px; background: #ffffff; line-height: 2.2; font-size: 16px; border-radius: 6px; }
+        .no-scroll-breakdown { height: auto !important; max-height: none !important; overflow: visible !important; border: 1px solid #cbd5e1; padding: 18px; background: #ffffff; line-height: 2.2; font-size: 15px; border-radius: 6px; }
         
         .word-normal { color: #333333; font-weight: normal; margin-right: 6px; display: inline-block; }
         .word-orig-blue-line { color: #2563eb; text-decoration: underline; font-weight: 600; margin-right: 4px; display: inline-block; }
@@ -132,9 +132,13 @@
         .legend-box { display: flex; gap: 15px; margin-top: 15px; margin-bottom: 10px; font-size: 13px; align-items: center; background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #e2e8f0; flex-wrap: wrap; }
         .legend-item { display: flex; align-items: center; gap: 6px; font-weight: 600; }
 
+        /* SIDE BY SIDE PASSAGE COMPARISON LAYOUT */
+        .side-by-side-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px; }
+        @media (max-width: 900px) { .side-by-side-grid { grid-template-columns: 1fr; } }
+
         /* LEARN TYPING INTERACTIVE MODULE STYLES */
         .learn-container { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
-        .lessons-sidebar { width: 310px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; max-height: 600px; overflow-y: auto; }
+        .lessons-sidebar { width: 310px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; max-height: 620px; overflow-y: auto; }
         .lesson-btn { display: block; width: 100%; text-align: left; padding: 10px 12px; margin-bottom: 6px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; color: #334155; transition: 0.2s; }
         .lesson-btn:hover, .lesson-btn.active-lesson { background: #e0e7ff; color: #1d4ed8; border-color: #2563eb; }
 
@@ -145,10 +149,17 @@
         .ed-char-box.current-char { border-bottom-color: #2563eb; color: #2563eb; font-weight: bold; background: #eff6ff; }
         .ed-char-box.done-char { color: #16a34a; border-bottom-color: #16a34a; }
 
-        .virtual-keyboard { display: flex; flex-direction: column; gap: 6px; background: #1e293b; padding: 18px; border-radius: 8px; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        /* VIRTUAL KEYBOARD & HANDS FINGER VISUALIZER */
+        .virtual-keyboard-box { display: flex; flex-direction: column; background: #1e293b; padding: 20px; border-radius: 10px; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3); gap: 15px; }
+        
+        /* HANDS GRAPHIC CONTAINER */
+        .hands-graphic-container { display: flex; justify-content: space-between; width: 100%; max-width: 580px; padding: 0 20px; color: #94a3b8; font-size: 12px; font-weight: bold; }
+        .hand-box { background: #334155; padding: 6px 12px; border-radius: 6px; border: 1px solid #475569; }
+        .hand-box.active-hand-indicator { background: #2563eb; color: white; border-color: #38bdf8; box-shadow: 0 0 10px #38bdf8; }
+
         .keyboard-row { display: flex; gap: 5px; }
         .key-cap { background: #334155; color: white; padding: 10px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; min-width: 34px; text-align: center; transition: 0.1s; }
-        .key-cap.active-key { background: #dc2626 !important; transform: scale(1.1); box-shadow: 0 0 12px #dc2626; }
+        .key-cap.active-key { background: #dc2626 !important; transform: scale(1.1); box-shadow: 0 0 14px #dc2626; color: #ffffff; }
 
         .finger-instruction-banner { background: #e0f2fe; border: 1px solid #0284c7; padding: 12px 18px; border-radius: 6px; font-weight: bold; color: #0369a1; text-align: center; font-size: 15px; }
 
@@ -489,7 +500,7 @@
                 </div>
             </div>
 
-            <!-- 6. SINGLE DETAILED RESULT SUMMARY VIEW -->
+            <!-- 6. SINGLE DETAILED RESULT SUMMARY VIEW (SIDE BY SIDE LAYOUT) -->
             <div id="singleResultView" class="view-section">
                 <button class="btn-view-result" onclick="switchTab('resultsHistoryView', document.getElementById('menu-results'))" style="margin-bottom: 15px; padding: 8px 15px; font-size:14px; width:fit-content;">
                     <i class="fa-solid fa-arrow-left"></i> Back to All Results
@@ -528,7 +539,7 @@
                         </table>
                     </div>
 
-                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown:</h4>
+                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown (Smart Anchor Matched):</h4>
                     
                     <div class="legend-box">
                         <div class="legend-item"><span class="word-normal">Word</span> Correct Typed (Normal)</div>
@@ -539,21 +550,25 @@
 
                     <div class="no-scroll-breakdown" id="differencesBox"></div>
 
-                    <div style="margin-top: 20px;">
-                        <h4 style="margin-bottom: 8px; color: #1e293b;"><i class="fa-solid fa-keyboard"></i> Your Typed Passage:</h4>
-                        <div id="yourTypedPassageBox" class="no-scroll-breakdown" style="font-size: 15px; color: #334155;"></div>
-
-                        <h4 style="margin-top: 20px; margin-bottom: 8px; color: #1e293b;"><i class="fa-solid fa-file-lines"></i> Original Passage Text:</h4>
-                        <div id="originalPassageBox" class="no-scroll-breakdown" style="font-size: 15px; color: #334155;"></div>
+                    <!-- SIDE BY SIDE PASSAGES COMPARISON (YOUR TYPED VS ORIGINAL) -->
+                    <div class="side-by-side-grid" style="margin-top: 25px;">
+                        <div>
+                            <h4 style="margin-bottom: 8px; color: #1e293b;"><i class="fa-solid fa-keyboard"></i> Your Typed Passage:</h4>
+                            <div id="yourTypedPassageBox" class="no-scroll-breakdown" style="font-size: 14px; color: #334155; min-height: 180px;"></div>
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 8px; color: #1e293b;"><i class="fa-solid fa-file-lines"></i> Original Passage Text:</h4>
+                            <div id="originalPassageBox" class="no-scroll-breakdown" style="font-size: 14px; color: #334155; min-height: 180px;"></div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 7. LEARN TYPING (EDCLUB STYLE INTERACTIVE LESSONS & FINGER INSTRUCTIONS) -->
+            <!-- 7. LEARN TYPING (EDCLUB STYLE WITH HAND & FINGER GRAPHIC) -->
             <div id="learnView" class="view-section">
                 <div class="card">
-                    <h3><i class="fa-solid fa-book-open"></i> Learn Typing & Finger Placement Guide</h3>
-                    <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">बाईं तरफ से पाठ चुनें। अगला अक्षर टाइप करने के लिए नीचे दी गई उंगली का प्रयोग करें।</p>
+                    <h3><i class="fa-solid fa-book-open"></i> Learn Typing & Hands Finger Guide</h3>
+                    <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">बाईं तरफ से पाठ चुनें। कीबोर्ड पर उंगलियों की सटीक पोजीशन और हाइलाइटेड हाथ देखकर अभ्यास करें।</p>
                     
                     <div class="learn-container">
                         <!-- Lessons Sidebar -->
@@ -569,13 +584,20 @@
                                 <input type="text" id="learnInputBox" placeholder="यहाँ टाइप करना शुरू करें..." oninput="handleLearnTypingInput(event)" style="opacity: 0; position: absolute; pointer-events: none;" autofocus>
                             </div>
 
-                            <!-- Dynamic Finger Instruction Banner -->
+                            <!-- Finger Instruction Banner -->
                             <div class="finger-instruction-banner" id="fingerInstructionBanner">
                                 <i class="fa-solid fa-hand-pointer"></i> <span id="fingerInstructionText">टाइप करना शुरू करने के लिए कुंजी दबाएं...</span>
                             </div>
 
-                            <!-- Virtual Keyboard Visualizer -->
-                            <div class="virtual-keyboard" onclick="document.getElementById('learnInputBox').focus()">
+                            <!-- Virtual Keyboard & Hands Graphic Visualizer -->
+                            <div class="virtual-keyboard-box" onclick="document.getElementById('learnInputBox').focus()">
+                                
+                                <!-- Hands Position Visualizer Header -->
+                                <div class="hands-graphic-container">
+                                    <div class="hand-box" id="leftHandBox"><i class="fa-solid fa-hand"></i> LEFT HAND (ASDF)</div>
+                                    <div class="hand-box" id="rightHandBox"><i class="fa-solid fa-hand"></i> RIGHT HAND (JKL;)</div>
+                                </div>
+
                                 <div class="keyboard-row">
                                     <span class="key-cap" id="key-`">~</span><span class="key-cap" id="key-1">1</span><span class="key-cap" id="key-2">2</span><span class="key-cap" id="key-3">3</span><span class="key-cap" id="key-4">4</span><span class="key-cap" id="key-5">5</span><span class="key-cap" id="key-6">6</span><span class="key-cap" id="key-7">7</span><span class="key-cap" id="key-8">8</span><span class="key-cap" id="key-9">9</span><span class="key-cap" id="key-0">0</span><span class="key-cap" id="key--">-</span><span class="key-cap" id="key-=">=</span>
                                 </div>
@@ -613,52 +635,51 @@ let testHistory = [];
 let loggedInUserEmail = localStorage.getItem('tm_user_email') || null;
 let loggedInUserName = localStorage.getItem('tm_user_name') || "Guest User";
 
-// MAP FOR EXACT FINGER INSTRUCTION
+// FINGER & HAND MAPPING
 const fingerMapping = {
-    'q': "Left Pinky (बाएं हाथ की कनिष्ठिका / छोटी उंगली)",
-    'a': "Left Pinky (बाएं हाथ की कनिष्ठिका / छोटी उंगली)",
-    'z': "Left Pinky (बाएं हाथ की कनिष्ठिका / छोटी उंगली)",
-    '1': "Left Pinky (बाएं हाथ की छोटी उंगली)",
-    'w': "Left Ring Finger (बाएं हाथ की अनामिका उंगली)",
-    's': "Left Ring Finger (बाएं हाथ की अनामिका उंगली)",
-    'x': "Left Ring Finger (बाएं हाथ की अनामिका उंगली)",
-    '2': "Left Ring Finger (बाएं हाथ की अनामिका उंगली)",
-    'e': "Left Middle Finger (बाएं हाथ की मध्यमा / बीच वाली उंगली)",
-    'd': "Left Middle Finger (बाएं हाथ की मध्यमा / बीच वाली उंगली)",
-    'c': "Left Middle Finger (बाएं हाथ की मध्यमा / बीच वाली उंगली)",
-    '3': "Left Middle Finger (बाएं हाथ की बीच वाली उंगली)",
-    'r': "Left Index Finger (बाएं हाथ की तर्जनी / अंगूठे के बगल वाली उंगली)",
-    'f': "Left Index Finger (बाएं हाथ की तर्जनी उंगली)",
-    'v': "Left Index Finger (बाएं हाथ की तर्जनी उंगली)",
-    't': "Left Index Finger (बाएं हाथ की तर्जनी उंगली)",
-    'g': "Left Index Finger (बाएं हाथ की तर्जनी उंगली)",
-    'b': "Left Index Finger (बाएं हाथ की तर्जनी उंगली)",
-    '4': "Left Index Finger (बाएं हाथ की तर्जनी उंगली)",
-    '5': "Left Index Finger (बाएं हाथ की तर्जनी उंगली)",
-    'y': "Right Index Finger (दाएं हाथ की तर्जनी / अंगूठे के बगल वाली उंगली)",
-    'h': "Right Index Finger (दाएं हाथ की तर्जनी उंगली)",
-    'n': "Right Index Finger (दाएं हाथ की तर्जनी उंगली)",
-    'u': "Right Index Finger (दाएं हाथ की तर्जनी उंगली)",
-    'j': "Right Index Finger (दाएं हाथ की तर्जनी उंगली)",
-    'm': "Right Index Finger (दाएं हाथ की तर्जनी उंगली)",
-    '6': "Right Index Finger (दाएं हाथ की तर्जनी उंगली)",
-    '7': "Right Index Finger (दाएं हाथ की तर्जनी उंगली)",
-    'i': "Right Middle Finger (दाएं हाथ की मध्यमा / बीच वाली उंगली)",
-    'k': "Right Middle Finger (दाएं हाथ की मध्यमा / बीच वाली उंगली)",
-    ',': "Right Middle Finger (दाएं हाथ की मध्यमा / बीच वाली उंगली)",
-    '8': "Right Middle Finger (दाएं हाथ की बीच वाली उंगली)",
-    'o': "Right Ring Finger (दाएं हाथ की अनामिका उंगली)",
-    'l': "Right Ring Finger (दाएं हाथ की अनामिका उंगली)",
-    '.': "Right Ring Finger (दाएं हाथ की अनामिका उंगली)",
-    '9': "Right Ring Finger (दाएं हाथ की अनामिका उंगली)",
-    'p': "Right Pinky (दाएं हाथ की कनिष्ठिका / छोटी उंगली)",
-    ';': "Right Pinky (दाएं हाथ की कनिष्ठिका / छोटी उंगली)",
-    '/': "Right Pinky (दाएं हाथ की कनिष्ठिका / छोटी उंगली)",
-    '0': "Right Pinky (दाएं हाथ की छोटी उंगली)",
-    ' ': "Thumb (दोनों हाथों में से किसी भी अंगूठे का उपयोग करें)"
+    'q': { hand: 'left', text: "Left Pinky (बाएं हाथ की कनिष्ठिका उंगली)" },
+    'a': { hand: 'left', text: "Left Pinky (बाएं हाथ की कनिष्ठिका उंगली)" },
+    'z': { hand: 'left', text: "Left Pinky (बाएं हाथ की कनिष्ठिका उंगली)" },
+    '1': { hand: 'left', text: "Left Pinky (बाएं हाथ की छोटी उंगली)" },
+    'w': { hand: 'left', text: "Left Ring Finger (बाएं हाथ की अनामिका उंगली)" },
+    's': { hand: 'left', text: "Left Ring Finger (बाएं हाथ की अनामिका उंगली)" },
+    'x': { hand: 'left', text: "Left Ring Finger (बाएं हाथ की अनामिका उंगली)" },
+    '2': { hand: 'left', text: "Left Ring Finger (बाएं हाथ की अनामिका उंगली)" },
+    'e': { hand: 'left', text: "Left Middle Finger (बाएं हाथ की मध्यमा उंगली)" },
+    'd': { hand: 'left', text: "Left Middle Finger (बाएं हाथ की मध्यमा उंगली)" },
+    'c': { hand: 'left', text: "Left Middle Finger (बाएं हाथ की मध्यमा उंगली)" },
+    '3': { hand: 'left', text: "Left Middle Finger (बाएं हाथ की बीच वाली उंगली)" },
+    'r': { hand: 'left', text: "Left Index Finger (बाएं हाथ की तर्जनी उंगली)" },
+    'f': { hand: 'left', text: "Left Index Finger (बाएं हाथ की तर्जनी उंगली)" },
+    'v': { hand: 'left', text: "Left Index Finger (बाएं हाथ की तर्जनी उंगली)" },
+    't': { hand: 'left', text: "Left Index Finger (बाएं हाथ की तर्जनी उंगली)" },
+    'g': { hand: 'left', text: "Left Index Finger (बाएं हाथ की तर्जनी उंगली)" },
+    'b': { hand: 'left', text: "Left Index Finger (बाएं हाथ की तर्जनी उंगली)" },
+    '4': { hand: 'left', text: "Left Index Finger (बाएं हाथ की तर्जनी उंगली)" },
+    '5': { hand: 'left', text: "Left Index Finger (बाएं हाथ की तर्जनी उंगली)" },
+    'y': { hand: 'right', text: "Right Index Finger (दाएं हाथ की तर्जनी उंगली)" },
+    'h': { hand: 'right', text: "Right Index Finger (दाएं हाथ की तर्जनी उंगली)" },
+    'n': { hand: 'right', text: "Right Index Finger (दाएं हाथ की तर्जनी उंगली)" },
+    'u': { hand: 'right', text: "Right Index Finger (दाएं हाथ की तर्जनी उंगली)" },
+    'j': { hand: 'right', text: "Right Index Finger (दाएं हाथ की तर्जनी उंगली)" },
+    'm': { hand: 'right', text: "Right Index Finger (दाएं हाथ की तर्जनी उंगली)" },
+    '6': { hand: 'right', text: "Right Index Finger (दाएं हाथ की तर्जनी उंगली)" },
+    '7': { hand: 'right', text: "Right Index Finger (दाएं हाथ की तर्जनी उंगली)" },
+    'i': { hand: 'right', text: "Right Middle Finger (दाएं हाथ की मध्यमा उंगली)" },
+    'k': { hand: 'right', text: "Right Middle Finger (दाएं हाथ की मध्यमा उंगली)" },
+    ',': { hand: 'right', text: "Right Middle Finger (दाएं हाथ की मध्यमा उंगली)" },
+    '8': { hand: 'right', text: "Right Middle Finger (दाएं हाथ की बीच वाली उंगली)" },
+    'o': { hand: 'right', text: "Right Ring Finger (दाएं हाथ की अनामिका उंगली)" },
+    'l': { hand: 'right', text: "Right Ring Finger (दाएं हाथ की अनामिका उंगली)" },
+    '.': { hand: 'right', text: "Right Ring Finger (दाएं हाथ की अनामिका उंगली)" },
+    '9': { hand: 'right', text: "Right Ring Finger (दाएं हाथ की अनामिका उंगली)" },
+    'p': { hand: 'right', text: "Right Pinky (दाएं हाथ की कनिष्ठिका उंगली)" },
+    ';': { hand: 'right', text: "Right Pinky (दाएं हाथ की कनिष्ठिका उंगली)" },
+    '/': { hand: 'right', text: "Right Pinky (दाएं हाथ की कनिष्ठिका उंगली)" },
+    '0': { hand: 'right', text: "Right Pinky (दाएं हाथ की छोटी उंगली)" },
+    ' ': { hand: 'both', text: "Thumb (अंगूठे से स्पेस बार दबाएं)" }
 };
 
-// 10-20 EXTENSIVE LESSONS FOR LEARN TYPING (INCLUDING MIXED COMBINATION SETS)
 let learnLessonsList = [
     { title: "Lesson 1: Home Row (f & j)", text: "f j f j j f j f fff jjj f j f j j f j f" },
     { title: "Lesson 2: Home Row (d & k)", text: "d k d k k d k d ddd kkk d k d k k d k d" },
@@ -676,7 +697,7 @@ let learnLessonsList = [
     { title: "Lesson 14: Bottom Row (z & /)", text: "z / z / / z / z zzz /// z / z / / z / z" },
     { title: "Lesson 15: Number Row Practice", text: "1 2 3 4 5 6 7 8 9 0 1234567890 12345 67890" },
     
-    // 10 MIXED COMBINATION PRACTICE LESSONS FOR QUICK RHYTHM MASTERY
+    // 10 MIXED COMBINATION PRACTICE LESSONS
     { title: "Combo Drill 1: Home & Top Row Mix", text: "sad red fed kid jar oak dark lake park safe high free gear" },
     { title: "Combo Drill 2: Home & Bottom Row Mix", text: "van cab max lab zinc scan jam dam back glass mask calm" },
     { title: "Combo Drill 3: All Letters Rhythm Drill", text: "the quick brown fox jumps over the lazy dog and runs fast" },
@@ -710,7 +731,6 @@ let typingData = JSON.parse(localStorage.getItem('tm_typing_data_custom')) || {
     ]
 };
 
-// Google Login Only
 async function handleGoogleLogin() {
     try {
         let result = await window.signInWithPopup(window.auth, window.googleProvider);
@@ -1404,7 +1424,7 @@ document.addEventListener('input', function(e) {
     }
 });
 
-// LEARN TYPING ENGINE WITH EXACT FINGER INSTRUCTIONS & CLEAN SPACE DISPLAY
+// LEARN TYPING ENGINE WITH HAND & FINGER GRAPHIC HIGHLIGHTS
 function renderLearnLessonsSidebar() {
     let sidebar = document.getElementById('lessonsSidebarList');
     if (!sidebar) return;
@@ -1451,7 +1471,6 @@ function renderEdClubLessonBoxes() {
         } else if (i === currentLessonTypedIndex) {
             span.classList.add('current-char');
         }
-        // Removed symbol for space: Empty space displayed cleanly
         span.innerText = text[i] === ' ' ? ' ' : text[i];
         container.appendChild(span);
     }
@@ -1459,6 +1478,9 @@ function renderEdClubLessonBoxes() {
 
 function highlightNextEdClubKey() {
     document.querySelectorAll('.key-cap').forEach(el => el.classList.remove('active-key'));
+    document.getElementById('leftHandBox').classList.remove('active-hand-indicator');
+    document.getElementById('rightHandBox').classList.remove('active-hand-indicator');
+
     let text = learnLessonsList[activeLessonIndex].text;
     
     if (currentLessonTypedIndex < text.length) {
@@ -1469,11 +1491,20 @@ function highlightNextEdClubKey() {
             targetKeyEl.classList.add('active-key');
         }
 
-        // Update exact finger instruction text
-        let instructionText = fingerMapping[nextChar] || `Press key '${nextChar.toUpperCase()}'`;
+        let mapping = fingerMapping[nextChar] || { hand: 'left', text: `Press key '${nextChar.toUpperCase()}'` };
+        
+        if (mapping.hand === 'left') {
+            document.getElementById('leftHandBox').classList.add('active-hand-indicator');
+        } else if (mapping.hand === 'right') {
+            document.getElementById('rightHandBox').classList.add('active-hand-indicator');
+        } else {
+            document.getElementById('leftHandBox').classList.add('active-hand-indicator');
+            document.getElementById('rightHandBox').classList.add('active-hand-indicator');
+        }
+
         let bannerTextEl = document.getElementById('fingerInstructionText');
         if (bannerTextEl) {
-            bannerTextEl.innerHTML = `अगला बटन <b>'${nextChar === ' ' ? 'SPACE' : nextChar.toUpperCase()}'</b> के लिए: <u>${instructionText}</u>`;
+            bannerTextEl.innerHTML = `अगला बटन <b>'${nextChar === ' ' ? 'SPACE' : nextChar.toUpperCase()}'</b> — उंगली निर्देश: <u>${mapping.text}</u>`;
         }
     }
 }
@@ -1516,7 +1547,8 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-function computeCustomDiffForText(origWords, typedWords) {
+// SMART ANCHOR MATCHING ALGORITHM FOR ACCURATE DIFF & SKIPPED PASSAGE DETECTION
+function computeSmartAnchorDiff(origWords, typedWords) {
     let cleanOrig = origWords.map(w => w.replace(/[,.;:!?]/g, '').toLowerCase());
     let cleanTyped = typedWords.map(w => w.replace(/[,.;:!?]/g, '').toLowerCase());
 
@@ -1532,21 +1564,24 @@ function computeCustomDiffForText(origWords, typedWords) {
             i++;
             j++;
         } else {
-            let lookAheadIndex = -1;
-            for (let k = 1; k <= 25 && (i + k) < origWords.length; k++) {
+            // Smart Anchor Matcher: Look ahead up to 15 words to check if user matched upcoming words
+            let anchorMatchIndex = -1;
+            for (let k = 1; k <= 15 && (i + k) < origWords.length; k++) {
                 if (cleanOrig[i + k] === cleanTyped[j]) {
-                    lookAheadIndex = i + k;
+                    anchorMatchIndex = i + k;
                     break;
                 }
             }
 
-            if (lookAheadIndex !== -1) {
-                for (let omittedIdx = i; omittedIdx < lookAheadIndex; omittedIdx++) {
+            if (anchorMatchIndex !== -1) {
+                // User skipped words between i and anchorMatchIndex
+                for (let omittedIdx = i; omittedIdx < anchorMatchIndex; omittedIdx++) {
                     diffList.push({ type: 'omitted_line', origWord: origWords[omittedIdx] });
                     mistakesCount++;
                 }
-                i = lookAheadIndex;
+                i = anchorMatchIndex;
             } else {
+                // Check if user typed extra words or typo
                 diffList.push({ type: 'typo', origWord: origWords[i], userWord: typedWords[j] });
                 mistakesCount++;
                 i++;
@@ -1608,7 +1643,7 @@ async function finishTest() {
     
     let typedWordsArray = typed.trim() ? typed.trim().split(/\s+/) : [];
 
-    let { diffList, correctCount, mistakesCount } = computeCustomDiffForText(activeWords, typedWordsArray);
+    let { diffList, correctCount, mistakesCount } = computeSmartAnchorDiff(activeWords, typedWordsArray);
 
     let correctKeystrokesCount = Math.round(correctCount * 5);
     let correctWordsNum = Math.round((correctKeystrokesCount / 5) * 10) / 10;
@@ -1743,9 +1778,8 @@ function viewSingleResult(index) {
     let res = testHistory[index];
     if (!res) return;
 
-    let courseName = res.course || "General Practice";
     if (!res.diffList && res.activeWords && res.typedWordsArray) {
-        let evaluated = computeCustomDiffForText(res.activeWords, res.typedWordsArray);
+        let evaluated = computeSmartAnchorDiff(res.activeWords, res.typedWordsArray);
         res.diffList = evaluated.diffList;
     }
 
@@ -1805,6 +1839,7 @@ function viewSingleResult(index) {
     let diffBox = document.getElementById('differencesBox');
     if (diffBox) diffBox.innerHTML = diffHtml;
 
+    // SIDE BY SIDE PASSAGES: YOUR TYPED PASSAGE (LEFT) VS ORIGINAL PASSAGE (RIGHT)
     let typedPassageEl = document.getElementById('yourTypedPassageBox');
     let origPassageEl = document.getElementById('originalPassageBox');
     if (typedPassageEl) typedPassageEl.innerText = res.typedText || (res.typedWordsArray ? res.typedWordsArray.join(' ') : "");
@@ -1821,7 +1856,7 @@ function copyResultShareLink(e) {
         navigator.clipboard.writeText(shareLink).then(() => {
             alert("🔗 रिजल्ट शेयरिंग लिंक कॉपी हो गया है! आप इसे किसी को भी भेज सकते हैं।");
         }).catch(err => {
-            alert("लिंक कॉपी करने में विफल: " + err);
+            alert("लिंक करने में विफल: " + err);
         });
     }
 }
