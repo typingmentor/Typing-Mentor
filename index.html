@@ -102,12 +102,11 @@
         .google-btn { background: #db4437; color: white; border: none; padding: 12px 20px; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
         .live-header { display: flex; justify-content: space-between; background: #1e293b; color: white; padding: 12px 20px; border-radius: 6px; margin-bottom: 15px; align-items: center; flex-shrink: 0; }
-        .text-display { height: 130px; overflow-y: auto; border: 1px solid #d1d5db; padding: 15px; background: #ffffff; line-height: 1.8; border-radius: 6px; margin-bottom: 15px; scroll-behavior: smooth; flex-shrink: 0; }
+        .text-display { height: 140px; overflow-y: auto; border: 1px solid #d1d5db; padding: 15px; background: #ffffff; line-height: 1.8; border-radius: 6px; margin-bottom: 15px; scroll-behavior: smooth; flex-shrink: 0; }
         .text-display span.correct { color: #16a34a; background: #dcfce7; }
         .text-display span.incorrect { color: #dc2626; background: #fee2e2; }
         .text-display span.current { background: #bae6fd; text-decoration: underline; font-weight: normal !important; }
 
-        /* Bigger typing textarea and bottom submit button */
         textarea.type-area { width: 100%; flex: 1; min-height: 220px; padding: 15px; border: 1px solid #d1d5db; border-radius: 6px; resize: none; outline: none; font-size: 18px; line-height: 1.6; }
 
         table.results-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
@@ -126,10 +125,17 @@
         .summary-table td.label { font-weight: 600; color: #334155; }
         .summary-table td.value { text-align: right; font-weight: bold; color: #0f172a; }
 
+        /* MISTAKES BREAKDOWN STYLES */
+        .diff-word-correct { background-color: #dcfce7; color: #15803d; padding: 2px 4px; border-radius: 3px; margin-right: 4px; display: inline-block; }
+        .diff-word-omitted { background-color: #0284c7; color: #ffffff; padding: 2px 5px; border-radius: 3px; margin-right: 4px; display: inline-block; font-weight: 500; }
+        .diff-word-wrong { color: #dc2626; text-decoration: line-through; margin-right: 4px; display: inline-block; font-weight: 600; }
+        
+        .legend-box { display: flex; gap: 15px; margin-top: 15px; margin-bottom: 8px; font-size: 12px; align-items: center; background: #f8fafc; padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0; }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .modal-card { background: #ffffff; padding: 25px; border-radius: 10px; width: 380px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative; }
         
-        /* TEST SELECT POPUP MODAL */
         .test-modal-card { background: #ffffff; padding: 25px; border-radius: 10px; width: 750px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.3); position: relative; }
         .test-grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; overflow-y: auto; max-height: 50vh; padding: 5px; margin-top: 15px; }
         .test-card-item { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; cursor: pointer; text-align: left; transition: all 0.2s; position: relative; }
@@ -142,13 +148,12 @@
 </head>
 <body>
 
-    <!-- USER LOGIN MODAL (Google Only) -->
+    <!-- USER LOGIN MODAL -->
     <div id="loginModal" class="modal-overlay hidden">
         <div class="modal-card">
             <button class="close-modal-btn" onclick="closeLoginModal()">&times;</button>
             <h3 style="margin-bottom: 10px;">Typing Mentor Login</h3>
             <p style="font-size: 12px; color:#64748b; margin-bottom: 20px;">अपने गूगल अकाउंट से सुरक्षित लॉगिन करें।</p>
-            
             <button class="google-btn" onclick="handleGoogleLogin()"><i class="fa-brands fa-google"></i> Sign in with Google</button>
         </div>
     </div>
@@ -407,7 +412,6 @@
 
                     <button class="start-btn" style="width:auto; padding:10px 25px;" onclick="addNewTestToPortal()">Upload to Cloud & Publish</button>
 
-                    <!-- Manage / Delete Section -->
                     <div style="margin-top: 25px; border-top: 1px solid #e5e7eb; padding-top: 15px;">
                         <h4 style="color:#dc2626; margin-bottom:10px;"><i class="fa-solid fa-trash-can"></i> टेस्ट्स या कोर्स मैनेज / डिलीट करें</h4>
                         <div style="display:flex; gap:10px; margin-bottom:10px;">
@@ -486,7 +490,7 @@
                                 <tr><td class="label">Typed Key Strokes</td><td class="value" id="resTypedKeystrokes">0</td></tr>
                                 <tr><td class="label">Total Typed Words</td><td class="value" id="resTypedWords">0</td></tr>
                                 <tr><td class="label">Correct Words</td><td class="value" id="resCorrectWords">0</td></tr>
-                                <tr><td class="label">Incorrect Words</td><td class="value" id="resIncorrectWords">0</td></tr>
+                                <tr><td class="label">Incorrect Words / Omissions</td><td class="value" id="resIncorrectWords">0</td></tr>
                             </tbody>
                         </table>
 
@@ -506,7 +510,15 @@
                     </div>
 
                     <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown:</h4>
-                    <div class="text-display" id="differencesBox" style="height: 140px; margin-top: 8px; font-size: 14px; background:#ffffff;"></div>
+                    
+                    <!-- Color Guide Legend -->
+                    <div class="legend-box">
+                        <div class="legend-item"><span class="diff-word-correct">Word</span> Correct</div>
+                        <div class="legend-item"><span class="diff-word-wrong">Word</span> Wrong / Typo</div>
+                        <div class="legend-item"><span class="diff-word-omitted">Word</span> Omitted / Skipped</div>
+                    </div>
+
+                    <div class="text-display" id="differencesBox" style="height: 180px; margin-top: 8px; font-size: 15px; background:#ffffff; line-height:2.0;"></div>
                 </div>
             </div>
 
@@ -552,8 +564,6 @@ let typingData = JSON.parse(localStorage.getItem('tm_typing_data_custom')) || {
         { title: "Speed Drill 1: Keyboard Mastery", text: "The quick brown fox jumps over the lazy dog. Typing practice helps improve finger dexterity, accuracy, and overall speed on mechanical and membrane keyboards." }
     ]
 };
-
-let masterTestList = [];
 
 // Google Login Only
 async function handleGoogleLogin() {
@@ -810,7 +820,6 @@ function onCourseChanged() {
     }
 }
 
-// TEST SELECT MODAL POPUP
 function openTestModal() {
     document.getElementById('testSelectModal').classList.remove('hidden');
     document.getElementById('modalSearchInput').value = "";
@@ -1077,7 +1086,6 @@ function startLiveTest() {
 
     if (pBox) {
         if (isPaperMode) {
-            // Paper Mode: Show test title and ONLY first line (8-10 words)
             let firstLineWords = activeWords.slice(0, 9).join(' ');
             pBox.innerHTML = `<div style="font-weight:bold; color:#1e293b; margin-bottom:5px; font-size:15px;"><i class="fa-solid fa-file-lines"></i> ${testObj.title} (Paper Mode Active)</div><div style="font-size:17px; color:#334155; line-height:1.6;">${firstLineWords} ...</div>`;
         } else {
@@ -1147,7 +1155,6 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// SMART AUTO-SCROLL & WORD-BY-WORD PUNCTUATION CHECK
 document.addEventListener('input', function(e) {
     if (e.target && e.target.id === 'typingInput') {
         if (!isTimerStarted && e.target.value.length > 0) {
@@ -1208,6 +1215,58 @@ document.addEventListener('input', function(e) {
     }
 });
 
+// SMART DIFFERENCE ALGORITHM WITH LINE-SKIP ALIGNMENT
+function computeSmartDiff(origWords, typedWords) {
+    let cleanOrig = origWords.map(w => w.replace(/[,.;:!?]/g, '').toLowerCase());
+    let cleanTyped = typedWords.map(w => w.replace(/[,.;:!?]/g, '').toLowerCase());
+
+    let i = 0, j = 0;
+    let diffList = [];
+    let correctCount = 0;
+    let mistakesCount = 0;
+
+    while (i < origWords.length && j < typedWords.length) {
+        if (cleanOrig[i] === cleanTyped[j]) {
+            diffList.push({ type: 'correct', word: origWords[i] });
+            correctCount++;
+            i++;
+            j++;
+        } else {
+            // Check if user skipped a line/words (look ahead up to 20 words in original)
+            let lookAheadIndex = -1;
+            for (let k = 1; k <= 20 && (i + k) < origWords.length; k++) {
+                if (cleanOrig[i + k] === cleanTyped[j]) {
+                    lookAheadIndex = i + k;
+                    break;
+                }
+            }
+
+            if (lookAheadIndex !== -1) {
+                // User skipped words between i and lookAheadIndex
+                for (let omittedIdx = i; omittedIdx < lookAheadIndex; omittedIdx++) {
+                    diffList.push({ type: 'omitted', word: origWords[omittedIdx] });
+                    mistakesCount++;
+                }
+                i = lookAheadIndex;
+            } else {
+                // Typo / wrong word typed
+                diffList.push({ type: 'wrong', word: typedWords[j] });
+                mistakesCount++;
+                i++;
+                j++;
+            }
+        }
+    }
+
+    // Remaining un-typed original words
+    while (i < origWords.length) {
+        diffList.push({ type: 'omitted', word: origWords[i] });
+        i++;
+    }
+
+    return { diffList, correctCount, mistakesCount };
+}
+
 async function finishTest() {
     if (timerInterval) clearInterval(timerInterval);
     let typingInput = document.getElementById('typingInput');
@@ -1252,26 +1311,15 @@ async function finishTest() {
     let grossWpm = Math.round((grossWords / timeSpentMin) * 10) / 10;
     
     let typedWordsArray = typed.trim() ? typed.trim().split(/\s+/) : [];
-    let mistakes = 0;
-    let correctKeystrokesCount = 0;
 
-    activeWords.forEach((word, idx) => {
-        let userW = typedWordsArray[idx] || "";
-        let cleanUserW = userW.replace(/[,.;:!?]/g, '');
-        let cleanOrigW = word.replace(/[,.;:!?]/g, '');
+    // SMART DIFF COMPUTATION
+    let { diffList, correctCount, mistakesCount } = computeSmartDiff(activeWords, typedWordsArray);
 
-        if (cleanUserW === cleanOrigW) {
-            correctKeystrokesCount += word.length + 1;
-            if (userW !== word) mistakes++;
-        } else if (idx < typedWordsArray.length) {
-            mistakes++;
-        }
-    });
-
+    let correctKeystrokesCount = Math.round(correctCount * 5);
     let correctWordsNum = Math.round((correctKeystrokesCount / 5) * 10) / 10;
 
     let allowedMistakes = Math.round((totalTypedWordsNum * allowPct) * 10) / 10;
-    let extraMistakes = Math.max(0, mistakes - allowedMistakes);
+    let extraMistakes = Math.max(0, mistakesCount - allowedMistakes);
     let penaltyWords = Math.round((extraMistakes * penaltyMultiplier) * 10) / 10;
     
     let netWords = Math.max(0, grossWords - penaltyWords);
@@ -1310,7 +1358,7 @@ async function finishTest() {
         typedWordsCount: totalTypedWordsNum,
         correctKeystrokes: correctKeystrokesCount,
         correctWords: correctWordsNum,
-        incorrectWords: mistakes,
+        incorrectWords: mistakesCount,
         gross: grossWpm + " WPM",
         allowedMistakes: allowedMistakes,
         penalty: penaltyWords,
@@ -1321,7 +1369,7 @@ async function finishTest() {
         details: detailsStr,
         activeWords: activeWords,
         typedWordsArray: typedWordsArray,
-        typedText: typed
+        diffList: diffList
     };
 
     try {
@@ -1434,16 +1482,31 @@ function viewSingleResult(index) {
         statusEl.style.color = res.status === 'Qualified' ? '#16a34a' : '#dc2626';
     }
 
-    let diffHtml = res.activeWords.map((word, idx) => {
-        let userW = res.typedWordsArray[idx];
-        if (userW === undefined) {
-            return `<span style="color: blue; margin-right: 5px;">${word}</span>`;
-        } else if (userW === word) {
-            return `<span style="background-color: #dcfce7; color: #16a34a; padding: 1px 3px; border-radius: 3px; margin-right: 5px;">${word}</span>`;
-        } else {
-            return `<span style="color: blue; margin-right: 2px;">${word}</span><span style="color: red; text-decoration: line-through; margin-right: 5px;">${userW}</span>`;
-        }
-    }).join(' ');
+    // Render Mistakes Breakdown with Legend Highlights
+    let diffHtml = "";
+    if (res.diffList && res.diffList.length > 0) {
+        diffHtml = res.diffList.map(item => {
+            if (item.type === 'correct') {
+                return `<span class="diff-word-correct">${item.word}</span>`;
+            } else if (item.type === 'omitted') {
+                return `<span class="diff-word-omitted">${item.word}</span>`;
+            } else {
+                return `<span class="diff-word-wrong">${item.word}</span>`;
+            }
+        }).join(' ');
+    } else {
+        // Fallback
+        diffHtml = res.activeWords.map((word, idx) => {
+            let userW = res.typedWordsArray ? res.typedWordsArray[idx] : undefined;
+            if (userW === undefined) {
+                return `<span class="diff-word-omitted">${word}</span>`;
+            } else if (userW === word) {
+                return `<span class="diff-word-correct">${word}</span>`;
+            } else {
+                return `<span class="diff-word-wrong">${userW}</span>`;
+            }
+        }).join(' ');
+    }
 
     let diffBox = document.getElementById('differencesBox');
     if (diffBox) diffBox.innerHTML = diffHtml;
