@@ -536,7 +536,7 @@
                         </table>
                     </div>
 
-                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown (Robust Omission-Aware Alignment):</h4>
+                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown (Strict Submission Cutoff Evaluation):</h4>
                     
                     <div class="legend-box">
                         <div class="legend-item"><span class="word-normal">Word</span> Correct Typed (Normal)</div>
@@ -1530,11 +1530,11 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// ROBUST OMISSION-AWARE ALIGNMENT (HANDLES SKIPPED WORDS/LINES CORRECTLY UP TO SUBMISSION POINT)
-function computeRobustOmissionAlignment(origWords, typedWords) {
+// STRICT SUBMISSION CUTOFF ALIGNMENT (DOES NOT COUNT POST-SUBMISSION LEFTOVER WORDS AS OMISSIONS)
+function computeStrictSubmissionAlignment(origWords, typedWords) {
     let m = typedWords.length;
-    // Only evaluate up to the typed length (Stop at submission point)
-    let limitOrigLen = Math.min(origWords.length, m + 50); 
+    // Strict cutoff up to the length of typed words by user
+    let limitOrigLen = Math.min(origWords.length, m + 2); 
     let slicedOrigWords = origWords.slice(0, limitOrigLen);
 
     let n = slicedOrigWords.length;
@@ -1676,7 +1676,7 @@ async function finishTest() {
     
     let typedWordsArray = typed.trim() ? typed.trim().split(/\s+/) : [];
 
-    let { diffList, correctCount, mistakesCount, correctKeystrokesCount } = computeRobustOmissionAlignment(activeWords, typedWordsArray);
+    let { diffList, correctCount, mistakesCount, correctKeystrokesCount } = computeStrictSubmissionAlignment(activeWords, typedWordsArray);
 
     let correctWordsNum = Math.round((correctKeystrokesCount / 5) * 10) / 10;
 
@@ -1812,7 +1812,7 @@ function viewSingleResult(index) {
     if (!res) return;
 
     if (!res.diffList && res.activeWords && res.typedWordsArray) {
-        let evaluated = computeRobustOmissionAlignment(res.activeWords, res.typedWordsArray);
+        let evaluated = computeStrictSubmissionAlignment(res.activeWords, res.typedWordsArray);
         res.diffList = evaluated.diffList;
     }
 
