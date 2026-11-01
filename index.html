@@ -536,7 +536,7 @@
                         </table>
                     </div>
 
-                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown (Two-Way Dynamic Anchoring Engine):</h4>
+                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown (Hybrid LCS Dynamic Alignment Engine):</h4>
                     
                     <div class="legend-box">
                         <div class="legend-item"><span class="word-normal">Word</span> Correct Typed (Normal)</div>
@@ -1530,15 +1530,12 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// TWO-WAY DYNAMIC ANCHORING ALIGNMENT ENGINE (PREVENTS SHIFT CASCADE ERRORS)
+// HYBRID LCS DYNAMIC ALIGNMENT ENGINE (PREVENTS SHIFT CASCADE ERRORS & HANDLES SKIPPED LINES)
 function computeStrictSubmissionAlignment(origWords, typedWords) {
     let n = origWords.length;
     let m = typedWords.length;
     
     let dp = Array(n + 1).fill(null).map(() => Array(m + 1).fill(0));
-
-    for (let i = 0; i <= n; i++) dp[i][0] = i;
-    for (let j = 0; j <= m; j++) dp[0][j] = j;
 
     for (let i = 1; i <= n; i++) {
         for (let j = 1; j <= m; j++) {
@@ -1546,89 +1543,78 @@ function computeStrictSubmissionAlignment(origWords, typedWords) {
             let cleanTyped = typedWords[j - 1].replace(/[,.;:!?]/g, '').toLowerCase();
             
             if (cleanOrig === cleanTyped) {
-                dp[i][j] = dp[i - 1][j - 1];
+                dp[i][j] = dp[i - 1][j - 1] + 1;
             } else {
-                dp[i][j] = Math.min(
-                    dp[i - 1][j] + 1,    // Omission
-                    dp[i][j - 1] + 1,    // Insertion
-                    dp[i - 1][j - 1] + 1 // Substitution / Typo
-                );
+                dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
             }
         }
     }
 
+    let lcsPath = [];
     let i = n, j = m;
-    let trace = [];
-    while (i > 0 || j > 0) {
-        if (i > 0 && j > 0) {
-            let cleanOrig = origWords[i - 1].replace(/[,.;:!?]/g, '').toLowerCase();
-            let cleanTyped = typedWords[j - 1].replace(/[,.;:!?]/g, '').toLowerCase();
-            if (cleanOrig === cleanTyped && dp[i][j] === dp[i - 1][j - 1]) {
-                trace.push({ type: 'match', origIdx: i - 1, typedIdx: j - 1 });
-                i--; j--;
-                continue;
-            }
-        }
-
-        let delCost = i > 0 ? dp[i - 1][j] : Infinity;
-        let insCost = j > 0 ? dp[i][j - 1] : Infinity;
-        let subCost = (i > 0 && j > 0) ? dp[i - 1][j - 1] : Infinity;
-
-        if (subCost <= delCost && subCost <= insCost && i > 0 && j > 0) {
-            trace.push({ type: 'substitution', origIdx: i - 1, typedIdx: j - 1 });
+    while (i > 0 && j > 0) {
+        let cleanOrig = origWords[i - 1].replace(/[,.;:!?]/g, '').toLowerCase();
+        let cleanTyped = typedWords[j - 1].replace(/[,.;:!?]/g, '').toLowerCase();
+        if (cleanOrig === cleanTyped) {
+            lcsPath.push({ origIdx: i - 1, typedIdx: j - 1 });
             i--; j--;
-        } else if (delCost <= insCost && i > 0) {
-            trace.push({ type: 'omission', origIdx: i - 1 });
+        } else if (dp[i - 1][j] >= dp[i][j - 1]) {
             i--;
-        } else if (j > 0) {
-            trace.push({ type: 'insertion', typedIdx: j - 1 });
-            j--;
         } else {
-            if (i > 0) { i--; } else if (j > 0) { j--; }
+            j--;
         }
     }
-    trace.reverse();
+    lcsPath.reverse();
 
     let diffList = [];
     let correctCount = 0;
     let mistakesCount = 0;
     let correctKeystrokesCount = 0;
 
-    for (let t of trace) {
-        if (t.type === 'match') {
-            let typedW = typedWords[t.typedIdx];
-            diffList.push({ type: 'correct', word: typedW });
-            correctCount++;
-            correctKeystrokesCount += typedW.length + 1;
-        } else if (t.type === 'substitution') {
-            let origW = origWords[t.origIdx];
-            let typedW = typedWords[t.typedIdx];
-            let cleanOrig = origW.replace(/[,.;:!?]/g, '').toLowerCase();
-            let cleanTyped = typedW.replace(/[,.;:!?]/g, '').toLowerCase();
-            if (cleanOrig === cleanTyped || origW === typedW) {
-                diffList.push({ type: 'correct', word: typedW });
-                correctCount++;
-                correctKeystrokesCount += typedW.length + 1;
-            } else {
-                diffList.push({ type: 'typo', origWord: origW, userWord: typedW });
-                mistakesCount++;
-            }
-        } else if (t.type === 'omission') {
-            diffList.push({ type: 'omitted_word', origWord: origWords[t.origIdx] });
+    let currOrig = 0;
+    let currTyped = 0;
+
+    for (let match of lcsPath) {
+        while (currOrig < match.origIdx && currTyped < match.typedIdx) {
+            diffList.push({ type: 'typo', origWord: origWords[currOrig], userWord: typedWords[currTyped] });
             mistakesCount++;
-        } else if (t.type === 'insertion') {
-            diffList.push({ type: 'typo', origWord: "", userWord: typedWords[t.typedIdx] });
-            mistakesCount++;
+            currOrig++;
+            currTyped++;
         }
+        while (currOrig < match.origIdx) {
+            diffList.push({ type: 'omitted_word', origWord: origWords[currOrig] });
+            mistakesCount++;
+            currOrig++;
+        }
+        while (currTyped < match.typedIdx) {
+            diffList.push({ type: 'typo', origWord: "", userWord: typedWords[currTyped] });
+            mistakesCount++;
+            currTyped++;
+        }
+
+        let matchedWord = typedWords[match.typedIdx];
+        diffList.push({ type: 'correct', word: matchedWord });
+        correctCount++;
+        correctKeystrokesCount += matchedWord.length + 1;
+
+        currOrig = match.origIdx + 1;
+        currTyped = match.typedIdx + 1;
     }
 
-    let maxOrigCovered = -1;
-    for (let t of trace) {
-        if (t.origIdx !== undefined && t.origIdx > maxOrigCovered) maxOrigCovered = t.origIdx;
+    while (currOrig < n && currTyped < m) {
+        diffList.push({ type: 'typo', origWord: origWords[currOrig], userWord: typedWords[currTyped] });
+        mistakesCount++;
+        currOrig++;
+        currTyped++;
     }
-
-    for (let u = maxOrigCovered + 1; u < origWords.length; u++) {
-        diffList.push({ type: 'untyped_subdued', origWord: origWords[u] });
+    while (currOrig < n) {
+        diffList.push({ type: 'untyped_subdued', origWord: origWords[currOrig] });
+        currOrig++;
+    }
+    while (currTyped < m) {
+        diffList.push({ type: 'typo', origWord: "", userWord: typedWords[currTyped] });
+        mistakesCount++;
+        currTyped++;
     }
 
     return { diffList, correctCount, mistakesCount, correctKeystrokesCount };
