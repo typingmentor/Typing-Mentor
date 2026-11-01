@@ -536,7 +536,7 @@
                         </table>
                     </div>
 
-                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown (Strict Stop-at-Submission Evaluation):</h4>
+                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown (Robust Omission-Aware Alignment):</h4>
                     
                     <div class="legend-box">
                         <div class="legend-item"><span class="word-normal">Word</span> Correct Typed (Normal)</div>
@@ -1530,28 +1530,78 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// STRICT STOP-AT-SUBMISSION EVALUATION (DOES NOT COUNT UNTYPED WORDS AFTER SUBMISSION AS OMISSIONS)
-function computeStrictStopAtSubmissionAlignment(origWords, typedWords) {
+// ROBUST OMISSION-AWARE ALIGNMENT (HANDLES SKIPPED WORDS/LINES CORRECTLY UP TO SUBMISSION POINT)
+function computeRobustOmissionAlignment(origWords, typedWords) {
     let m = typedWords.length;
-    let slicedOrigWords = origWords.slice(0, m);
+    // Only evaluate up to the typed length (Stop at submission point)
+    let limitOrigLen = Math.min(origWords.length, m + 50); 
+    let slicedOrigWords = origWords.slice(0, limitOrigLen);
+
+    let n = slicedOrigWords.length;
+    let dp = Array(n + 1).fill(null).map(() => Array(m + 1).fill(0));
+
+    for (let i = 0; i <= n; i++) dp[i][0] = i;
+    for (let j = 0; j <= m; j++) dp[0][j] = j;
+
+    for (let i = 1; i <= n; i++) {
+        for (let j = 1; j <= m; j++) {
+            if (slicedOrigWords[i - 1] === typedWords[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1];
+            } else {
+                let cleanOrig = slicedOrigWords[i - 1].replace(/[,.;:!?]/g, '').toLowerCase();
+                let cleanTyped = typedWords[j - 1].replace(/[,.;:!?]/g, '').toLowerCase();
+                let subCost = (cleanOrig === cleanTyped) ? 1 : 2;
+                dp[i][j] = Math.min(
+                    dp[i - 1][j] + 1,    // omission / skipped word
+                    dp[i][j - 1] + 1,    // extra typed word / typo insertion
+                    dp[i - 1][j - 1] + subCost // substitution / typo
+                );
+            }
+        }
+    }
+
+    let i = n, j = m;
+    let trace = [];
+    while (i > 0 || j > 0) {
+        if (i > 0 && j > 0 && slicedOrigWords[i - 1] === typedWords[j - 1]) {
+            trace.push({ type: 'match', origIdx: i - 1, typedIdx: j - 1 });
+            i--; j--;
+        } else {
+            let delCost = i > 0 ? dp[i - 1][j] : Infinity;
+            let insCost = j > 0 ? dp[i][j - 1] : Infinity;
+            let subCost = (i > 0 && j > 0) ? dp[i - 1][j - 1] : Infinity;
+
+            if (subCost <= delCost && subCost <= insCost) {
+                trace.push({ type: 'substitution', origIdx: i - 1, typedIdx: j - 1 });
+                i--; j--;
+            } else if (delCost <= insCost) {
+                trace.push({ type: 'omission', origIdx: i - 1 });
+                i--;
+            } else {
+                trace.push({ type: 'insertion', typedIdx: j - 1 });
+                j--;
+            }
+        }
+    }
+    trace.reverse();
 
     let diffList = [];
     let correctCount = 0;
     let mistakesCount = 0;
     let correctKeystrokesCount = 0;
 
-    for (let k = 0; k < m; k++) {
-        let origW = slicedOrigWords[k] || "";
-        let typedW = typedWords[k] || "";
-
-        if (origW === typedW) {
-            diffList.push({ type: 'correct', word: origW });
+    for (let t of trace) {
+        if (t.type === 'match') {
+            let word = slicedOrigWords[t.origIdx];
+            diffList.push({ type: 'correct', word: word });
             correctCount++;
-            correctKeystrokesCount += typedW.length + 1;
-        } else {
+            correctKeystrokesCount += word.length + 1;
+        } else if (t.type === 'substitution') {
+            let origW = slicedOrigWords[t.origIdx];
+            let typedW = typedWords[t.typedIdx];
             let cleanOrig = origW.replace(/[,.;:!?]/g, '').toLowerCase();
             let cleanTyped = typedW.replace(/[,.;:!?]/g, '').toLowerCase();
-            if (cleanOrig === cleanTyped) {
+            if (cleanOrig === cleanTyped || origW === typedW) {
                 diffList.push({ type: 'correct', word: typedW });
                 correctCount++;
                 correctKeystrokesCount += typedW.length + 1;
@@ -1559,11 +1609,22 @@ function computeStrictStopAtSubmissionAlignment(origWords, typedWords) {
                 diffList.push({ type: 'typo', origWord: origW, userWord: typedW });
                 mistakesCount++;
             }
+        } else if (t.type === 'omission') {
+            diffList.push({ type: 'omitted_word', origWord: slicedOrigWords[t.origIdx] });
+            mistakesCount++;
+        } else if (t.type === 'insertion') {
+            diffList.push({ type: 'typo', origWord: "", userWord: typedWords[t.typedIdx] });
+            mistakesCount++;
         }
     }
 
-    // Append remaining untyped words after submission with middle line-through (NOT counted as mistakes)
-    for (let u = m; u < origWords.length; u++) {
+    // Append remaining untyped passage after submission with middle line-through (NOT counted as mistakes)
+    let maxOrigCovered = -1;
+    for (let t of trace) {
+        if (t.origIdx !== undefined && t.origIdx > maxOrigCovered) maxOrigCovered = t.origIdx;
+    }
+
+    for (let u = maxOrigCovered + 1; u < origWords.length; u++) {
         diffList.push({ type: 'untyped_subdued', origWord: origWords[u] });
     }
 
@@ -1615,7 +1676,7 @@ async function finishTest() {
     
     let typedWordsArray = typed.trim() ? typed.trim().split(/\s+/) : [];
 
-    let { diffList, correctCount, mistakesCount, correctKeystrokesCount } = computeStrictStopAtSubmissionAlignment(activeWords, typedWordsArray);
+    let { diffList, correctCount, mistakesCount, correctKeystrokesCount } = computeRobustOmissionAlignment(activeWords, typedWordsArray);
 
     let correctWordsNum = Math.round((correctKeystrokesCount / 5) * 10) / 10;
 
@@ -1751,7 +1812,7 @@ function viewSingleResult(index) {
     if (!res) return;
 
     if (!res.diffList && res.activeWords && res.typedWordsArray) {
-        let evaluated = computeStrictStopAtSubmissionAlignment(res.activeWords, res.typedWordsArray);
+        let evaluated = computeRobustOmissionAlignment(res.activeWords, res.typedWordsArray);
         res.diffList = evaluated.diffList;
     }
 
@@ -1797,6 +1858,8 @@ function viewSingleResult(index) {
         diffHtml = res.diffList.map(item => {
             if (item.type === 'correct') {
                 return `<span class="word-normal">${item.word}</span>`;
+            } else if (item.type === 'omitted_word') {
+                return `<span class="word-orig-blue-line">${item.origWord}</span>`;
             } else if (item.type === 'untyped_subdued') {
                 return `<span class="word-untyped-strike">${item.origWord}</span>`;
             } else if (item.type === 'typo') {
