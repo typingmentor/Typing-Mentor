@@ -100,9 +100,10 @@
 
         .live-header { display: flex; justify-content: space-between; background: #1e293b; color: white; padding: 12px 20px; border-radius: 6px; margin-bottom: 15px; align-items: center; flex-shrink: 0; }
         .text-display { height: 140px; overflow-y: auto; border: 1px solid #d1d5db; padding: 15px; background: #ffffff; line-height: 1.8; border-radius: 6px; margin-bottom: 15px; scroll-behavior: smooth; flex-shrink: 0; }
-        .text-display span.correct { color: #16a34a; background: #dcfce7; }
-        .text-display span.incorrect { color: #dc2626; background: #fee2e2; }
-        .text-display span.current { background: #bae6fd; text-decoration: underline; font-weight: normal !important; }
+        .text-display span.correct { color: #16a34a; background: #dcfce7; text-decoration: none !important; }
+        .text-display span.incorrect { color: #dc2626; background: #fee2e2; text-decoration: none !important; }
+        /* NO UNDERLINE ON LIVE HIGHLIGHT WORD */
+        .text-display span.current { background: #bae6fd; text-decoration: none !important; font-weight: bold; border-radius: 3px; padding: 0 2px; }
 
         textarea.type-area { width: 100%; flex: 1; min-height: 220px; padding: 15px; border: 1px solid #d1d5db; border-radius: 6px; resize: none; outline: none; font-size: 18px; line-height: 1.6; }
 
@@ -127,7 +128,8 @@
         .word-normal { color: #333333; font-weight: normal; margin-right: 6px; display: inline-block; background: transparent !important; }
         .word-orig-blue-line { color: #2563eb; text-decoration: underline; font-weight: 600; margin-right: 4px; display: inline-block; background: transparent !important; }
         .word-wrong-red { color: #dc2626; font-weight: bold; margin-right: 6px; display: inline-block; background: transparent !important; }
-        .word-untyped-blue { color: #2563eb; text-decoration: underline; font-weight: 600; margin-right: 6px; display: inline-block; background: transparent !important; }
+        /* UNTYPED PASSAGE AFTER SUBMIT - STRIKE THROUGH IN THE MIDDLE */
+        .word-untyped-strike { color: #64748b; text-decoration: line-through; margin-right: 6px; display: inline-block; background: transparent !important; }
 
         .legend-box { display: flex; gap: 15px; margin-top: 15px; margin-bottom: 10px; font-size: 13px; align-items: center; background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid #e2e8f0; flex-wrap: wrap; }
         .legend-item { display: flex; align-items: center; gap: 6px; font-weight: 600; }
@@ -514,6 +516,7 @@
                                 <tr><td class="label">Total Key Strokes Given</td><td class="value" id="resTotalKeystrokes">0</td></tr>
                                 <tr><td class="label">Total Words</td><td class="value" id="resTotalWords">0</td></tr>
                                 <tr><td class="label">Typed Key Strokes</td><td class="value" id="resTypedKeystrokes">0</td></tr>
+                                <tr><td class="label">Typed Correct Key Strokes</td><td class="value" id="resTypedCorrectKeystrokes" style="color:#16a34a;">0</td></tr>
                                 <tr><td class="label">Total Typed Words</td><td class="value" id="resTypedWords">0</td></tr>
                                 <tr><td class="label">Correct Words</td><td class="value" id="resCorrectWords">0</td></tr>
                                 <tr><td class="label">Incorrect Words / Omissions</td><td class="value" id="resIncorrectWords">0</td></tr>
@@ -535,13 +538,13 @@
                         </table>
                     </div>
 
-                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown (Strict Punctuation & Clean Omission Match):</h4>
+                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown (Strict Typed-Only Evaluation):</h4>
                     
                     <div class="legend-box">
                         <div class="legend-item"><span class="word-normal">Word</span> Correct Typed (Normal)</div>
                         <div class="legend-item"><span class="word-orig-blue-line">Word</span> Original Word (Should be typed)</div>
                         <div class="legend-item"><span class="word-wrong-red">Word</span> Your Wrong Typed Word</div>
-                        <div class="legend-item"><span class="word-untyped-blue">Word</span> Untyped / Skipped Passage Block (No Background Color)</div>
+                        <div class="legend-item"><span class="word-untyped-strike">Word</span> Untyped / Skipped Passage Block (Middle Strikethrough)</div>
                     </div>
 
                     <div class="no-scroll-breakdown" id="differencesBox"></div>
@@ -1376,7 +1379,6 @@ document.addEventListener('input', function(e) {
 
                 if (highlight) {
                     if (idx < typedWords.length - 1) {
-                        // Strict check including punctuation
                         span.classList.add(typedWords[idx] === word ? 'correct' : 'incorrect');
                     } else if (idx === activeIdx) {
                         span.classList.add('current');
@@ -1530,85 +1532,36 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// STRICT PUNCTUATION & CLEAN OMISSION ALIGNMENT (NO BACKGROUND COLOR ON SKIPPED WORDS)
-function computeStrictPunctuationDiff(origWords, typedWords) {
-    let n = origWords.length;
+// STRICT TYPED-ONLY EVALUATION (NO UNTYPED PENALTY AFTER SUBMISSION)
+function computeStrictTypedOnlyDiff(origWords, typedWords) {
     let m = typedWords.length;
-    let dp = Array(n + 1).fill(null).map(() => Array(m + 1).fill(0));
-
-    for (let i = 0; i <= n; i++) dp[i][0] = i;
-    for (let j = 0; j <= m; j++) dp[0][j] = j;
-
-    for (let i = 1; i <= n; i++) {
-        for (let j = 1; j <= m; j++) {
-            if (origWords[i - 1] === typedWords[j - 1]) {
-                dp[i][j] = dp[i - 1][j - 1];
-            } else {
-                let cleanOrig = origWords[i - 1].replace(/[,.;:!?]/g, '').toLowerCase();
-                let cleanTyped = typedWords[j - 1].replace(/[,.;:!?]/g, '').toLowerCase();
-                let subCost = (cleanOrig === cleanTyped) ? 1 : 2; // Exact word match with different punctuation has low cost
-                dp[i][j] = Math.min(
-                    dp[i - 1][j] + 1,    // deletion (omission)
-                    dp[i][j - 1] + 1,    // insertion (extra word)
-                    dp[i - 1][j - 1] + subCost // substitution / typo
-                );
-            }
-        }
-    }
-
-    let i = n, j = m;
-    let trace = [];
-    while (i > 0 || j > 0) {
-        if (i > 0 && j > 0 && origWords[i - 1] === typedWords[j - 1]) {
-            trace.push({ type: 'match', origIdx: i - 1, typedIdx: j - 1 });
-            i--; j--;
-        } else {
-            let delCost = i > 0 ? dp[i - 1][j] : Infinity;
-            let insCost = j > 0 ? dp[i][j - 1] : Infinity;
-            let subCost = (i > 0 && j > 0) ? dp[i - 1][j - 1] : Infinity;
-
-            if (subCost <= delCost && subCost <= insCost) {
-                trace.push({ type: 'substitution', origIdx: i - 1, typedIdx: j - 1 });
-                i--; j--;
-            } else if (delCost <= insCost) {
-                trace.push({ type: 'deletion', origIdx: i - 1 });
-                i--;
-            } else {
-                trace.push({ type: 'insertion', typedIdx: j - 1 });
-                j--;
-            }
-        }
-    }
-    trace.reverse();
+    let slicedOrigWords = origWords.slice(0, m);
 
     let diffList = [];
     let correctCount = 0;
     let mistakesCount = 0;
+    let correctKeystrokesCount = 0;
 
-    for (let t of trace) {
-        if (t.type === 'match') {
-            diffList.push({ type: 'correct', word: origWords[t.origIdx] });
+    for (let k = 0; k < m; k++) {
+        let origW = slicedOrigWords[k] || "";
+        let typedW = typedWords[k] || "";
+
+        if (origW === typedW) {
+            diffList.push({ type: 'correct', word: origW });
             correctCount++;
-        } else if (t.type === 'substitution') {
-            let origW = origWords[t.origIdx];
-            let typedW = typedWords[t.typedIdx];
-            if (origW === typedW) {
-                diffList.push({ type: 'correct', word: origW });
-                correctCount++;
-            } else {
-                diffList.push({ type: 'typo', origWord: origW, userWord: typedW });
-                mistakesCount++;
-            }
-        } else if (t.type === 'deletion') {
-            diffList.push({ type: 'omitted_line', origWord: origWords[t.origIdx] });
-            mistakesCount++;
-        } else if (t.type === 'insertion') {
-            diffList.push({ type: 'typo', origWord: "", userWord: typedWords[t.typedIdx] });
+            correctKeystrokesCount += typedW.length + 1; // including space
+        } else {
+            diffList.push({ type: 'typo', origWord: origW, userWord: typedW });
             mistakesCount++;
         }
     }
 
-    return { diffList, correctCount, mistakesCount };
+    // Append remaining untyped words after submission with middle line-through
+    for (let u = m; u < origWords.length; u++) {
+        diffList.push({ type: 'untyped_subdued', origWord: origWords[u] });
+    }
+
+    return { diffList, correctCount, mistakesCount, correctKeystrokesCount };
 }
 
 async function finishTest() {
@@ -1656,9 +1609,8 @@ async function finishTest() {
     
     let typedWordsArray = typed.trim() ? typed.trim().split(/\s+/) : [];
 
-    let { diffList, correctCount, mistakesCount } = computeStrictPunctuationDiff(activeWords, typedWordsArray);
+    let { diffList, correctCount, mistakesCount, correctKeystrokesCount } = computeStrictTypedOnlyDiff(activeWords, typedWordsArray);
 
-    let correctKeystrokesCount = Math.round(correctCount * 5);
     let correctWordsNum = Math.round((correctKeystrokesCount / 5) * 10) / 10;
 
     let allowedMistakes = Math.round((totalTypedWordsNum * allowPct) * 10) / 10;
@@ -1668,7 +1620,7 @@ async function finishTest() {
     let netWords = Math.max(0, grossWords - penaltyWords);
     let netWpm = Math.round((netWords / timeSpentMin) * 10) / 10;
 
-    let accuracy = totalTypedWordsNum > 0 ? Math.round((correctWordsNum / totalTypedWordsNum) * 100 * 10) / 10 : 0;
+    let accuracy = typedKeystrokes > 0 ? Math.round((correctKeystrokesCount / typedKeystrokes) * 100 * 10) / 10 : 0;
     if (accuracy > 100) accuracy = 100;
 
     let isQualified = netWpm >= minNetWpmReq && typedKeystrokes >= minKeysReq;
@@ -1699,6 +1651,7 @@ async function finishTest() {
         totalKeystrokes: totalKeystrokesInOrig,
         totalWords: totalWordsInOrig,
         typedKeystrokes: typedKeystrokes,
+        typedCorrectKeystrokes: correctKeystrokesCount,
         typedWordsCount: totalTypedWordsNum,
         correctKeystrokes: correctKeystrokesCount,
         correctWords: correctWordsNum,
@@ -1792,7 +1745,7 @@ function viewSingleResult(index) {
     if (!res) return;
 
     if (!res.diffList && res.activeWords && res.typedWordsArray) {
-        let evaluated = computeStrictPunctuationDiff(res.activeWords, res.typedWordsArray);
+        let evaluated = computeStrictTypedOnlyDiff(res.activeWords, res.typedWordsArray);
         res.diffList = evaluated.diffList;
     }
 
@@ -1813,6 +1766,7 @@ function viewSingleResult(index) {
     setVal('resTotalKeystrokes', res.totalKeystrokes);
     setVal('resTotalWords', res.totalWords);
     setVal('resTypedKeystrokes', res.typedKeystrokes);
+    setVal('resTypedCorrectKeystrokes', res.typedCorrectKeystrokes || res.correctKeystrokes || 0);
     setVal('resTypedWords', res.typedWordsCount);
     setVal('resCorrectWords', res.correctWords);
     setVal('resIncorrectWords', res.incorrectWords);
@@ -1837,8 +1791,8 @@ function viewSingleResult(index) {
         diffHtml = res.diffList.map(item => {
             if (item.type === 'correct') {
                 return `<span class="word-normal">${item.word}</span>`;
-            } else if (item.type === 'omitted_line') {
-                return `<span class="word-untyped-blue">${item.origWord}</span>`;
+            } else if (item.type === 'untyped_subdued') {
+                return `<span class="word-untyped-strike">${item.origWord}</span>`;
             } else if (item.type === 'typo') {
                 let origPart = item.origWord ? `<span class="word-orig-blue-line">${item.origWord}</span>` : "";
                 let userPart = item.userWord ? `<span class="word-wrong-red">${item.userWord}</span>` : "";
