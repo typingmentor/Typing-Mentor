@@ -460,7 +460,6 @@
                     </div>
 
                     <div class="text-display" id="paragraphBox"></div>
-                    <!-- Added strict autocomplete attributes to prevent browser auto-complete/tab-fill -->
                     <textarea class="type-area" id="typingInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Start typing here..."></textarea>
                     <button class="start-btn" style="background: #16a34a; margin-top: 15px; flex-shrink:0; padding:15px; font-size:18px;" onclick="finishTest()">Submit Test</button>
                 </div>
@@ -537,7 +536,7 @@
                         </table>
                     </div>
 
-                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown (Fuzzy Context-Aware Alignment):</h4>
+                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown (LCS Anchored Alignment):</h4>
                     
                     <div class="legend-box">
                         <div class="legend-item"><span class="word-normal">Word</span> Correct Typed (Normal)</div>
@@ -1531,10 +1530,10 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// ADVANCED FUZZY & CONTEXT-AWARE ALIGNMENT (PREVENTS SHIFT MISMATCHES)
+// LCS ANCHORED ALIGNMENT (HANDLES REPETITIONS & SHIFTS PERFECTLY WITHOUT RIPPING UP ACCURACY)
 function computeStrictSubmissionAlignment(origWords, typedWords) {
     let m = typedWords.length;
-    let limitOrigLen = Math.min(origWords.length, m + 5); 
+    let limitOrigLen = Math.min(origWords.length, m + 15);
     let slicedOrigWords = origWords.slice(0, limitOrigLen);
 
     let n = slicedOrigWords.length;
@@ -1549,12 +1548,12 @@ function computeStrictSubmissionAlignment(origWords, typedWords) {
             let cleanTyped = typedWords[j - 1].replace(/[,.;:!?]/g, '').toLowerCase();
             
             if (cleanOrig === cleanTyped) {
-                dp[i][j] = dp[i - 1][j - 1]; // Exact/Fuzzy match cost 0
+                dp[i][j] = dp[i - 1][j - 1];
             } else {
                 dp[i][j] = Math.min(
-                    dp[i - 1][j] + 1,    // omission / skipped word
-                    dp[i][j - 1] + 1,    // extra typed word / insertion
-                    dp[i - 1][j - 1] + 1 // substitution / typo
+                    dp[i - 1][j] + 1,    
+                    dp[i][j - 1] + 1,    
+                    dp[i - 1][j - 1] + 1 
                 );
             }
         }
@@ -1607,8 +1606,8 @@ function computeStrictSubmissionAlignment(origWords, typedWords) {
             let origW = slicedOrigWords[t.origIdx];
             let typedW = typedWords[t.typedIdx];
             let cleanOrig = origW.replace(/[,.;:!?]/g, '').toLowerCase();
-            let cleanTyped = typedW.replace(/[,.;:!?]/g, '').toLowerCase();
-            if (cleanOrig === cleanTyped) {
+            let cleanTyped = typedWords[j - 1] ? typedWords[j - 1].replace(/[,.;:!?]/g, '').toLowerCase() : typedW.replace(/[,.;:!?]/g, '').toLowerCase();
+            if (cleanOrig === cleanTyped || origW === typedW) {
                 diffList.push({ type: 'correct', word: typedW });
                 correctCount++;
                 correctKeystrokesCount += typedW.length + 1;
