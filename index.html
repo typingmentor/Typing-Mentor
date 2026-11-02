@@ -99,7 +99,21 @@
         .google-btn { background: #db4437; color: white; border: none; padding: 12px 20px; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
         .live-header { display: flex; justify-content: space-between; background: #1e293b; color: white; padding: 12px 20px; border-radius: 6px; margin-bottom: 15px; align-items: center; flex-shrink: 0; }
-        .text-display { height: 140px; overflow-y: auto; border: 1px solid #d1d5db; padding: 15px; background: #ffffff; line-height: 1.8; border-radius: 6px; margin-bottom: 15px; scroll-behavior: smooth; flex-shrink: 0; position: relative; }
+        
+        /* PARAGRAPH BOX WITH SMOOTH SCROLL */
+        .text-display { 
+            height: 140px; 
+            overflow-y: auto; 
+            border: 1px solid #d1d5db; 
+            padding: 15px; 
+            background: #ffffff; 
+            line-height: 1.8; 
+            border-radius: 6px; 
+            margin-bottom: 15px; 
+            scroll-behavior: smooth; 
+            flex-shrink: 0; 
+            position: relative; 
+        }
         .text-display span.correct { color: #16a34a; background: #dcfce7; text-decoration: none !important; }
         .text-display span.incorrect { color: #dc2626; background: #fee2e2; text-decoration: none !important; }
         .text-display span.current { background: #bae6fd; text-decoration: none !important; font-weight: bold; border-radius: 3px; padding: 0 2px; }
@@ -1359,6 +1373,7 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+/* EXACT ONE-LINE STEP AUTO-SCROLL LOGIC FIXED */
 document.addEventListener('input', function(e) {
     if (e.target && e.target.id === 'typingInput') {
         if (!isTimerStarted && e.target.value.length > 0) {
@@ -1390,24 +1405,28 @@ document.addEventListener('input', function(e) {
                 }
             });
 
-            // EXACT MIDDLE-LINE TRIGGERED AUTO-SCROLL LOGIC
+            // RELIABLE RE-ENGINEERED STEP SCROLL LOGIC
             let autoScrollToggle = document.getElementById('setAutoScroll');
             let isAutoScroll = autoScrollToggle ? autoScrollToggle.checked : true;
 
             if (isAutoScroll) {
                 let activeSpan = document.getElementById(`w-${activeIdx}`);
                 let pBox = document.getElementById('paragraphBox');
+                
                 if (activeSpan && pBox) {
-                    let spanTop = activeSpan.offsetTop - pBox.offsetTop;
-                    let visibleHeight = pBox.clientHeight;
-                    let currentScroll = pBox.scrollTop;
+                    let boxRect = pBox.getBoundingClientRect();
+                    let spanRect = activeSpan.getBoundingClientRect();
+                    
+                    // कैलकुलेट करें कि स्पैन बॉक्स की टॉप सीमा से कितना नीचे है
+                    let relativeSpanTop = spanRect.top - boxRect.top + pBox.scrollTop;
+                    let targetMiddle = (pBox.clientHeight / 2) - (activeSpan.offsetHeight / 2);
 
-                    // केवल तभी स्क्रॉल करे जब कर्सर मिडिल लाइन (या उससे नीचे) पहुंचे
-                    if (spanTop > currentScroll + (visibleHeight * 0.45)) {
-                        pBox.scrollTop = spanTop - (visibleHeight / 2) + (activeSpan.offsetHeight / 2);
-                    } else if (spanTop < currentScroll) {
-                        // बैकस्पेस दबाकर ऊपर जाने पर वापस सिंक करने का लॉजिक
-                        pBox.scrollTop = spanTop - 20;
+                    // जब वर्ड मिडल लाइन तक पहुँचेगा तभी 1-1 लाइन स्मूथ स्क्रॉल करेगा
+                    if (relativeSpanTop > targetMiddle) {
+                        pBox.scrollTop = relativeSpanTop - targetMiddle;
+                    } else if (spanRect.top < boxRect.top) {
+                        // बैकस्पेस करने पर ऊपर ले जाने के लिए
+                        pBox.scrollTop = relativeSpanTop - 20;
                     }
                 }
             }
@@ -1651,12 +1670,10 @@ async function finishTest() {
     let formattedDate = now.getDate() + " " + now.toLocaleString('en-US', { month: 'short' }) + " " + now.getFullYear() + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     let randomId = Math.random().toString(36).substring(2, 10).toUpperCase();
 
-    // SACT SECONDS FORMAT (1 mins : 15 secs)
     let minsPart = Math.floor(timeSpentSec / 60);
     let secsPart = timeSpentSec % 60;
     let exactTimeTakenStr = `${minsPart} mins : ${secsPart < 10 ? '0' : ''}${secsPart} secs`;
 
-    // DETAILED QUALIFYING FORMULA WITH ACCURACY, ALLOWANCE, AND PENALTY PER MISTAKE
     let exactFormulaStr = `Net Speed >= ${minNetWpmReq} WPM, Acc >= ${minAccReq}%, ${rules.allowance}% Mistakes Allowed, Penalty: ${penaltyMultiplier} Words/Mistake`;
 
     let resultObj = {
