@@ -99,7 +99,7 @@
         .google-btn { background: #db4437; color: white; border: none; padding: 12px 20px; font-size: 15px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
         .live-header { display: flex; justify-content: space-between; background: #1e293b; color: white; padding: 12px 20px; border-radius: 6px; margin-bottom: 15px; align-items: center; flex-shrink: 0; }
-        .text-display { height: 140px; overflow-y: auto; border: 1px solid #d1d5db; padding: 15px; background: #ffffff; line-height: 1.8; border-radius: 6px; margin-bottom: 15px; scroll-behavior: smooth; flex-shrink: 0; }
+        .text-display { height: 140px; overflow-y: auto; border: 1px solid #d1d5db; padding: 15px; background: #ffffff; line-height: 1.8; border-radius: 6px; margin-bottom: 15px; scroll-behavior: smooth; flex-shrink: 0; position: relative; }
         .text-display span.correct { color: #16a34a; background: #dcfce7; text-decoration: none !important; }
         .text-display span.incorrect { color: #dc2626; background: #fee2e2; text-decoration: none !important; }
         .text-display span.current { background: #bae6fd; text-decoration: none !important; font-weight: bold; border-radius: 3px; padding: 0 2px; }
@@ -1298,6 +1298,7 @@ function startLiveTest() {
             pBox.innerHTML = activeWords.map((w, i) => `<span id="w-${i}">${w}</span>`).join(' ');
             let firstSpan = document.getElementById('w-0');
             if (firstSpan) firstSpan.classList.add('current');
+            pBox.scrollTop = 0;
         }
     }
     
@@ -1388,6 +1389,28 @@ document.addEventListener('input', function(e) {
                     }
                 }
             });
+
+            // EXACT MIDDLE-LINE TRIGGERED AUTO-SCROLL LOGIC
+            let autoScrollToggle = document.getElementById('setAutoScroll');
+            let isAutoScroll = autoScrollToggle ? autoScrollToggle.checked : true;
+
+            if (isAutoScroll) {
+                let activeSpan = document.getElementById(`w-${activeIdx}`);
+                let pBox = document.getElementById('paragraphBox');
+                if (activeSpan && pBox) {
+                    let spanTop = activeSpan.offsetTop - pBox.offsetTop;
+                    let visibleHeight = pBox.clientHeight;
+                    let currentScroll = pBox.scrollTop;
+
+                    // केवल तभी स्क्रॉल करे जब कर्सर मिडिल लाइन (या उससे नीचे) पहुंचे
+                    if (spanTop > currentScroll + (visibleHeight * 0.45)) {
+                        pBox.scrollTop = spanTop - (visibleHeight / 2) + (activeSpan.offsetHeight / 2);
+                    } else if (spanTop < currentScroll) {
+                        // बैकस्पेस दबाकर ऊपर जाने पर वापस सिंक करने का लॉजिक
+                        pBox.scrollTop = spanTop - 20;
+                    }
+                }
+            }
         }
 
         let correctLive = 0;
