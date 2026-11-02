@@ -135,6 +135,30 @@
         .side-by-side-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px; }
         @media (max-width: 900px) { .side-by-side-grid { grid-template-columns: 1fr; } }
 
+        /* LEARN TYPING INTERACTIVE MODULE STYLES */
+        .learn-container { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+        .lessons-sidebar { width: 310px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; max-height: 620px; overflow-y: auto; }
+        .lesson-btn { display: block; width: 100%; text-align: left; padding: 10px 12px; margin-bottom: 6px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer; color: #334155; transition: 0.2s; }
+        .lesson-btn:hover, .lesson-btn.active-lesson { background: #e0e7ff; color: #1d4ed8; border-color: #2563eb; }
+
+        .learn-workspace { flex: 1; display: flex; flex-direction: column; gap: 15px; min-width: 320px; }
+        .edclub-practice-box { background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px; text-align: center; }
+        .edclub-text-row { font-size: 26px; font-family: monospace; letter-spacing: 4px; color: #334155; margin-bottom: 15px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+        .ed-char-box { padding: 8px 12px; border-bottom: 3px solid #cbd5e1; min-width: 38px; display: inline-block; }
+        .ed-char-box.current-char { border-bottom-color: #2563eb; color: #2563eb; font-weight: bold; background: #eff6ff; }
+        .ed-char-box.done-char { color: #16a34a; border-bottom-color: #16a34a; }
+
+        .virtual-keyboard-box { display: flex; flex-direction: column; background: #1e293b; padding: 20px; border-radius: 10px; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3); gap: 15px; }
+        .hands-graphic-container { display: flex; justify-content: space-between; width: 100%; max-width: 580px; padding: 0 20px; color: #94a3b8; font-size: 12px; font-weight: bold; }
+        .hand-box { background: #334155; padding: 6px 12px; border-radius: 6px; border: 1px solid #475569; }
+        .hand-box.active-hand-indicator { background: #2563eb; color: white; border-color: #38bdf8; box-shadow: 0 0 10px #38bdf8; }
+
+        .keyboard-row { display: flex; gap: 5px; }
+        .key-cap { background: #334155; color: white; padding: 10px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; min-width: 34px; text-align: center; transition: 0.1s; }
+        .key-cap.active-key { background: #dc2626 !important; transform: scale(1.1); box-shadow: 0 0 14px #dc2626; color: #ffffff; }
+
+        .finger-instruction-banner { background: #e0f2fe; border: 1px solid #0284c7; padding: 12px 18px; border-radius: 6px; font-weight: bold; color: #0369a1; text-align: center; font-size: 15px; }
+
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .modal-card { background: #ffffff; padding: 25px; border-radius: 10px; width: 380px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2); position: relative; }
         
@@ -165,10 +189,10 @@
         <div class="test-modal-card">
             <button class="close-modal-btn" onclick="closeTestModal()">&times;</button>
             <h3 style="margin-bottom: 5px;"><i class="fa-solid fa-file-lines"></i> Select a Test</h3>
-            <p style="font-size: 12px; color: #64748b; margin-bottom: 10px;">नीचे दिए गए टेस्ट्स में से अपना अभ्यास टेस्ट चुनें।</p>
+            <p style="font-size: 12px; color: #64748b; margin-bottom: 10px;">नीचे दिए गए टेस्ट्स में से अपना अभ्यास टेस्ट चुनें। (जो टेस्ट दे चुके हैं उन पर ✔ टिक लगा है)</p>
             
             <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
-                <input type="text" id="modalSearchInput" placeholder="टेस्ट सर्च करें..." oninput="renderTestCardsModal()" style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
+                <input type="text" id="modalSearchInput" placeholder="टेस्ट सर्च करें (जैसे: 1 या BSF)..." oninput="renderTestCardsModal()" style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
                 <label style="font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600;">
                     <input type="checkbox" id="unattemptedOnlyCheck" onchange="renderTestCardsModal()" style="width: 16px; height: 16px;"> Unattempted Only
                 </label>
@@ -221,6 +245,9 @@
                 <li class="menu-item" id="menu-results" onclick="switchTab('resultsHistoryView', this)">
                     <i class="fa-solid fa-square-poll-vertical"></i> My Test Results
                 </li>
+                <li class="menu-item" onclick="switchTab('learnView', this)">
+                    <i class="fa-solid fa-book-open"></i> Learn Typing
+                </li>
                 <li class="menu-item" style="margin-top: 20px; color: #dc2626;" onclick="logoutUser()">
                     <i class="fa-solid fa-right-from-bracket"></i> Logout
                 </li>
@@ -234,6 +261,7 @@
             <div id="homeView" class="view-section active">
                 <div class="card">
                     <h3>Your Dashboard Overview</h3>
+                    
                     <div style="background: linear-gradient(135deg, #eff6ff, #dbeafe); border-left: 5px solid #2563eb; padding: 15px; border-radius: 6px; margin: 15px 0;">
                         <h4 style="color: #1e40af; margin-bottom: 5px;"><i class="fa-solid fa-trophy"></i> All-Time Highest Performance Record</h4>
                         <p style="font-size: 14px; color: #334155; margin-bottom: 8px;">
@@ -241,7 +269,7 @@
                             Accuracy: <b id="bestAccDisplay" style="color: #2563eb;">0%</b>
                         </p>
                         <p style="font-style: italic; font-size: 13px; color: #475569;" id="motivationQuote">
-                            "सफलता एक दिन में नहीं मिलती, लेकिन ठान लो तो एक दिन जरूर मिलती है!"
+                            "सफलता एक दिन में नहीं मिलती, लेकिन ठान लो तो एक दिन जरूर मिलती है! निरंतर अभ्यास ही सफलता की चाबी है।"
                         </p>
                     </div>
 
@@ -261,13 +289,14 @@
                     <div class="card" style="text-align:center; display:flex; flex-direction:column; justify-content:center; align-items:center;">
                         <i class="fa-brands fa-telegram" style="font-size:45px; color:#2563eb; margin-bottom:10px;"></i>
                         <h3>Join Community Support</h3>
-                        <p style="font-size:13px; color:#64748b; margin:10px 0;">किसी भी समस्या या चर्चा के लिए हमारे टेलीग्राम ग्रुप से जुड़ें।</p>
+                        <p style="font-size:13px; color:#64748b; margin:10px 0;">किसी भी समस्या या चर्चा के लिए हमारे आधिकारिक टेलीग्राम ग्रुप से जुड़ें।</p>
                         <a href="https://t.me/+BRkqWkRoos81NTA1" target="_blank" class="start-btn" style="text-decoration:none; display:inline-block; width:auto; padding:10px 25px; background:#2563eb;"><i class="fa-brands fa-telegram"></i> Join Telegram Group</a>
                     </div>
 
                     <div class="support-box card">
                         <i class="fa-solid fa-hand-holding-dollar" style="font-size:35px; color:#16a34a; margin-bottom:8px;"></i>
                         <h4 style="margin-bottom:5px;">Query for Support & Donate</h4>
+                        <p style="font-size:12px; color:#64748b; margin-bottom:10px;">पोर्टल को निःशुल्क और बेहतर बनाए रखने के लिए स्वेच्छा से सहयोग करें।</p>
                         <img src="21079.png" onerror="this.onerror=null; this.src='21079.jpg'; this.onerror=function(){this.src='21079.jpeg';};" alt="Support QR Code" style="width:130px; height:130px; object-fit:contain; border:1px solid #cbd5e1; border-radius:6px; padding:4px; background:#fff;">
                         <p style="font-size:11px; color:#94a3b8; margin-top:5px;">Scan & Support Typing Mentor</p>
                     </div>
@@ -337,38 +366,26 @@
                                 <span>Full Screen Mode</span>
                                 <label class="switch"><input type="checkbox" id="setFullScreen" checked><span class="slider"></span></label>
                             </div>
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label>Default Font Size (px):</label>
+                                <input type="number" id="setFontSize" value="18" min="14" max="28" onchange="applyFontSize()">
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- EXAM RULES & CUSTOMIZATION VIEW -->
+            <!-- EXAM RULES VIEW -->
             <div id="rulesView" class="view-section">
                 <div class="card">
                     <h3><i class="fa-solid fa-sliders"></i> Exam Rules & Customization Settings</h3>
+                    <p style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">जिस परीक्षा के नियम आप बदलना चाहते हैं, पहले उसे सेलेक्ट करें या नया नियम जोड़ें:</p>
                     
-                    <!-- NEW COURSE CREATOR BLOCK -->
-                    <div style="background: #e0e7ff; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #c7d2fe;">
-                        <label style="font-size: 13px; font-weight: bold; color: #1e3a8a;"><i class="fa-solid fa-plus-circle"></i> नया कोर्स / परीक्षा नाम जोड़ें (Add New Course Name):</label>
-                        <div style="display: flex; gap: 10px; margin-top: 6px;">
-                            <input type="text" id="createNewCourseInput" placeholder="जैसे: RRB NTPC Typing Test या UP Police" style="flex: 1; padding: 8px; border: 1px solid #93c5fd; border-radius: 4px;">
-                            <button onclick="addNewCourseFromRules()" class="start-btn" style="margin: 0; width: auto; padding: 8px 18px; font-size: 13px; background: #16a34a;"><i class="fa-solid fa-plus"></i> नया कोर्स जोड़ें</button>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
-                        <div style="display: flex; gap: 15px; align-items: center;">
-                            <div style="flex: 1;">
-                                <label style="color:#1e3a8a; font-size:13px; font-weight: bold;"><i class="fa-solid fa-graduation-cap"></i> Select Exam Course Rule to Edit:</label>
-                                <select id="ruleCourseSelect" onchange="loadExamRulesForCourse()" style="font-weight:bold; margin-top: 4px;"></select>
-                            </div>
-                            <div style="width: 180px;">
-                                <label style="color:#1e3a8a; font-size:13px; font-weight: bold;"><i class="fa-solid fa-language"></i> Rules Language:</label>
-                                <select id="ruleLangSelect" onchange="loadExamRulesForCourse()" style="font-weight:bold; margin-top: 4px;">
-                                    <option value="English">English Rules</option>
-                                    <option value="Hindi">Hindi Rules</option>
-                                </select>
-                            </div>
+                    <div class="form-group" style="margin-bottom: 15px; background: #eef2ff; padding: 12px; border-radius: 6px;">
+                        <label style="color:#1e3a8a; font-size:14px;"><i class="fa-solid fa-graduation-cap"></i> Select or Create Exam Rule:</label>
+                        <div style="display:flex; gap:10px; margin-top:5px;">
+                            <select id="ruleCourseSelect" onchange="loadExamRulesForCourse()" style="font-weight:bold; flex:1;"></select>
+                            <button class="btn-view-result" onclick="createNewCustomExamRule()" style="background:#16a34a;"><i class="fa-solid fa-plus"></i> नया नियम जोड़ें</button>
                         </div>
                     </div>
 
@@ -400,14 +417,13 @@
                                 <option value="optional">Non-Mandatory (Penalize mistakes only, no fail)</option>
                             </select>
                         </div>
-                        <div class="form-group" style="grid-column: 1 / -1;">
-                            <label>Word Calculation Type / Hindi Font Layout:</label>
+                        <div class="form-group">
+                            <label>Word Calculation Type / Font Layout:</label>
                             <select id="ruleWordCalculation">
-                                <option value="5_keystroke">5 Keystrokes = 1 Word (Standard English / BSF HCM)</option>
-                                <option value="space_based">Space Separated Word (Exact Words / SSC CGL)</option>
+                                <option value="5_keystroke">5 Keystrokes = 1 Word (Standard English)</option>
+                                <option value="space_based">Space Separated Word (Exact Words)</option>
                                 <option value="mangal_inscript">Hindi Mangal Inscript Layout</option>
                                 <option value="mangal_remington">Hindi Mangal Remington Gail Layout</option>
-                                <option value="krutidev">Hindi KrutiDev 010 Layout</option>
                             </select>
                         </div>
                     </div>
@@ -418,22 +434,21 @@
             <!-- ADMIN VIEW -->
             <div id="adminView" class="view-section">
                 <div class="card">
-                    <h3>📥 नया टेस्ट / पैराग्राफ अपलोड करें</h3>
-                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">बने हुए कोर्स में टेस्ट अपलोड करने के लिए भाषा और कोर्स चुनें:</p>
+                    <h3>📥 नया टेस्ट सीरीज / पैराग्राफ अपलोड करें</h3>
+                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">नया कोर्स बनाएं या बिना पैराग्राफ के केवल टेस्ट/कोर्स नाम पहले जोड़ें।</p>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div class="form-group">
-                            <label>भाषा चुनें (Language):</label>
-                            <select id="uploadLangSelect" style="font-weight:bold; background:#f0fdf4;" onchange="refreshCourseDropdowns()">
-                                <option value="English">English</option>
-                                <option value="Hindi">Hindi</option>
-                            </select>
-                        </div>
+                    <div class="form-group">
+                        <label>भाषा चुनें (Language):</label>
+                        <select id="uploadLangSelect" style="font-weight:bold; background:#f0fdf4;">
+                            <option value="English">English</option>
+                            <option value="Hindi">Hindi (Mangal Font Support)</option>
+                        </select>
+                    </div>
 
-                        <div class="form-group">
-                            <label>कोर्स/टेस्ट सीरीज चुनें (Select Course):</label>
-                            <select id="uploadCourseCategory" style="font-weight:bold;" onchange="renderAdminDeleteList()"></select>
-                        </div>
+                    <div class="form-group">
+                        <label>कोर्स/टेस्ट सीरीज नाम:</label>
+                        <input type="text" id="uploadNewCourseInput" placeholder="या नया कोर्स नाम टाइप करें (जैसे: RRB NTPC Typing Test)">
+                        <select id="uploadCourseCategory" style="margin-top:6px;" onchange="document.getElementById('uploadNewCourseInput').value = this.value; renderAdminDeleteList();"></select>
                     </div>
 
                     <div class="form-group">
@@ -442,8 +457,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label>पैराग्राफ टेक्स्ट (Required):</label>
-                        <textarea id="uploadTestText" rows="6" placeholder="यहाँ पैराग्राफ का पूरा टेक्स्ट पेस्ट करें..."></textarea>
+                        <label>पैराग्राफ टेक्स्ट (Optional - बाद में भी जोड़ सकते हैं):</label>
+                        <textarea id="uploadTestText" rows="6" placeholder="यहाँ टेक्स्ट पेस्ट करें (खाली छोड़ने पर केवल टेस्ट नाम जुड़ेगा)..."></textarea>
                     </div>
 
                     <button class="start-btn" style="width:auto; padding:10px 25px;" onclick="addNewTestToPortal()">Upload to Cloud & Publish</button>
@@ -487,6 +502,7 @@
             <div id="resultsHistoryView" class="view-section">
                 <div class="card">
                     <h3>My Test Results History</h3>
+                    <p style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">अपने पिछले किसी भी टेस्ट का विस्तृत रिजल्ट देखने के लिए 'View' पर क्लिक करें।</p>
                     <table class="results-table">
                         <thead>
                             <tr>
@@ -505,7 +521,7 @@
                 </div>
             </div>
 
-            <!-- 6. SINGLE DETAILED RESULT SUMMARY VIEW -->
+            <!-- 6. SINGLE DETAILED RESULT SUMMARY VIEW (SIDE BY SIDE LAYOUT) -->
             <div id="singleResultView" class="view-section">
                 <button class="btn-view-result" onclick="switchTab('resultsHistoryView', document.getElementById('menu-results'))" style="margin-bottom: 15px; padding: 8px 15px; font-size:14px; width:fit-content;">
                     <i class="fa-solid fa-arrow-left"></i> Back to All Results
@@ -517,13 +533,16 @@
                         <table class="summary-table">
                             <thead><tr><th>DESCRIPTION</th><th style="text-align:right;">RESULT</th></tr></thead>
                             <tbody>
-                                <tr><td class="label">Result ID</td><td class="value"><a href="#" id="resLinkShare" onclick="copyResultShareLink(event)" style="color:#2563eb; text-decoration:underline; cursor:pointer;">-</a></td></tr>
+                                <tr><td class="label">Result ID / Share Link</td><td class="value"><a href="#" id="resLinkShare" onclick="copyResultShareLink(event)" style="color:#2563eb; text-decoration:underline; cursor:pointer;" title="Click to copy shareable link">-</a></td></tr>
                                 <tr><td class="label">Test Duration</td><td class="value" id="resDuration">-</td></tr>
                                 <tr><td class="label">Time Taken</td><td class="value" id="resTimeTaken">-</td></tr>
-                                <tr><td class="label">Total Key Strokes</td><td class="value" id="resTotalKeystrokes">0</td></tr>
+                                <tr><td class="label">Total Key Strokes Given</td><td class="value" id="resTotalKeystrokes">0</td></tr>
                                 <tr><td class="label">Total Words</td><td class="value" id="resTotalWords">0</td></tr>
+                                <tr><td class="label">Typed Key Strokes</td><td class="value" id="resTypedKeystrokes">0</td></tr>
+                                <tr><td class="label">Total Typed Words</td><td class="value" id="resTypedWords">0</td></tr>
+                                <tr><td class="label">Typed Correct Key Strokes</td><td class="value" id="resTypedCorrectKeystrokes" style="color:#16a34a;">0</td></tr>
                                 <tr><td class="label">Correct Words</td><td class="value" id="resCorrectWords" style="color:#16a34a;">0</td></tr>
-                                <tr><td class="label">Incorrect Words</td><td class="value" id="resIncorrectWords">0</td></tr>
+                                <tr><td class="label">Incorrect Words / Omissions</td><td class="value" id="resIncorrectWords">0</td></tr>
                             </tbody>
                         </table>
 
@@ -534,14 +553,85 @@
                                 <tr><td class="label">Allowed Mistakes</td><td class="value" id="resAllowedMistakes">0</td></tr>
                                 <tr><td class="label">Penalty</td><td class="value" id="resPenalty">0</td></tr>
                                 <tr><td class="label">Net Speed (WPM)</td><td class="value" id="resNet" style="font-size:16px;">0 WPM</td></tr>
+                                <tr><td class="label">Backspace Count</td><td class="value" id="resBackspaceCount">0</td></tr>
                                 <tr><td class="label">Accuracy (%)</td><td class="value" id="resAccuracy">0%</td></tr>
                                 <tr><td class="label">Status</td><td class="value" id="resStatus">-</td></tr>
+                                <tr><td class="label">Qualifying Formula</td><td class="value" id="resFormula" style="font-size:12px; font-weight:normal; color:#475569;">-</td></tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown:</h4>
+                    <h4 style="margin-top: 25px;"><i class="fa-solid fa-layer-group"></i> Mistakes Breakdown (Hybrid LCS Dynamic Alignment Engine):</h4>
+                    
+                    <div class="legend-box">
+                        <div class="legend-item"><span class="word-normal">Word</span> Correct Typed (Normal)</div>
+                        <div class="legend-item"><span class="word-orig-blue-line">Word</span> Original Word (Should be typed)</div>
+                        <div class="legend-item"><span class="word-wrong-red">Word</span> Your Wrong Typed Word</div>
+                        <div class="legend-item"><span class="word-untyped-strike">Word</span> Untyped / Skipped Passage Block (Middle Strikethrough)</div>
+                    </div>
+
                     <div class="no-scroll-breakdown" id="differencesBox"></div>
+
+                    <!-- SIDE BY SIDE PASSAGES COMPARISON -->
+                    <div class="side-by-side-grid" style="margin-top: 25px;">
+                        <div>
+                            <h4 style="margin-bottom: 8px; color: #1e293b;"><i class="fa-solid fa-keyboard"></i> Your Typed Passage:</h4>
+                            <div id="yourTypedPassageBox" class="no-scroll-breakdown" style="font-size: 14px; color: #334155; min-height: 180px;"></div>
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 8px; color: #1e293b;"><i class="fa-solid fa-file-lines"></i> Original Passage Text:</h4>
+                            <div id="originalPassageBox" class="no-scroll-breakdown" style="font-size: 14px; color: #334155; min-height: 180px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. LEARN TYPING -->
+            <div id="learnView" class="view-section">
+                <div class="card">
+                    <h3><i class="fa-solid fa-book-open"></i> Learn Typing & Hands Finger Guide</h3>
+                    <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">बाईं तरफ से पाठ चुनें। कीबोर्ड पर उंगलियों की सटीक पोजीशन और हाइलाइटेड हाथ देखकर अभ्यास करें।</p>
+                    
+                    <div class="learn-container">
+                        <div class="lessons-sidebar" id="lessonsSidebarList"></div>
+
+                        <div class="learn-workspace">
+                            <div class="edclub-practice-box">
+                                <h4 id="activeLessonTitleDisplay" style="margin-bottom: 12px; font-size: 16px; color:#1e293b; text-align: left;"><i class="fa-solid fa-graduation-cap"></i> Lesson 1</h4>
+                                
+                                <div class="edclub-text-row" id="edclubTextRowContainer"></div>
+
+                                <input type="text" id="learnInputBox" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="यहाँ टाइप करना शुरू करें..." oninput="handleLearnTypingInput(event)" style="opacity: 0; position: absolute; pointer-events: none;" autofocus>
+                            </div>
+
+                            <div class="finger-instruction-banner" id="fingerInstructionBanner">
+                                <i class="fa-solid fa-hand-pointer"></i> <span id="fingerInstructionText">टाइप करना शुरू करने के लिए कुंजी दबाएं...</span>
+                            </div>
+
+                            <div class="virtual-keyboard-box" onclick="document.getElementById('learnInputBox').focus()">
+                                <div class="hands-graphic-container">
+                                    <div class="hand-box" id="leftHandBox"><i class="fa-solid fa-hand"></i> LEFT HAND (ASDF)</div>
+                                    <div class="hand-box" id="rightHandBox"><i class="fa-solid fa-hand"></i> RIGHT HAND (JKL;)</div>
+                                </div>
+
+                                <div class="keyboard-row">
+                                    <span class="key-cap" id="key-`">~</span><span class="key-cap" id="key-1">1</span><span class="key-cap" id="key-2">2</span><span class="key-cap" id="key-3">3</span><span class="key-cap" id="key-4">4</span><span class="key-cap" id="key-5">5</span><span class="key-cap" id="key-6">6</span><span class="key-cap" id="key-7">7</span><span class="key-cap" id="key-8">8</span><span class="key-cap" id="key-9">9</span><span class="key-cap" id="key-0">0</span><span class="key-cap" id="key--">-</span><span class="key-cap" id="key-=">=</span>
+                                </div>
+                                <div class="keyboard-row">
+                                    <span class="key-cap" id="key-q">Q</span><span class="key-cap" id="key-w">W</span><span class="key-cap" id="key-e">E</span><span class="key-cap" id="key-r">R</span><span class="key-cap" id="key-t">T</span><span class="key-cap" id="key-y">Y</span><span class="key-cap" id="key-u">U</span><span class="key-cap" id="key-i">I</span><span class="key-cap" id="key-o">O</span><span class="key-cap" id="key-p">P</span><span class="key-cap" id="key-[">[</span><span class="key-cap" id="key-]">]</span>
+                                </div>
+                                <div class="keyboard-row">
+                                    <span class="key-cap" id="key-a">A</span><span class="key-cap" id="key-s">S</span><span class="key-cap" id="key-d">D</span><span class="key-cap" id="key-f">F</span><span class="key-cap" id="key-g">G</span><span class="key-cap" id="key-h">H</span><span class="key-cap" id="key-j">J</span><span class="key-cap" id="key-k">K</span><span class="key-cap" id="key-l">L</span><span class="key-cap" id="key-;">;</span><span class="key-cap" id="key-'">'</span>
+                                </div>
+                                <div class="keyboard-row">
+                                    <span class="key-cap" id="key-z">Z</span><span class="key-cap" id="key-x">X</span><span class="key-cap" id="key-c">C</span><span class="key-cap" id="key-v">V</span><span class="key-cap" id="key-b">B</span><span class="key-cap" id="key-n">N</span><span class="key-cap" id="key-m">M</span><span class="key-cap" id="key-,">,</span><span class="key-cap" id="key-.">.</span><span class="key-cap" id="key-/">/</span>
+                                </div>
+                                <div class="keyboard-row">
+                                    <span class="key-cap" id="key-space" style="width: 250px;">SPACE BAR</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -561,14 +651,95 @@ let testHistory = [];
 let loggedInUserEmail = localStorage.getItem('tm_user_email') || null;
 let loggedInUserName = localStorage.getItem('tm_user_name') || "Guest User";
 
+const fingerMapping = {
+    'q': { hand: 'left', text: "Left Pinky (बाएं हाथ की कनिष्ठिका उंगली)" },
+    'a': { hand: 'left', text: "Left Pinky (बाएं हाथ की कनिष्ठिका उंगली)" },
+    'z': { hand: 'left', text: "Left Pinky (बाएं हाथ की कनिष्ठिका उंगली)" },
+    '1': { hand: 'left', text: "Left Pinky (बाएं हाथ की छोटी उंगली)" },
+    'w': { hand: 'left', text: "Left Ring Finger (बाएं हाथ की अनामिका उंगली)" },
+    's': { hand: 'left', text: "Left Ring Finger (बाएं हाथ की अनामिका उंगली)" },
+    'x': { hand: 'left', text: "Left Ring Finger (बाएं हाथ की अनामिका उंगली)" },
+    '2': { hand: 'left', text: "Left Ring Finger (बाएं हाथ की अनामिका उंगली)" },
+    'e': { hand: 'left', text: "Left Middle Finger (बाएं हाथ की मध्यमा उंगली)" },
+    'd': { hand: 'left', text: "Left Middle Finger (बाएं हाथ की मध्यमा उंगली)" },
+    'c': { hand: 'left', text: "Left Middle Finger (बाएं हाथ की मध्यमा उंगली)" },
+    '3': { hand: 'left', text: "Left Middle Finger (बाएं हाथ की बीच वाली उंगली)" },
+    'r': { hand: 'left', text: "Left Index Finger (बाएं हाथ की तर्जनी उंगली)" },
+    'f': { hand: 'left', text: "Left Index Finger (बाएं हाथ की तर्जनी उंगली)" },
+    'v': { hand: 'left', text: "Left Index Finger (बाएं हाथ की तर्जनी उंगली)" },
+    't': { hand: 'left', text: "Left Index Finger (बाएं हाथ की तर्जनी उंगली)" },
+    'g': { hand: 'left', text: "Left Index Finger (बाएं हाथ की तर्जनी उंगली)" },
+    'b': { hand: 'left', text: "Left Index Finger (बाएं हाथ की तर्जनी उंगली)" },
+    '4': { hand: 'left', text: "Left Index Finger (बाएं हाथ की तर्जनी उंगली)" },
+    '5': { hand: 'left', text: "Left Index Finger (बाएं हाथ की तर्जनी उंगली)" },
+    'y': { hand: 'right', text: "Right Index Finger (दाएं हाथ की तर्जनी उंगली)" },
+    'h': { hand: 'right', text: "Right Index Finger (दाएं हाथ की तर्जनी उंगली)" },
+    'n': { hand: 'right', text: "Right Index Finger (दाएं हाथ की तर्जनी उंगली)" },
+    'u': { hand: 'right', text: "Right Index Finger (दाएं हाथ की तर्जनी उंगली)" },
+    'j': { hand: 'right', text: "Right Index Finger (दाएं हाथ की तर्जनी उंगली)" },
+    'm': { hand: 'right', text: "Right Index Finger (दाएं हाथ की तर्जनी उंगली)" },
+    '6': { hand: 'right', text: "Right Index Finger (दाएं हाथ की तर्जनी उंगली)" },
+    '7': { hand: 'right', text: "Right Index Finger (दाएं हाथ की तर्जनी उंगली)" },
+    'i': { hand: 'right', text: "Right Middle Finger (दाएं हाथ की मध्यमा उंगली)" },
+    'k': { hand: 'right', text: "Right Middle Finger (दाएं हाथ की मध्यमा उंगली)" },
+    ',': { hand: 'right', text: "Right Middle Finger (दाएं हाथ की मध्यमा उंगली)" },
+    '8': { hand: 'right', text: "Right Middle Finger (दाएं हाथ की बीच वाली उंगली)" },
+    'o': { hand: 'right', text: "Right Ring Finger (दाएं हाथ की अनामिका उंगली)" },
+    'l': { hand: 'right', text: "Right Ring Finger (दाएं हाथ की अनामिका उंगली)" },
+    '.': { hand: 'right', text: "Right Ring Finger (दाएं हाथ की अनामिका उंगली)" },
+    '9': { hand: 'right', text: "Right Ring Finger (दाएं हाथ की अनामिका उंगली)" },
+    'p': { hand: 'right', text: "Right Pinky (दाएं हाथ की कनिष्ठिका उंगली)" },
+    ';': { hand: 'right', text: "Right Pinky (दाएं हाथ की कनिष्ठिका उंगली)" },
+    '/': { hand: 'right', text: "Right Pinky (दाएं हाथ की कनिष्ठिका उंगली)" },
+    '0': { hand: 'right', text: "Right Pinky (दाएं हाथ की छोटी उंगली)" },
+    ' ': { hand: 'both', text: "Thumb (अंगूठे से स्पेस बार दबाएं)" }
+};
+
+let learnLessonsList = [
+    { title: "Lesson 1: Home Row (f & j)", text: "f j f j j f j f fff jjj f j f j j f j f" },
+    { title: "Lesson 2: Home Row (d & k)", text: "d k d k k d k d ddd kkk d k d k k d k d" },
+    { title: "Lesson 3: Home Row (s & l)", text: "s l s l l s l s sss lll s l s l l s l s" },
+    { title: "Lesson 4: Home Row (a & ;)", text: "a ; a ; ; a ; a aaa ;;; a ; a ; ; a ; a" },
+    { title: "Lesson 5: Home Row Complete Review", text: "asdfghjkl; asdf ghjkl; dad fad sad lad gall hall flask glass" },
+    { title: "Lesson 6: Top Row (r & u)", text: "r u r u u r u r rrr uuu r u r u u r u r" },
+    { title: "Lesson 7: Top Row (e & i)", text: "e i e i i e i e eee iii e i e i i e i e" },
+    { title: "Lesson 8: Top Row (w & o)", text: "w o w o o w o w www ooo w o w o o w o w" },
+    { title: "Lesson 9: Top Row (q & p)", text: "q p q p p q p q qqq ppp q p q p p q p q" },
+    { title: "Lesson 10: Top Row Complete Review", text: "qwertyuiop qwerty uiop power route quiet quite tower router writer" },
+    { title: "Lesson 11: Bottom Row (v & m)", text: "v m v m m v m v vvv mmm v m v m m v m v" },
+    { title: "Lesson 12: Bottom Row (c & ,)", text: "c , c , , c , c ccc ,, c , c , , c , c" },
+    { title: "Lesson 13: Bottom Row (x & .)", text: "x . x . . x . x xxx ... x . x . . x . x" },
+    { title: "Lesson 14: Bottom Row (z & /)", text: "z / z / / z / z zzz /// z / z / / z / z" },
+    { title: "Lesson 15: Number Row Practice", text: "1 2 3 4 5 6 7 8 9 0 1234567890 12345 67890" },
+    { title: "Combo Drill 1: Home & Top Row Mix", text: "sad red fed kid jar oak dark lake park safe high free gear" },
+    { title: "Combo Drill 2: Home & Bottom Row Mix", text: "van cab max lab zinc scan jam dam back glass mask calm" },
+    { title: "Combo Drill 3: All Letters Rhythm Drill", text: "the quick brown fox jumps over the lazy dog and runs fast" },
+    { title: "Combo Drill 4: Numbers & Home Row", text: "asdf1 2345 hjkl6 7890 12345asdf 67890hjkl" },
+    { title: "Combo Drill 5: Words & Punctuation", text: "hello, world. fast typing, high accuracy. practice everyday!" },
+    { title: "Combo Drill 6: Common English Words", text: "have with this form from line have with this form from line" },
+    { title: "Combo Drill 7: Key Dexterity Drill", text: "quip word zoom task view flex bold quit apex size jump" },
+    { title: "Combo Drill 8: Real Sentence Practice 1", text: "if you want your typing speed to increase you must focus on accuracy." },
+    { title: "Combo Drill 9: Real Sentence Practice 2", text: "consistent practice helps in clearing government typing speed tests." },
+    { title: "Combo Drill 10: Full Keyboard Master Challenge", text: "pack my box with five dozen liquor jugs 1234567890." }
+];
+let activeLessonIndex = 0;
+let currentLessonTypedIndex = 0;
+
 let examRulesConfig = JSON.parse(localStorage.getItem('tm_exam_rules_config')) || {
-    "BSF HCM Typing Test": { English: { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, accMandatory: "mandatory", wordCalc: "5_keystroke" } },
-    "SSC CGL Typing Test": { English: { allowance: 5, penalty: 10, minWpm: 27, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory", wordCalc: "space_based" } }
+    "BSF HCM Typing Test": { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, accMandatory: "mandatory", wordCalc: "5_keystroke" },
+    "SSC CGL Typing Test": { allowance: 5, penalty: 10, minWpm: 27, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory", wordCalc: "5_keystroke" },
+    "General Practice": { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1000, minAcc: 80, accMandatory: "optional", wordCalc: "5_keystroke" }
 };
 
 let typingData = JSON.parse(localStorage.getItem('tm_typing_data_custom')) || {
-    "English": { "BSF HCM Typing Test": [], "SSC CGL Typing Test": [] },
-    "Hindi": { "BSF HCM Typing Test": [] }
+    "English": {
+        "BSF HCM Typing Test": [],
+        "SSC CGL Typing Test": [],
+        "General Practice": []
+    },
+    "Hindi": {
+        "Hindi Standard Test": []
+    }
 };
 
 async function handleGoogleLogin() {
@@ -577,7 +748,11 @@ async function handleGoogleLogin() {
         window.loggedInUserEmail = result.user.email;
         window.loggedInUserName = result.user.displayName || result.user.email.split('@')[0];
         saveUserSession();
-    } catch (error) { if (error.code !== "auth/popup-closed-by-user") alert("Login Error: " + error.message); }
+    } catch (error) {
+        if (error.code !== "auth/popup-closed-by-user") {
+            alert("Google Login Error: " + error.message);
+        }
+    }
 }
 
 function saveUserSession() {
@@ -596,11 +771,17 @@ function updateHeaderUserUI() {
     if (window.loggedInUserEmail) {
         if(nameEl) nameEl.innerText = window.loggedInUserName;
         if(emailEl) emailEl.innerText = window.loggedInUserEmail;
-        if(authBtn) { authBtn.innerText = "Logout"; authBtn.onclick = logoutUser; }
+        if(authBtn) { 
+            authBtn.innerText = "Logout"; 
+            authBtn.onclick = logoutUser; 
+        }
     } else {
         if(nameEl) nameEl.innerText = "Guest User";
         if(emailEl) emailEl.innerText = "Not logged in";
-        if(authBtn) { authBtn.innerText = "Login / Signup"; authBtn.onclick = openLoginModal; }
+        if(authBtn) { 
+            authBtn.innerText = "Login / Signup"; 
+            authBtn.onclick = openLoginModal; 
+        }
     }
 }
 
@@ -623,11 +804,11 @@ async function fetchCloudData() {
                 let data = docSnap.data();
                 let lang = data.language || "English";
                 let course = data.course;
-                if (course && data.title && data.text) {
+                if (course && data.title) {
                     if (!typingData[lang]) typingData[lang] = {};
                     if (!typingData[lang][course]) typingData[lang][course] = [];
                     if (!typingData[lang][course].some(t => t.title === data.title)) {
-                        typingData[lang][course].push({ id: docSnap.id, title: data.title, text: data.text });
+                        typingData[lang][course].push({ id: docSnap.id, title: data.title, text: data.text || "" });
                     }
                 }
             });
@@ -635,18 +816,43 @@ async function fetchCloudData() {
             refreshCourseDropdowns();
             onCourseChanged();
             updateAllExamsViewList();
+
+            if (window.loggedInUserEmail) {
+                let q = window.query(window.collection(window.db, "userResults"), window.where("email", "==", window.loggedInUserEmail));
+                let userSnap = await window.getDocs(q);
+                testHistory = [];
+                userSnap.forEach(d => testHistory.push({ docId: d.id, ...d.data() }));
+                testHistory.sort((a,b) => new Date(b.rawTimestamp) - new Date(a.rawTimestamp));
+                updateResultsHistoryTable();
+                updateBestPerformance();
+            }
         }
     } catch(e) { console.log("Cloud Fetch Error:", e); }
 }
 
 document.addEventListener('keydown', function(e) {
     if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-        let enteredPwd = prompt("🔐 एडमिन पासवर्ड दर्ज करें:");
-        if (enteredPwd === "Saurabh@2003") {
-            isAdminLoggedIn = true;
-            document.getElementById('adminSidebarMenu').classList.remove('hidden');
-            document.getElementById('rulesSidebarMenu').classList.remove('hidden');
-            alert("एडमिन एक्सेस एक्टिवेट हो गया है!");
+        if (isAdminLoggedIn) {
+            let adminItem = document.getElementById('adminSidebarMenu');
+            let rulesItem = document.getElementById('rulesSidebarMenu');
+            if (adminItem && rulesItem) {
+                adminItem.classList.toggle('hidden');
+                rulesItem.classList.toggle('hidden');
+            }
+        } else {
+            let enteredPwd = prompt("🔐 एडमिन पासवर्ड दर्ज करें:");
+            if (enteredPwd === "Saurabh@2003") {
+                isAdminLoggedIn = true;
+                let adminItem = document.getElementById('adminSidebarMenu');
+                let rulesItem = document.getElementById('rulesSidebarMenu');
+                if (adminItem && rulesItem) {
+                    adminItem.classList.remove('hidden');
+                    rulesItem.classList.remove('hidden');
+                }
+                alert("एडमिन एक्सेस एक्टिवेट हो गया है!");
+            } else if (enteredPwd !== null) {
+                alert("गलत पासवर्ड!");
+            }
         }
     }
 });
@@ -656,39 +862,87 @@ function checkAdminAccess(viewId) {
         switchTab(viewId, document.getElementById(viewId === 'adminView' ? 'adminSidebarMenu' : 'rulesSidebarMenu'));
         if(viewId === 'rulesView') loadExamRulesForCourse();
         if(viewId === 'adminView') { refreshCourseDropdowns(); renderAdminDeleteList(); }
+    } else {
+        let enteredPwd = prompt("🔐 एडमिन पासवर्ड दर्ज करें:");
+        if (enteredPwd === "Saurabh@2003") {
+            isAdminLoggedIn = true;
+            let adminItem = document.getElementById('adminSidebarMenu');
+            let rulesItem = document.getElementById('rulesSidebarMenu');
+            if (adminItem && rulesItem) {
+                adminItem.classList.remove('hidden');
+                rulesItem.classList.remove('hidden');
+            }
+            switchTab(viewId, document.getElementById(viewId === 'adminView' ? 'adminSidebarMenu' : 'rulesSidebarMenu'));
+            if(viewId === 'rulesView') loadExamRulesForCourse();
+            if(viewId === 'adminView') { refreshCourseDropdowns(); renderAdminDeleteList(); }
+        } else if (enteredPwd !== null) {
+            alert("गलत पासवर्ड!");
+        }
     }
 }
 
 window.onload = function() {
     let savedEmail = localStorage.getItem('tm_user_email');
+    let savedName = localStorage.getItem('tm_user_name');
     if (savedEmail) {
         window.loggedInUserEmail = savedEmail;
-        window.loggedInUserName = localStorage.getItem('tm_user_name') || savedEmail.split('@')[0];
+        window.loggedInUserName = savedName || savedEmail.split('@')[0];
     }
     updateHeaderUserUI();
     refreshCourseDropdowns();
     fetchCloudData();
     onCourseChanged();
     updateAllExamsViewList();
+    renderLearnLessonsSidebar();
+    loadLearnLesson(0);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedId = urlParams.get('resultId');
+    if (sharedId) {
+        loadSharedResult(sharedId);
+    } else {
+        switchTab('homeView', document.getElementById('menu-home'));
+    }
 };
 
 function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
 function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
 function logoutUser() { handleGoogleLogout(); }
-function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+
+function toggleSidebar() {
+    let sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.classList.toggle('collapsed');
+}
 
 function switchTab(tabId, clickedElement) {
     let views = document.querySelectorAll('.view-section');
     views.forEach(v => { v.classList.remove('active'); v.style.display = 'none'; });
+    
     let targetView = document.getElementById(tabId);
-    if (targetView) { targetView.style.display = 'flex'; targetView.classList.add('active'); }
+    if (targetView) {
+        targetView.style.display = 'flex';
+        targetView.classList.add('active');
+    }
+
     let menuItems = document.querySelectorAll('.menu-item');
     menuItems.forEach(item => item.classList.remove('active'));
     if (clickedElement) clickedElement.classList.add('active');
     
     if(tabId === 'rulesView') loadExamRulesForCourse();
+    if(tabId === 'homeView') updateBestPerformance();
     if(tabId === 'examsView') updateAllExamsViewList();
     if(tabId === 'adminView') renderAdminDeleteList();
+}
+
+function applyFontSize() {
+    let sizeInput = document.getElementById('setFontSize');
+    let pBox = document.getElementById('paragraphBox');
+    let tInput = document.getElementById('typingInput');
+    if (sizeInput && pBox && tInput) {
+        let size = sizeInput.value + 'px';
+        pBox.style.fontSize = size;
+        tInput.style.fontSize = size;
+    }
 }
 
 function onLanguageFilterChanged() {
@@ -703,25 +957,20 @@ function refreshCourseDropdowns() {
     let uploadCourseCategory = document.getElementById('uploadCourseCategory');
     
     let currentLang = langEl ? langEl.value : "English";
-    let allCourses = new Set();
+    if (!typingData[currentLang]) typingData[currentLang] = {};
+    let courses = Object.keys(typingData[currentLang]);
     
-    if (typingData["English"]) Object.keys(typingData["English"]).forEach(c => allCourses.add(c));
-    if (typingData["Hindi"]) Object.keys(typingData["Hindi"]).forEach(c => allCourses.add(c));
-    Object.keys(examRulesConfig).forEach(c => allCourses.add(c));
-    
-    let courseArray = Array.from(allCourses);
-
     let populate = (el) => {
         if(!el) return;
         let currentVal = el.value;
         el.innerHTML = "";
-        courseArray.forEach(c => {
+        courses.forEach(c => {
             let opt = document.createElement('option');
             opt.value = c;
             opt.textContent = c;
             el.appendChild(opt);
         });
-        if(courseArray.includes(currentVal)) el.value = currentVal;
+        if(courses.includes(currentVal)) el.value = currentVal;
     };
 
     populate(courseSelect);
@@ -730,25 +979,20 @@ function refreshCourseDropdowns() {
     renderAdminDeleteList();
 }
 
-function addNewCourseFromRules() {
-    let input = document.getElementById('createNewCourseInput');
-    let name = input ? input.value.trim() : "";
-    if(!name) { alert("कृपया कोर्स का नाम दर्ज करें!"); return; }
-    
-    if(!examRulesConfig[name]) {
-        examRulesConfig[name] = { English: { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, accMandatory: "mandatory", wordCalc: "5_keystroke" } };
-        localStorage.setItem('tm_exam_rules_config', JSON.stringify(examRulesConfig));
+function createNewCustomExamRule() {
+    let newExamName = prompt("नया परीक्षा/कोर्स नियम का नाम दर्ज करें (जैसे: UP Police Typing Test):");
+    if (!newExamName) return;
+    newExamName = newExamName.trim();
+    if (examRulesConfig[newExamName]) {
+        alert("यह नियम पहले से मौजूद है!");
+        return;
     }
-    
-    if(!typingData["English"][name]) typingData["English"][name] = [];
-    if(!typingData["Hindi"][name]) typingData["Hindi"][name] = [];
-    localStorage.setItem('tm_typing_data_custom', JSON.stringify(typingData));
-
+    examRulesConfig[newExamName] = { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory", wordCalc: "5_keystroke" };
+    localStorage.setItem('tm_exam_rules_config', JSON.stringify(examRulesConfig));
     refreshCourseDropdowns();
-    document.getElementById('ruleCourseSelect').value = name;
+    document.getElementById('ruleCourseSelect').value = newExamName;
     loadExamRulesForCourse();
-    input.value = "";
-    alert(`नया कोर्स '${name}' सफलतापूर्वक जोड़ दिया गया है!`);
+    alert(`नया नियम '${newExamName}' सफलतापूर्वक जोड़ दिया गया है!`);
 }
 
 function onCourseChanged() {
@@ -769,9 +1013,14 @@ function onCourseChanged() {
 
 function openTestModal() {
     document.getElementById('testSelectModal').classList.remove('hidden');
+    document.getElementById('modalSearchInput').value = "";
+    document.getElementById('unattemptedOnlyCheck').checked = false;
     renderTestCardsModal();
 }
-function closeTestModal() { document.getElementById('testSelectModal').classList.add('hidden'); }
+
+function closeTestModal() {
+    document.getElementById('testSelectModal').classList.add('hidden');
+}
 
 function renderTestCardsModal() {
     let langEl = document.getElementById('portalLangSelect');
@@ -781,6 +1030,9 @@ function renderTestCardsModal() {
     
     let lang = langEl.value;
     let course = courseEl.value;
+    let query = document.getElementById('modalSearchInput').value.trim().toLowerCase();
+    let unattemptedOnly = document.getElementById('unattemptedOnlyCheck').checked;
+    
     gridContainer.innerHTML = "";
     
     if (!typingData[lang] || !typingData[lang][course] || typingData[lang][course].length === 0) {
@@ -788,17 +1040,41 @@ function renderTestCardsModal() {
         return;
     }
 
-    typingData[lang][course].forEach((item, originalIndex) => {
+    let sortedList = [...typingData[lang][course]].map((item, originalIndex) => ({ ...item, originalIndex })).sort((a, b) => {
+        return a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' });
+    });
+
+    let attemptedTestNames = new Set(testHistory.map(h => h.name));
+
+    let countShown = 0;
+    sortedList.forEach(item => {
+        let isAttempted = attemptedTestNames.has(item.title);
+        
+        if (query && !item.title.toLowerCase().includes(query)) return;
+        if (unattemptedOnly && isAttempted) return;
+
+        countShown++;
         let card = document.createElement('div');
-        card.className = 'test-card-item';
-        card.innerHTML = `<div style="font-weight: bold; font-size: 14px; color: #1e293b;">${item.title}</div>`;
+        card.className = `test-card-item ${isAttempted ? 'attempted' : ''}`;
+        let wordCount = item.text ? item.text.trim().split(/\s+/).length : 0;
+        card.innerHTML = `
+            <div style="font-weight: bold; font-size: 14px; color: #1e293b; display: flex; justify-content: space-between; align-items: center;">
+                ${item.title}
+                ${isAttempted ? '<span style="color: #16a34a; font-size: 16px;" title="Attempted">✔</span>' : ''}
+            </div>
+            <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Words: ~${wordCount}</div>
+        `;
         card.onclick = function() {
-            document.getElementById('testSelectHiddenIndex').value = originalIndex;
+            document.getElementById('testSelectHiddenIndex').value = item.originalIndex;
             document.getElementById('selectedTestDisplayBox').value = item.title;
             closeTestModal();
         };
         gridContainer.appendChild(card);
     });
+
+    if (countShown === 0) {
+        gridContainer.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color:#94a3b8; padding:20px;">कोई मैचिंग टेस्ट नहीं मिला।</p>`;
+    }
 }
 
 function renderAdminDeleteList() {
@@ -816,7 +1092,7 @@ function renderAdminDeleteList() {
             let itemDiv = document.createElement('div');
             itemDiv.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:#f3f4f6; border-radius:4px; margin-bottom:6px; border:1px solid #e5e7eb;";
             itemDiv.innerHTML = `
-                <span style="font-size:13px; font-weight:600;">${testObj.title}</span>
+                <span style="font-size:13px; font-weight:600;">${testObj.title} ${!testObj.text ? '<span style="color:#eab308; font-size:11px;">(No Text Yet)</span>' : ''}</span>
                 <button onclick="deleteTestFromCourse('${lang}', '${course}', ${idx})" style="background:#dc2626; color:white; border:none; padding:4px 10px; border-radius:4px; font-size:12px; cursor:pointer;"><i class="fa-solid fa-trash"></i> Delete Test</button>
             `;
             container.appendChild(itemDiv);
@@ -844,38 +1120,62 @@ async function deleteTestFromCourse(lang, course, index) {
     }
 }
 
+async function deleteEntireCourse() {
+    let langEl = document.getElementById('uploadLangSelect');
+    let courseEl = document.getElementById('uploadCourseCategory');
+    if (!courseEl || !langEl) return;
+    let lang = langEl.value;
+    let course = courseEl.value;
+
+    if (confirm(`⚠️ चेतावनी: क्या आप पूरा कोर्स '${course}' और उसके अंदर के सभी टेस्ट्स को हमेशा के लिए हटाना चाहते हैं?`)) {
+        try {
+            if (typingData[lang] && typingData[lang][course]) {
+                for (let testObj of typingData[lang][course]) {
+                    if (testObj.id && window.db && window.deleteDoc && window.doc) {
+                        await window.deleteDoc(window.doc(window.db, "typingTests", testObj.id));
+                    }
+                }
+            }
+        } catch(e) { console.log("Cloud Course Delete Error:", e); }
+
+        if (typingData[lang]) delete typingData[lang][course];
+        if(examRulesConfig[course]) delete examRulesConfig[course];
+        
+        localStorage.setItem('tm_typing_data_custom', JSON.stringify(typingData));
+        localStorage.setItem('tm_exam_rules_config', JSON.stringify(examRulesConfig));
+        
+        alert("कोर्स सफलतापूर्वक हटा दिया गया है!");
+        refreshCourseDropdowns();
+        onCourseChanged();
+        updateAllExamsViewList();
+    }
+}
+
 function loadExamRulesForCourse() {
     let courseSelect = document.getElementById('ruleCourseSelect');
-    let langSelect = document.getElementById('ruleLangSelect');
-    if(!courseSelect || !langSelect) return;
+    if(!courseSelect) return;
     let selectedCourse = courseSelect.value;
-    let selectedLang = langSelect.value;
     
-    if(!examRulesConfig[selectedCourse]) examRulesConfig[selectedCourse] = {};
-    if(!examRulesConfig[selectedCourse][selectedLang]) {
-        examRulesConfig[selectedCourse][selectedLang] = { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory", wordCalc: selectedLang === "Hindi" ? "mangal_inscript" : "5_keystroke" };
+    if(!examRulesConfig[selectedCourse]) {
+        examRulesConfig[selectedCourse] = { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory", wordCalc: "5_keystroke" };
     }
 
-    let rules = examRulesConfig[selectedCourse][selectedLang];
+    let rules = examRulesConfig[selectedCourse];
     document.getElementById('ruleAllowance').value = rules.allowance;
     document.getElementById('rulePenalty').value = rules.penalty;
     document.getElementById('ruleMinWpm').value = rules.minWpm;
     document.getElementById('ruleMinKeystrokes').value = rules.minKeystrokes;
     document.getElementById('ruleMinAcc').value = rules.minAcc;
     document.getElementById('ruleAccuracyMandatory').value = rules.accMandatory || "mandatory";
-    document.getElementById('ruleWordCalculation').value = rules.wordCalc || (selectedLang === "Hindi" ? "mangal_inscript" : "5_keystroke");
+    document.getElementById('ruleWordCalculation').value = rules.wordCalc || "5_keystroke";
 }
 
 function saveExamRules() {
     let courseSelect = document.getElementById('ruleCourseSelect');
-    let langSelect = document.getElementById('ruleLangSelect');
-    if(!courseSelect || !langSelect) return;
+    if(!courseSelect) return;
     let selectedCourse = courseSelect.value;
-    let selectedLang = langSelect.value;
 
-    if(!examRulesConfig[selectedCourse]) examRulesConfig[selectedCourse] = {};
-
-    examRulesConfig[selectedCourse][selectedLang] = {
+    examRulesConfig[selectedCourse] = {
         allowance: parseFloat(document.getElementById('ruleAllowance').value),
         penalty: parseFloat(document.getElementById('rulePenalty').value),
         minWpm: parseFloat(document.getElementById('ruleMinWpm').value),
@@ -886,17 +1186,21 @@ function saveExamRules() {
     };
 
     localStorage.setItem('tm_exam_rules_config', JSON.stringify(examRulesConfig));
-    alert(`नियम '${selectedCourse}' (${selectedLang}) के लिए सफलतापूर्वक सहेज लिए गए हैं!`);
+    alert(`नियम '${selectedCourse}' के लिए सफलतापूर्वक सहेज लिए गए हैं!`);
 }
 
 async function addNewTestToPortal() {
-    let lang = document.getElementById('uploadLangSelect').value;
-    let course = document.getElementById('uploadCourseCategory').value;
+    let langEl = document.getElementById('uploadLangSelect');
+    let customCourseInput = document.getElementById('uploadNewCourseInput').value.trim();
+    let selectCourse = document.getElementById('uploadCourseCategory').value;
+    let lang = langEl ? langEl.value : "English";
+    let course = customCourseInput ? customCourseInput : selectCourse;
+    
     let title = document.getElementById('uploadTestTitle').value.trim();
     let content = document.getElementById('uploadTestText').value.trim();
 
-    if(!title || !content) {
-        alert("कृपया टेस्ट का नाम और पैराग्राफ दोनों भरें!");
+    if(!title) {
+        alert("कृपया टेस्ट का नाम (Title) दर्ज करें!");
         return;
     }
 
@@ -912,17 +1216,22 @@ async function addNewTestToPortal() {
             });
             docRefId = docRef.id;
         }
-    } catch(e) { console.log("Cloud Upload Warning:", e); }
+    } catch(e) {
+        console.log("Cloud Upload Warning:", e);
+    }
 
     if (!typingData[lang]) typingData[lang] = {};
     if (!typingData[lang][course]) typingData[lang][course] = [];
     typingData[lang][course].push({ id: docRefId, title: title, text: content });
     
     localStorage.setItem('tm_typing_data_custom', JSON.stringify(typingData));
-    alert("नया टेस्ट सफलतापूर्वक अपलोड हो गया!");
+    
+    alert("नया टेस्ट/कोर्स सफलतापूर्वक जोड़ दिया गया है!");
     document.getElementById('uploadTestTitle').value = "";
     document.getElementById('uploadTestText').value = "";
+    document.getElementById('uploadNewCourseInput').value = "";
     
+    refreshCourseDropdowns();
     onCourseChanged();
     updateAllExamsViewList();
     renderAdminDeleteList();
@@ -932,20 +1241,695 @@ function updateAllExamsViewList() {
     let listEl = document.getElementById('allExamsList');
     if(!listEl) return;
     listEl.innerHTML = "";
-    
-    let allCourses = new Set();
-    if (typingData["English"]) Object.keys(typingData["English"]).forEach(c => allCourses.add(c));
-    if (typingData["Hindi"]) Object.keys(typingData["Hindi"]).forEach(c => allCourses.add(c));
-    
-    allCourses.forEach(courseName => {
-        let engCount = (typingData["English"] && typingData["English"][courseName]) ? typingData["English"][courseName].length : 0;
-        let hinCount = (typingData["Hindi"] && typingData["Hindi"][courseName]) ? typingData["Hindi"][courseName].length : 0;
-        
-        let li = document.createElement('li');
-        li.style.marginBottom = "8px";
-        li.innerHTML = `<b>${courseName}</b> — (English: ${engCount} | Hindi: ${hinCount} Available) <span style="color:#16a34a; font-size:12px; font-weight:bold;">[Active Series]</span>`;
-        listEl.appendChild(li);
+    Object.keys(typingData).forEach(lang => {
+        Object.keys(typingData[lang]).forEach(courseName => {
+            let count = typingData[lang][courseName].length;
+            let li = document.createElement('li');
+            li.style.marginBottom = "8px";
+            li.innerHTML = `<b>[${lang}] ${courseName}</b> — (${count} Test Paragraphs) <span style="color:#16a34a; font-size:12px; font-weight:bold;">[Active Series]</span>`;
+            listEl.appendChild(li);
+        });
     });
+}
+
+function startLiveTest() {
+    let sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.classList.add('collapsed');
+
+    let fullScreenToggle = document.getElementById('setFullScreen');
+    if (fullScreenToggle && fullScreenToggle.checked) {
+        let elem = document.documentElement;
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen().catch(err => console.log(err));
+        }
+    }
+
+    switchTab('liveTestView');
+    applyFontSize();
+
+    let langEl = document.getElementById('portalLangSelect');
+    let courseEl = document.getElementById('courseSelect');
+    let testIdxInput = document.getElementById('testSelectHiddenIndex');
+    if (!courseEl || !testIdxInput || !langEl) return;
+
+    let lang = langEl.value;
+    let course = courseEl.value;
+    let testIdx = parseInt(testIdxInput.value);
+    
+    if (!typingData[lang] || !typingData[lang][course] || !typingData[lang][course][testIdx]) {
+        alert("कृपया पहले वैध टेस्ट चुनें!");
+        switchTab('chooseView', document.getElementById('menu-choose'));
+        return;
+    }
+
+    let testObj = typingData[lang][course][testIdx];
+    let text = testObj.text || "";
+    if (!text.trim()) {
+        alert("इस टेस्ट में अभी कोई पैराग्राफ टेक्स्ट नहीं है। कृपया एडमिन पैनल से टेक्स्ट जोड़ें!");
+        switchTab('chooseView', document.getElementById('menu-choose'));
+        return;
+    }
+
+    activeWords = text.trim().split(/\s+/);
+    
+    let titleDisplay = document.getElementById('liveTestTitleDisplay');
+    if(titleDisplay) titleDisplay.innerText = testObj.title;
+
+    let pBox = document.getElementById('paragraphBox');
+    let paperModeToggle = document.getElementById('setPaperMode');
+    let isPaperMode = paperModeToggle ? paperModeToggle.checked : false;
+
+    if (pBox) {
+        if (isPaperMode) {
+            let firstLineWords = activeWords.slice(0, 9).join(' ');
+            pBox.innerHTML = `<div style="font-weight:bold; color:#1e293b; margin-bottom:5px; font-size:15px;"><i class="fa-solid fa-file-lines"></i> ${testObj.title} (Paper Mode Active)</div><div style="font-size:17px; color:#334155; line-height:1.6;">${firstLineWords} ...</div>`;
+        } else {
+            pBox.innerHTML = activeWords.map((w, i) => `<span id="w-${i}">${w}</span>`).join(' ');
+            let firstSpan = document.getElementById('w-0');
+            if (firstSpan) firstSpan.classList.add('current');
+        }
+    }
+    
+    let timeSelectEl = document.getElementById('timeSelect');
+    totalTimeSec = timeSelectEl ? parseInt(timeSelectEl.value) * 60 : 300;
+    timeLeft = totalTimeSec;
+    backspaceCount = 0;
+
+    let typingInput = document.getElementById('typingInput');
+    if (typingInput) {
+        typingInput.value = '';
+        typingInput.disabled = false;
+        typingInput.focus();
+    }
+
+    isTimerStarted = false;
+    if (timerInterval) clearInterval(timerInterval);
+    
+    updateTimerDisplay();
+    document.getElementById('grossDisplay').innerText = "0 WPM";
+    document.getElementById('accuracyDisplay').innerText = "100%";
+}
+
+function updateTimerDisplay() {
+    let min = Math.floor(timeLeft / 60);
+    let sec = timeLeft % 60;
+    let timerDisplay = document.getElementById('timerDisplay');
+    if (timerDisplay) {
+        timerDisplay.innerText = `${min}:${sec < 10 ? '0' : ''}${sec}`;
+    }
+}
+
+function updateTimer() {
+    timeLeft--;
+    updateTimerDisplay();
+
+    let typingInput = document.getElementById('typingInput');
+    let timeSpent = (totalTimeSec - timeLeft) / 60;
+    if (timeSpent > 0 && typingInput) {
+        let typed = typingInput.value;
+        let rules = examRulesConfig[courseSelect.value] || { wordCalc: "5_keystroke" };
+        let divisor = rules.wordCalc === "space_based" ? 1 : 5;
+        let grossWords = typed.length / divisor;
+        let gross = Math.round((grossWords / timeSpent) * 10) / 10;
+        document.getElementById('grossDisplay').innerText = gross + " WPM";
+    }
+
+    if (timeLeft <= 0) {
+        finishTest();
+    }
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Backspace') {
+        let activeEl = document.activeElement;
+        if (activeEl && activeEl.id === 'typingInput') {
+            backspaceCount++;
+            let backspaceToggle = document.getElementById('setBackspace');
+            if (backspaceToggle && !backspaceToggle.checked) {
+                e.preventDefault();
+            }
+        }
+    }
+});
+
+document.addEventListener('input', function(e) {
+    if (e.target && e.target.id === 'typingInput') {
+        if (!isTimerStarted && e.target.value.length > 0) {
+            isTimerStarted = true;
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        let typedVal = e.target.value;
+        let typedWords = typedVal.split(/\s+/);
+        let activeIdx = typedWords.length - 1;
+
+        let highlightEl = document.getElementById('setHighlight');
+        let highlight = highlightEl ? highlightEl.checked : true;
+        let paperModeToggle = document.getElementById('setPaperMode');
+        let isPaperMode = paperModeToggle ? paperModeToggle.checked : false;
+
+        if (!isPaperMode) {
+            activeWords.forEach((word, idx) => {
+                let span = document.getElementById(`w-${idx}`);
+                if (!span) return;
+                span.className = '';
+
+                if (highlight) {
+                    if (idx < typedWords.length - 1) {
+                        span.classList.add(typedWords[idx] === word ? 'correct' : 'incorrect');
+                    } else if (idx === activeIdx) {
+                        span.classList.add('current');
+                    }
+                }
+            });
+        }
+
+        let correctLive = 0;
+        for(let i=0; i<typedWords.length - 1; i++) {
+            if(typedWords[i] === activeWords[i]) correctLive++;
+        }
+        let totalTypedSoFar = Math.max(1, typedWords.length - 1);
+        let liveAcc = Math.round((correctLive / totalTypedSoFar) * 100);
+        document.getElementById('accuracyDisplay').innerText = (liveAcc > 100 ? 100 : liveAcc) + "%";
+
+        let autoScrollEl = document.getElementById('setAutoScroll');
+        if (autoScrollEl && autoScrollEl.checked && !isPaperMode) {
+            let currentSpan = document.getElementById(`w-${activeIdx}`);
+            let pBox = document.getElementById('paragraphBox');
+            if (currentSpan && pBox) {
+                let spanTop = currentSpan.offsetTop - pBox.offsetTop;
+                let scrollThreshold = pBox.clientHeight * 0.4;
+                if (spanTop > scrollThreshold) {
+                    pBox.scrollTop = spanTop - 60;
+                }
+            }
+        }
+    }
+});
+
+function renderLearnLessonsSidebar() {
+    let sidebar = document.getElementById('lessonsSidebarList');
+    if (!sidebar) return;
+    sidebar.innerHTML = "";
+    learnLessonsList.forEach((lesson, idx) => {
+        let btn = document.createElement('button');
+        btn.className = `lesson-btn ${idx === activeLessonIndex ? 'active-lesson' : ''}`;
+        btn.innerHTML = `<i class="fa-solid fa-book"></i> ${lesson.title}`;
+        btn.onclick = () => loadLearnLesson(idx);
+        sidebar.appendChild(btn);
+    });
+}
+
+function loadLearnLesson(idx) {
+    activeLessonIndex = idx;
+    currentLessonTypedIndex = 0;
+    renderLearnLessonsSidebar();
+    let lesson = learnLessonsList[idx];
+    
+    let titleEl = document.getElementById('activeLessonTitleDisplay');
+    if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-graduation-cap"></i> ${lesson.title}`;
+
+    renderEdClubLessonBoxes();
+    highlightNextEdClubKey();
+
+    let inputEl = document.getElementById('learnInputBox');
+    if (inputEl) {
+        inputEl.value = "";
+        inputEl.focus();
+    }
+}
+
+function renderEdClubLessonBoxes() {
+    let container = document.getElementById('edclubTextRowContainer');
+    if (!container) return;
+    let text = learnLessonsList[activeLessonIndex].text;
+    container.innerHTML = "";
+
+    for (let i = 0; i < text.length; i++) {
+        let span = document.createElement('span');
+        span.className = 'ed-char-box';
+        if (i < currentLessonTypedIndex) {
+            span.classList.add('done-char');
+        } else if (i === currentLessonTypedIndex) {
+            span.classList.add('current-char');
+        }
+        span.innerText = text[i] === ' ' ? ' ' : text[i];
+        container.appendChild(span);
+    }
+}
+
+function highlightNextEdClubKey() {
+    document.querySelectorAll('.key-cap').forEach(el => el.classList.remove('active-key'));
+    document.getElementById('leftHandBox').classList.remove('active-hand-indicator');
+    document.getElementById('rightHandBox').classList.remove('active-hand-indicator');
+
+    let text = learnLessonsList[activeLessonIndex].text;
+    
+    if (currentLessonTypedIndex < text.length) {
+        let nextChar = text[currentLessonTypedIndex].toLowerCase();
+        let keyId = nextChar === ' ' ? 'key-space' : 'key-' + nextChar;
+        let targetKeyEl = document.getElementById(keyId);
+        if (targetKeyEl) {
+            targetKeyEl.classList.add('active-key');
+        }
+
+        let mapping = fingerMapping[nextChar] || { hand: 'left', text: `Press key '${nextChar.toUpperCase()}'` };
+        
+        if (mapping.hand === 'left') {
+            document.getElementById('leftHandBox').classList.add('active-hand-indicator');
+        } else if (mapping.hand === 'right') {
+            document.getElementById('rightHandBox').classList.add('active-hand-indicator');
+        } else {
+            document.getElementById('leftHandBox').classList.add('active-hand-indicator');
+            document.getElementById('rightHandBox').classList.add('active-hand-indicator');
+        }
+
+        let bannerTextEl = document.getElementById('fingerInstructionText');
+        if (bannerTextEl) {
+            bannerTextEl.innerHTML = `अगला बटन <b>'${nextChar === ' ' ? 'SPACE' : nextChar.toUpperCase()}'</b> — उंगली निर्देश: <u>${mapping.text}</u>`;
+        }
+    }
+}
+
+function handleLearnTypingInput(e) {
+    let text = learnLessonsList[activeLessonIndex].text;
+    let inputVal = e.target.value;
+    if (inputVal.length === 0) return;
+    
+    let typedChar = inputVal.slice(-1);
+    let expectedChar = text[currentLessonTypedIndex];
+
+    if (typedChar === expectedChar) {
+        currentLessonTypedIndex++;
+        renderEdClubLessonBoxes();
+        highlightNextEdClubKey();
+
+        if (currentLessonTypedIndex >= text.length) {
+            alert("🎉 बधाई हो! आपने यह अभ्यास सफलतापूर्वक पूरा कर लिया है!");
+            if (activeLessonIndex < learnLessonsList.length - 1) {
+                loadLearnLesson(activeLessonIndex + 1);
+            } else {
+                currentLessonTypedIndex = 0;
+                loadLearnLesson(0);
+            }
+        }
+    }
+    e.target.value = "";
+}
+
+document.addEventListener('keydown', function(e) {
+    let learnView = document.getElementById('learnView');
+    if (learnView && learnView.classList.contains('active')) {
+        let inputEl = document.getElementById('learnInputBox');
+        if (inputEl) {
+            inputEl.focus();
+            let fakeEvent = { target: { value: e.key } };
+            handleLearnTypingInput(fakeEvent);
+        }
+    }
+});
+
+function computeStrictSubmissionAlignment(origWords, typedWords) {
+    let n = origWords.length;
+    let m = typedWords.length;
+    
+    let dp = Array(n + 1).fill(null).map(() => Array(m + 1).fill(0));
+
+    for (let i = 1; i <= n; i++) {
+        for (let j = 1; j <= m; j++) {
+            let cleanOrig = origWords[i - 1].replace(/[,.;:!?]/g, '').toLowerCase();
+            let cleanTyped = typedWords[j - 1].replace(/[,.;:!?]/g, '').toLowerCase();
+            
+            if (cleanOrig === cleanTyped) {
+                dp[i][j] = dp[i - 1][j - 1] + 1;
+            } else {
+                dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+            }
+        }
+    }
+
+    let lcsPath = [];
+    let i = n, j = m;
+    while (i > 0 && j > 0) {
+        let cleanOrig = origWords[i - 1].replace(/[,.;:!?]/g, '').toLowerCase();
+        let cleanTyped = typedWords[j - 1].replace(/[,.;:!?]/g, '').toLowerCase();
+        if (cleanOrig === cleanTyped) {
+            lcsPath.push({ origIdx: i - 1, typedIdx: j - 1 });
+            i--; j--;
+        } else if (dp[i - 1][j] >= dp[i][j - 1]) {
+            i--;
+        } else {
+            j--;
+        }
+    }
+    lcsPath.reverse();
+
+    let diffList = [];
+    let correctCount = 0;
+    let mistakesCount = 0;
+    let correctKeystrokesCount = 0;
+
+    let currOrig = 0;
+    let currTyped = 0;
+
+    for (let match of lcsPath) {
+        while (currOrig < match.origIdx && currTyped < match.typedIdx) {
+            diffList.push({ type: 'typo', origWord: origWords[currOrig], userWord: typedWords[currTyped] });
+            mistakesCount++;
+            currOrig++;
+            currTyped++;
+        }
+        while (currOrig < match.origIdx) {
+            diffList.push({ type: 'omitted_word', origWord: origWords[currOrig] });
+            mistakesCount++;
+            currOrig++;
+        }
+        while (currTyped < match.typedIdx) {
+            diffList.push({ type: 'typo', origWord: "", userWord: typedWords[currTyped] });
+            mistakesCount++;
+            currTyped++;
+        }
+
+        let matchedWord = typedWords[match.typedIdx];
+        diffList.push({ type: 'correct', word: matchedWord });
+        correctCount++;
+        correctKeystrokesCount += matchedWord.length + 1;
+
+        currOrig = match.origIdx + 1;
+        currTyped = match.typedIdx + 1;
+    }
+
+    while (currOrig < n && currTyped < m) {
+        diffList.push({ type: 'typo', origWord: origWords[currOrig], userWord: typedWords[currTyped] });
+        mistakesCount++;
+        currOrig++;
+        currTyped++;
+    }
+    while (currOrig < n) {
+        diffList.push({ type: 'untyped_subdued', origWord: origWords[currOrig] });
+        currOrig++;
+    }
+    while (currTyped < m) {
+        diffList.push({ type: 'typo', origWord: "", userWord: typedWords[currTyped] });
+        mistakesCount++;
+        currTyped++;
+    }
+
+    return { diffList, correctCount, mistakesCount, correctKeystrokesCount };
+}
+
+async function finishTest() {
+    if (timerInterval) clearInterval(timerInterval);
+    let typingInput = document.getElementById('typingInput');
+    if (typingInput) typingInput.disabled = true;
+
+    if (document.exitFullscreen) {
+        document.exitFullscreen().catch(err => console.log(err));
+    }
+
+    let sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.classList.remove('collapsed');
+
+    let courseEl = document.getElementById('courseSelect');
+    let testIdxInput = document.getElementById('testSelectHiddenIndex');
+    let course = courseEl ? courseEl.value : 'General Practice';
+    let testIdx = testIdxInput ? parseInt(testIdxInput.value) : 0;
+    let lang = document.getElementById('portalLangSelect').value;
+
+    if (!typingData[lang] || !typingData[lang][course] || !typingData[lang][course][testIdx]) return;
+    let testObj = typingData[lang][course][testIdx];
+    let testName = testObj.title;
+
+    let rules = examRulesConfig[course] || { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, accMandatory: "mandatory", wordCalc: "5_keystroke" };
+
+    let allowPct = rules.allowance / 100;
+    let penaltyMultiplier = rules.penalty;
+    let minNetWpmReq = rules.minWpm;
+    let minKeysReq = rules.minKeystrokes;
+    let minAccReq = rules.minAcc;
+    let accMandatory = rules.accMandatory || "mandatory";
+    let wordCalc = rules.wordCalc || "5_keystroke";
+
+    let timeSpentSec = totalTimeSec - timeLeft;
+    let timeSpentMin = timeSpentSec / 60;
+    if (timeSpentMin <= 0) timeSpentMin = 0.01;
+    
+    let typed = typingInput ? typingInput.value : "";
+    let typedKeystrokes = typed.length;
+    let totalKeystrokesInOrig = activeWords.join(' ').length;
+    
+    let divisor = wordCalc === "space_based" ? 1 : 5;
+    let totalWordsInOrig = Math.round((totalKeystrokesInOrig / divisor) * 10) / 10;
+    let totalTypedWordsNum = Math.round((typedKeystrokes / divisor) * 10) / 10;
+    
+    let grossWords = typedKeystrokes / divisor;
+    let grossWpm = Math.round((grossWords / timeSpentMin) * 10) / 10;
+    
+    let typedWordsArray = typed.trim() ? typed.trim().split(/\s+/) : [];
+
+    let { diffList, correctCount, mistakesCount, correctKeystrokesCount } = computeStrictSubmissionAlignment(activeWords, typedWordsArray);
+
+    let correctWordsNum = Math.round((correctKeystrokesCount / divisor) * 10) / 10;
+
+    let allowedMistakes = Math.round((totalTypedWordsNum * allowPct) * 10) / 10;
+    let extraMistakes = Math.max(0, mistakesCount - allowedMistakes);
+    let penaltyWords = Math.round((extraMistakes * penaltyMultiplier) * 10) / 10;
+    
+    let netWords = Math.max(0, grossWords - penaltyWords);
+    let netWpm = Math.round((netWords / timeSpentMin) * 10) / 10;
+
+    let accuracy = typedKeystrokes > 0 ? Math.round((correctKeystrokesCount / typedKeystrokes) * 100 * 10) / 10 : 0;
+    if (accuracy > 100) accuracy = 100;
+
+    let isQualified = netWpm >= minNetWpmReq && typedKeystrokes >= minKeysReq;
+    if (accMandatory === "mandatory") {
+        if (accuracy < minAccReq) isQualified = false;
+    }
+    
+    let now = new Date();
+    let formattedDate = now.getDate() + " " + now.toLocaleString('en-US', { month: 'short' }) + " " + now.getFullYear() + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    let randomId = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+    let durationStr = Math.floor(totalTimeSec / 60) + " mins : 00 seconds";
+    let timeTakenStr = Math.floor(timeSpentSec / 60) + " mins : " + (timeSpentSec % 60) + " seconds";
+    let detailsStr = Math.floor(totalTimeSec / 60) + " mins | " + lang + " | " + testName + " | " + formattedDate + " | Email: " + (window.loggedInUserEmail || "Guest");
+    let formulaStr = `Net speed >= ${minNetWpmReq} WPM${accMandatory === "mandatory" ? `, Acc >= ${minAccReq}%` : ''} (${Math.round(allowPct*100)}% allowance)`;
+
+    let resultObj = {
+        id: randomId,
+        course: course,
+        email: window.loggedInUserEmail || "Guest",
+        rawTimestamp: now.toISOString(),
+        time: formattedDate,
+        name: testName,
+        duration: durationStr,
+        timeTaken: timeTakenStr,
+        formula: formulaStr,
+        totalKeystrokes: totalKeystrokesInOrig,
+        totalWords: totalWordsInOrig,
+        typedKeystrokes: typedKeystrokes,
+        typedCorrectKeystrokes: correctKeystrokesCount,
+        typedWordsCount: totalTypedWordsNum,
+        correctKeystrokes: correctKeystrokesCount,
+        correctWords: correctWordsNum,
+        incorrectWords: mistakesCount,
+        gross: grossWpm + " WPM",
+        allowedMistakes: allowedMistakes,
+        penalty: penaltyWords,
+        netWpm: netWpm,
+        backspaceCount: backspaceCount,
+        accuracy: accuracy,
+        status: isQualified ? "Qualified" : "Non Qualified",
+        details: detailsStr,
+        activeWords: activeWords,
+        typedWordsArray: typedWordsArray,
+        diffList: diffList,
+        typedText: typed
+    };
+
+    try {
+        if(window.db && window.addDoc && window.collection) {
+            let docRes = await window.addDoc(window.collection(window.db, "userResults"), resultObj);
+            resultObj.docId = docRes.id;
+        }
+    } catch(e) { console.log("Save Result Error:", e); }
+
+    testHistory.unshift(resultObj);
+    updateResultsHistoryTable();
+    updateBestPerformance();
+    viewSingleResult(0);
+}
+
+function updateResultsHistoryTable() {
+    let tbody = document.getElementById('resultsTableBody');
+    let totalCountEl = document.getElementById('totalTestsCount');
+    let qualCountEl = document.getElementById('qualifiedCount');
+
+    if (totalCountEl) totalCountEl.innerText = testHistory.length;
+    let qualified = testHistory.filter(h => h.status === "Qualified").length;
+    if (qualCountEl) qualCountEl.innerText = qualified;
+
+    if (!tbody) return;
+
+    if (testHistory.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No test attempts found yet.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = testHistory.map((h, index) => `
+        <tr>
+            <td>${h.time}</td>
+            <td><b>${h.name}</b></td>
+            <td>${h.accuracy}%</td>
+            <td class="${h.status === 'Qualified' ? 'status-qualified' : 'status-nonqualified'}">${h.status}</td>
+            <td><b>${h.netWpm} WPM</b></td>
+            <td><button class="btn-view-result" onclick="viewSingleResult(${index})"><i class="fa-solid fa-eye"></i> View</button></td>
+        </tr>
+    `).join('');
+}
+
+function updateBestPerformance() {
+    let bestSpeed = 0;
+    let bestAcc = 0;
+    
+    if (testHistory.length > 0) {
+        testHistory.forEach(h => {
+            if (h.netWpm > bestSpeed) {
+                bestSpeed = h.netWpm;
+                bestAcc = h.accuracy;
+            }
+        });
+    }
+
+    let speedEl = document.getElementById('bestSpeedDisplay');
+    let accEl = document.getElementById('bestAccDisplay');
+    if(speedEl) speedEl.innerText = bestSpeed + " WPM";
+    if(accEl) accEl.innerText = bestAcc + "%";
+
+    let quotes = [
+        "\"सफलता एक दिन में नहीं मिलती, लेकिन ठान लो तो एक दिन जरूर मिलती है! निरंतर अभ्यास ही सफलता की चाबी है।\"",
+        "\"मुश्किलें दिल के इरादे आजमाती हैं, स्वप्न के पर्दे निगाहों से हटाती हैं, हौसला मत हार गिर कर ऐ मुसाफिर, ठोकरें इंसान को चलना सिखाती हैं!\"",
+        "\"आज की मेहनत कल की जीत है, अपनी उंगलियों की रफ्तार और सटीकता को हर दिन बेहतर बनाओ!\"",
+        "\"लक्ष्य पर नजर और उंगलियों में फुर्ती हो, तो दुनिया की कोई भी टाइपिंग परीक्षा नामुमकिन नहीं!\""
+    ];
+    let randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    let quoteEl = document.getElementById('motivationQuote');
+    if(quoteEl) quoteEl.innerText = randomQuote;
+}
+
+function viewSingleResult(index) {
+    let res = testHistory[index];
+    if (!res) return;
+
+    if (!res.diffList && res.activeWords && res.typedWordsArray) {
+        let evaluated = computeStrictSubmissionAlignment(res.activeWords, res.typedWordsArray);
+        res.diffList = evaluated.diffList;
+    }
+
+    let setVal = (id, val) => {
+        let el = document.getElementById(id);
+        if (el) el.innerText = val;
+    };
+
+    let shareLink = window.location.origin + window.location.pathname + "?resultId=" + (res.docId || res.id);
+    let linkEl = document.getElementById('resLinkShare');
+    if (linkEl) {
+        linkEl.innerText = res.id + " (Copy Link)";
+        linkEl.setAttribute('data-link', shareLink);
+    }
+
+    setVal('resDuration', res.duration);
+    setVal('resTimeTaken', res.timeTaken);
+    setVal('resTotalKeystrokes', res.totalKeystrokes);
+    setVal('resTotalWords', res.totalWords);
+    setVal('resTypedKeystrokes', res.typedKeystrokes);
+    setVal('resTypedWords', res.typedWordsCount);
+    setVal('resTypedCorrectKeystrokes', res.typedCorrectKeystrokes || res.correctKeystrokes || 0);
+    setVal('resCorrectWords', res.correctWords);
+    setVal('resIncorrectWords', res.incorrectWords);
+
+    setVal('resGross', res.gross);
+    setVal('resAllowedMistakes', res.allowedMistakes);
+    setVal('resPenalty', res.penalty);
+    setVal('resNet', res.netWpm + " WPM");
+    setVal('resBackspaceCount', res.backspaceCount);
+    setVal('resAccuracy', res.accuracy + "%");
+    setVal('resDetails', res.details);
+    setVal('resFormula', res.formula);
+    
+    let statusEl = document.getElementById('resStatus');
+    if (statusEl) {
+        statusEl.innerText = res.status;
+        statusEl.style.color = res.status === 'Qualified' ? '#16a34a' : '#dc2626';
+    }
+
+    let diffHtml = "";
+    if (res.diffList && res.diffList.length > 0) {
+        diffHtml = res.diffList.map(item => {
+            if (item.type === 'correct') {
+                return `<span class="word-normal">${item.word}</span>`;
+            } else if (item.type === 'omitted_word') {
+                return `<span class="word-orig-blue-line">${item.origWord}</span>`;
+            } else if (item.type === 'untyped_subdued') {
+                return `<span class="word-untyped-strike">${item.origWord}</span>`;
+            } else if (item.type === 'typo') {
+                let origPart = item.origWord ? `<span class="word-orig-blue-line">${item.origWord}</span>` : "";
+                let userPart = item.userWord ? `<span class="word-wrong-red">${item.userWord}</span>` : "";
+                return origPart + userPart;
+            }
+        }).join(' ');
+    } else if (res.activeWords) {
+        diffHtml = res.activeWords.map(w => `<span class="word-normal">${w}</span>`).join(' ');
+    }
+
+    let diffBox = document.getElementById('differencesBox');
+    if (diffBox) diffBox.innerHTML = diffHtml;
+
+    let typedPassageEl = document.getElementById('yourTypedPassageBox');
+    let origPassageEl = document.getElementById('originalPassageBox');
+    if (typedPassageEl) typedPassageEl.innerText = res.typedText || (res.typedWordsArray ? res.typedWordsArray.join(' ') : "");
+    if (origPassageEl) origPassageEl.innerText = res.activeWords ? res.activeWords.join(' ') : "";
+
+    switchTab('singleResultView');
+}
+
+function copyResultShareLink(e) {
+    e.preventDefault();
+    let linkEl = document.getElementById('resLinkShare');
+    let shareLink = linkEl.getAttribute('data-link');
+    if (shareLink) {
+        navigator.clipboard.writeText(shareLink).then(() => {
+            alert("🔗 रिजल्ट शेयरिंग लिंक कॉपी हो गया है!");
+        }).catch(err => {
+            alert("लिंक कॉपी करने में विफल: " + err);
+        });
+    }
+}
+
+async function loadSharedResult(docId) {
+    try {
+        if (window.db && window.getDocs) {
+            let snap = await window.getDocs(window.collection(window.db, "userResults"));
+            let foundResult = null;
+            snap.forEach(d => {
+                if (d.id === docId || d.data().id === docId) {
+                    foundResult = { docId: d.id, ...d.data() };
+                }
+            });
+            if (foundResult) {
+                activeWords = foundResult.activeWords || [];
+                testHistory = [foundResult];
+                viewSingleResult(0);
+            } else {
+                alert("रिजल्ट नहीं मिला या लिंक एक्सपायर हो गया है।");
+                switchTab('homeView', document.getElementById('menu-home'));
+            }
+        }
+    } catch(e) {
+        console.log("Load Shared Result Error:", e);
+    }
 }
 </script>
 
