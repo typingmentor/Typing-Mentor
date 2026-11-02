@@ -1628,10 +1628,20 @@ async function finishTest() {
     let formattedDate = now.getDate() + " " + now.toLocaleString('en-US', { month: 'short' }) + " " + now.getFullYear() + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     let randomId = Math.random().toString(36).substring(2, 10).toUpperCase();
 
+    // SACT SECONDS FORMAT (1 mins : 15 secs)
+    let minsPart = Math.floor(timeSpentSec / 60);
+    let secsPart = timeSpentSec % 60;
+    let exactTimeTakenStr = `${minsPart} mins : ${secsPart < 10 ? '0' : ''}${secsPart} secs`;
+
+    // DETAILED QUALIFYING FORMULA WITH ACCURACY, ALLOWANCE, AND PENALTY PER MISTAKE
+    let exactFormulaStr = `Net Speed >= ${minNetWpmReq} WPM, Acc >= ${minAccReq}%, ${rules.allowance}% Mistakes Allowed, Penalty: ${penaltyMultiplier} Words/Mistake`;
+
     let resultObj = {
         id: randomId, course: course, email: window.loggedInUserEmail || "Guest",
         rawTimestamp: now.toISOString(), time: formattedDate, name: testName,
-        duration: Math.floor(totalTimeSec / 60) + " mins", timeTaken: Math.floor(timeSpentSec / 60) + " mins",
+        duration: Math.floor(totalTimeSec / 60) + " mins", 
+        timeTaken: exactTimeTakenStr,
+        formula: exactFormulaStr,
         totalKeystrokes: totalKeystrokesInOrig, totalWords: totalWordsInOrig,
         typedKeystrokes: typedKeystrokes, typedCorrectKeystrokes: correctKeystrokesCount,
         typedWordsCount: totalTypedWordsNum, correctWords: correctWordsNum,
@@ -1698,6 +1708,7 @@ function viewSingleResult(index) {
 
     setVal('resDuration', res.duration);
     setVal('resTimeTaken', res.timeTaken);
+    setVal('resFormula', res.formula || "-");
     setVal('resTotalKeystrokes', res.totalKeystrokes);
     setVal('resTotalWords', res.totalWords);
     setVal('resTypedKeystrokes', res.typedKeystrokes);
