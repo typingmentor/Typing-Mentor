@@ -310,6 +310,14 @@
                     <div class="test-setup-grid" style="margin-top: 15px;">
                         <div>
                             <div class="form-group">
+                                <label><i class="fa-solid fa-language"></i> Select Test Language:</label>
+                                <select id="portalLangSelect" onchange="onLanguageFilterChanged()">
+                                    <option value="English">English</option>
+                                    <option value="Hindi">Hindi</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
                                 <label><i class="fa-solid fa-graduation-cap"></i> Select Course / Test Series:</label>
                                 <select id="courseSelect" onchange="onCourseChanged()"></select>
                             </div>
@@ -409,6 +417,15 @@
                                 <option value="optional">Non-Mandatory (Penalize mistakes only, no fail)</option>
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label>Word Calculation Type / Font Layout:</label>
+                            <select id="ruleWordCalculation">
+                                <option value="5_keystroke">5 Keystrokes = 1 Word (Standard English)</option>
+                                <option value="space_based">Space Separated Word (Exact Words)</option>
+                                <option value="mangal_inscript">Hindi Mangal Inscript Layout</option>
+                                <option value="mangal_remington">Hindi Mangal Remington Gail Layout</option>
+                            </select>
+                        </div>
                     </div>
                     <button class="start-btn" style="width: auto; padding: 10px 25px; margin-top: 15px;" onclick="saveExamRules()"><i class="fa-solid fa-save"></i> Save Rules for Selected Exam</button>
                 </div>
@@ -418,8 +435,16 @@
             <div id="adminView" class="view-section">
                 <div class="card">
                     <h3>📥 नया टेस्ट सीरीज / पैराग्राफ अपलोड करें</h3>
-                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">नया कोर्स बनाएं या किसी मौजूदा सीरीज में टेस्ट जोड़ें।</p>
+                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">नया कोर्स बनाएं या बिना पैराग्राफ के केवल टेस्ट/कोर्स नाम पहले जोड़ें।</p>
                     
+                    <div class="form-group">
+                        <label>भाषा चुनें (Language):</label>
+                        <select id="uploadLangSelect" style="font-weight:bold; background:#f0fdf4;">
+                            <option value="English">English</option>
+                            <option value="Hindi">Hindi (Mangal Font Support)</option>
+                        </select>
+                    </div>
+
                     <div class="form-group">
                         <label>कोर्स/टेस्ट सीरीज नाम:</label>
                         <input type="text" id="uploadNewCourseInput" placeholder="या नया कोर्स नाम टाइप करें (जैसे: RRB NTPC Typing Test)">
@@ -432,8 +457,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label>पैराग्राफ टेक्स्ट:</label>
-                        <textarea id="uploadTestText" rows="6" placeholder="यहाँ टेक्स्ट पेस्ट करें..."></textarea>
+                        <label>पैराग्राफ टेक्स्ट (Optional - बाद में भी जोड़ सकते हैं):</label>
+                        <textarea id="uploadTestText" rows="6" placeholder="यहाँ टेक्स्ट पेस्ट करें (खाली छोड़ने पर केवल टेस्ट नाम जुड़ेगा)..."></textarea>
                     </div>
 
                     <button class="start-btn" style="width:auto; padding:10px 25px;" onclick="addNewTestToPortal()">Upload to Cloud & Publish</button>
@@ -701,15 +726,20 @@ let activeLessonIndex = 0;
 let currentLessonTypedIndex = 0;
 
 let examRulesConfig = JSON.parse(localStorage.getItem('tm_exam_rules_config')) || {
-    "BSF HCM Typing Test": { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, accMandatory: "mandatory" },
-    "SSC CGL Typing Test": { allowance: 5, penalty: 10, minWpm: 27, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory" },
-    "General Practice": { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1000, minAcc: 80, accMandatory: "optional" }
+    "BSF HCM Typing Test": { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, accMandatory: "mandatory", wordCalc: "5_keystroke" },
+    "SSC CGL Typing Test": { allowance: 5, penalty: 10, minWpm: 27, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory", wordCalc: "5_keystroke" },
+    "General Practice": { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1000, minAcc: 80, accMandatory: "optional", wordCalc: "5_keystroke" }
 };
 
 let typingData = JSON.parse(localStorage.getItem('tm_typing_data_custom')) || {
-    "BSF HCM Typing Test": [],
-    "SSC CGL Typing Test": [],
-    "General Practice": []
+    "English": {
+        "BSF HCM Typing Test": [],
+        "SSC CGL Typing Test": [],
+        "General Practice": []
+    },
+    "Hindi": {
+        "Hindi Standard Test": []
+    }
 };
 
 async function handleGoogleLogin() {
@@ -772,10 +802,13 @@ async function fetchCloudData() {
             let snap = await window.getDocs(window.collection(window.db, "typingTests"));
             snap.forEach(docSnap => {
                 let data = docSnap.data();
-                if (data.course && data.title && data.text) {
-                    if (!typingData[data.course]) typingData[data.course] = [];
-                    if (!typingData[data.course].some(t => t.title === data.title)) {
-                        typingData[data.course].push({ id: docSnap.id, title: data.title, text: data.text });
+                let lang = data.language || "English";
+                let course = data.course;
+                if (course && data.title) {
+                    if (!typingData[lang]) typingData[lang] = {};
+                    if (!typingData[lang][course]) typingData[lang][course] = [];
+                    if (!typingData[lang][course].some(t => t.title === data.title)) {
+                        typingData[lang][course].push({ id: docSnap.id, title: data.title, text: data.text || "" });
                     }
                 }
             });
@@ -912,12 +945,20 @@ function applyFontSize() {
     }
 }
 
+function onLanguageFilterChanged() {
+    refreshCourseDropdowns();
+    onCourseChanged();
+}
+
 function refreshCourseDropdowns() {
+    let langEl = document.getElementById('portalLangSelect');
     let courseSelect = document.getElementById('courseSelect');
     let ruleCourseSelect = document.getElementById('ruleCourseSelect');
     let uploadCourseCategory = document.getElementById('uploadCourseCategory');
     
-    let courses = Object.keys(typingData);
+    let currentLang = langEl ? langEl.value : "English";
+    if (!typingData[currentLang]) typingData[currentLang] = {};
+    let courses = Object.keys(typingData[currentLang]);
     
     let populate = (el) => {
         if(!el) return;
@@ -946,7 +987,7 @@ function createNewCustomExamRule() {
         alert("यह नियम पहले से मौजूद है!");
         return;
     }
-    examRulesConfig[newExamName] = { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory" };
+    examRulesConfig[newExamName] = { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory", wordCalc: "5_keystroke" };
     localStorage.setItem('tm_exam_rules_config', JSON.stringify(examRulesConfig));
     refreshCourseDropdowns();
     document.getElementById('ruleCourseSelect').value = newExamName;
@@ -955,13 +996,15 @@ function createNewCustomExamRule() {
 }
 
 function onCourseChanged() {
+    let langEl = document.getElementById('portalLangSelect');
     let courseEl = document.getElementById('courseSelect');
-    if (!courseEl) return;
+    if (!courseEl || !langEl) return;
+    let lang = langEl.value;
     let course = courseEl.value;
     
-    if (typingData[course] && typingData[course].length > 0) {
+    if (typingData[lang] && typingData[lang][course] && typingData[lang][course].length > 0) {
         document.getElementById('testSelectHiddenIndex').value = "0";
-        document.getElementById('selectedTestDisplayBox').value = typingData[course][0].title + " (1 / " + typingData[course].length + ")";
+        document.getElementById('selectedTestDisplayBox').value = typingData[lang][course][0].title + " (1 / " + typingData[lang][course].length + ")";
     } else {
         document.getElementById('testSelectHiddenIndex').value = "";
         document.getElementById('selectedTestDisplayBox').value = "No tests available";
@@ -980,22 +1023,24 @@ function closeTestModal() {
 }
 
 function renderTestCardsModal() {
+    let langEl = document.getElementById('portalLangSelect');
     let courseEl = document.getElementById('courseSelect');
     let gridContainer = document.getElementById('testModalGrid');
-    if (!courseEl || !gridContainer) return;
+    if (!courseEl || !gridContainer || !langEl) return;
     
+    let lang = langEl.value;
     let course = courseEl.value;
     let query = document.getElementById('modalSearchInput').value.trim().toLowerCase();
     let unattemptedOnly = document.getElementById('unattemptedOnlyCheck').checked;
     
     gridContainer.innerHTML = "";
     
-    if (!typingData[course] || typingData[course].length === 0) {
+    if (!typingData[lang] || !typingData[lang][course] || typingData[lang][course].length === 0) {
         gridContainer.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color:#94a3b8; padding:20px;">कोई टेस्ट उपलब्ध नहीं है।</p>`;
         return;
     }
 
-    let sortedList = [...typingData[course]].map((item, originalIndex) => ({ ...item, originalIndex })).sort((a, b) => {
+    let sortedList = [...typingData[lang][course]].map((item, originalIndex) => ({ ...item, originalIndex })).sort((a, b) => {
         return a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' });
     });
 
@@ -1011,12 +1056,13 @@ function renderTestCardsModal() {
         countShown++;
         let card = document.createElement('div');
         card.className = `test-card-item ${isAttempted ? 'attempted' : ''}`;
+        let wordCount = item.text ? item.text.trim().split(/\s+/).length : 0;
         card.innerHTML = `
             <div style="font-weight: bold; font-size: 14px; color: #1e293b; display: flex; justify-content: space-between; align-items: center;">
                 ${item.title}
                 ${isAttempted ? '<span style="color: #16a34a; font-size: 16px;" title="Attempted">✔</span>' : ''}
             </div>
-            <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Words: ~${item.text.trim().split(/\s+/).length}</div>
+            <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Words: ~${wordCount}</div>
         `;
         card.onclick = function() {
             document.getElementById('testSelectHiddenIndex').value = item.originalIndex;
@@ -1034,18 +1080,20 @@ function renderTestCardsModal() {
 function renderAdminDeleteList() {
     let container = document.getElementById('adminDeleteListContainer');
     if (!container) return;
+    let langEl = document.getElementById('uploadLangSelect');
     let courseEl = document.getElementById('uploadCourseCategory');
-    if (!courseEl) return;
+    if (!courseEl || !langEl) return;
+    let lang = langEl.value;
     let course = courseEl.value;
     container.innerHTML = "";
 
-    if (typingData[course] && typingData[course].length > 0) {
-        typingData[course].forEach((testObj, idx) => {
+    if (typingData[lang] && typingData[lang][course] && typingData[lang][course].length > 0) {
+        typingData[lang][course].forEach((testObj, idx) => {
             let itemDiv = document.createElement('div');
             itemDiv.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:#f3f4f6; border-radius:4px; margin-bottom:6px; border:1px solid #e5e7eb;";
             itemDiv.innerHTML = `
-                <span style="font-size:13px; font-weight:600;">${testObj.title}</span>
-                <button onclick="deleteTestFromCourse('${course}', ${idx})" style="background:#dc2626; color:white; border:none; padding:4px 10px; border-radius:4px; font-size:12px; cursor:pointer;"><i class="fa-solid fa-trash"></i> Delete Test</button>
+                <span style="font-size:13px; font-weight:600;">${testObj.title} ${!testObj.text ? '<span style="color:#eab308; font-size:11px;">(No Text Yet)</span>' : ''}</span>
+                <button onclick="deleteTestFromCourse('${lang}', '${course}', ${idx})" style="background:#dc2626; color:white; border:none; padding:4px 10px; border-radius:4px; font-size:12px; cursor:pointer;"><i class="fa-solid fa-trash"></i> Delete Test</button>
             `;
             container.appendChild(itemDiv);
         });
@@ -1054,8 +1102,8 @@ function renderAdminDeleteList() {
     }
 }
 
-async function deleteTestFromCourse(course, index) {
-    let testObj = typingData[course][index];
+async function deleteTestFromCourse(lang, course, index) {
+    let testObj = typingData[lang][course][index];
     if (confirm(`क्या आप वाकई '${testObj.title}' को हटाना चाहते हैं?`)) {
         try {
             if (testObj.id && window.db && window.deleteDoc && window.doc) {
@@ -1063,7 +1111,7 @@ async function deleteTestFromCourse(course, index) {
             }
         } catch(e) { console.log("Cloud Delete Error:", e); }
 
-        typingData[course].splice(index, 1);
+        typingData[lang][course].splice(index, 1);
         localStorage.setItem('tm_typing_data_custom', JSON.stringify(typingData));
         alert("टेस्ट सफलतापूर्वक हटा दिया गया है!");
         onCourseChanged();
@@ -1073,14 +1121,16 @@ async function deleteTestFromCourse(course, index) {
 }
 
 async function deleteEntireCourse() {
+    let langEl = document.getElementById('uploadLangSelect');
     let courseEl = document.getElementById('uploadCourseCategory');
-    if (!courseEl) return;
+    if (!courseEl || !langEl) return;
+    let lang = langEl.value;
     let course = courseEl.value;
 
     if (confirm(`⚠️ चेतावनी: क्या आप पूरा कोर्स '${course}' और उसके अंदर के सभी टेस्ट्स को हमेशा के लिए हटाना चाहते हैं?`)) {
         try {
-            if (typingData[course]) {
-                for (let testObj of typingData[course]) {
+            if (typingData[lang] && typingData[lang][course]) {
+                for (let testObj of typingData[lang][course]) {
                     if (testObj.id && window.db && window.deleteDoc && window.doc) {
                         await window.deleteDoc(window.doc(window.db, "typingTests", testObj.id));
                     }
@@ -1088,7 +1138,7 @@ async function deleteEntireCourse() {
             }
         } catch(e) { console.log("Cloud Course Delete Error:", e); }
 
-        delete typingData[course];
+        if (typingData[lang]) delete typingData[lang][course];
         if(examRulesConfig[course]) delete examRulesConfig[course];
         
         localStorage.setItem('tm_typing_data_custom', JSON.stringify(typingData));
@@ -1107,7 +1157,7 @@ function loadExamRulesForCourse() {
     let selectedCourse = courseSelect.value;
     
     if(!examRulesConfig[selectedCourse]) {
-        examRulesConfig[selectedCourse] = { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory" };
+        examRulesConfig[selectedCourse] = { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory", wordCalc: "5_keystroke" };
     }
 
     let rules = examRulesConfig[selectedCourse];
@@ -1117,6 +1167,7 @@ function loadExamRulesForCourse() {
     document.getElementById('ruleMinKeystrokes').value = rules.minKeystrokes;
     document.getElementById('ruleMinAcc').value = rules.minAcc;
     document.getElementById('ruleAccuracyMandatory').value = rules.accMandatory || "mandatory";
+    document.getElementById('ruleWordCalculation').value = rules.wordCalc || "5_keystroke";
 }
 
 function saveExamRules() {
@@ -1130,65 +1181,26 @@ function saveExamRules() {
         minWpm: parseFloat(document.getElementById('ruleMinWpm').value),
         minKeystrokes: parseInt(document.getElementById('ruleMinKeystrokes').value),
         minAcc: parseFloat(document.getElementById('ruleMinAcc').value),
-        accMandatory: document.getElementById('ruleAccuracyMandatory').value
+        accMandatory: document.getElementById('ruleAccuracyMandatory').value,
+        wordCalc: document.getElementById('ruleWordCalculation').value
     };
 
     localStorage.setItem('tm_exam_rules_config', JSON.stringify(examRulesConfig));
-
-    let rules = examRulesConfig[selectedCourse];
-    let allowPct = rules.allowance / 100;
-    let penaltyMultiplier = rules.penalty;
-    let minNetWpmReq = rules.minWpm;
-    let minKeysReq = rules.minKeystrokes;
-    let minAccReq = rules.minAcc;
-    let accMandatory = rules.accMandatory || "mandatory";
-
-    testHistory.forEach(h => {
-        if ((h.course || "General Practice") === selectedCourse && h.typedWordsArray && h.activeWords) {
-            let totalTypedWordsNum = h.typedWordsCount || 0;
-            let mistakesCount = h.incorrectWords || 0;
-            let timeSpentMin = 10; 
-            if (h.timeTaken) {
-                let parts = h.timeTaken.split(' ');
-                if (parts.length > 0) timeSpentMin = parseFloat(parts[0]) / 60 || 10;
-            }
-
-            let grossWords = (h.typedKeystrokes || 0) / 5;
-            let allowedMistakes = Math.round((totalTypedWordsNum * allowPct) * 10) / 10;
-            let extraMistakes = Math.max(0, mistakesCount - allowedMistakes);
-            let penaltyWords = Math.round((extraMistakes * penaltyMultiplier) * 10) / 10;
-            
-            let netWords = Math.max(0, grossWords - penaltyWords);
-            let netWpm = Math.round((netWords / timeSpentMin) * 10) / 10;
-
-            let isQualified = netWpm >= minNetWpmReq && (h.typedKeystrokes || 0) >= minKeysReq;
-            if (accMandatory === "mandatory" && (h.accuracy || 0) < minAccReq) {
-                isQualified = false;
-            }
-
-            h.allowedMistakes = allowedMistakes;
-            h.penalty = penaltyWords;
-            h.netWpm = netWpm;
-            h.status = isQualified ? "Qualified" : "Non Qualified";
-            h.formula = `Net speed >= ${minNetWpmReq} WPM${accMandatory === "mandatory" ? `, Acc >= ${minAccReq}%` : ''} (${Math.round(allowPct*100)}% allowance)`;
-        }
-    });
-
-    updateResultsHistoryTable();
-    updateBestPerformance();
-    alert(`नियम '${selectedCourse}' के लिए सफलतापूर्वक सहेज लिए गए हैं और पुराने रिजल्ट्स पर भी लागू कर दिए गए हैं!`);
+    alert(`नियम '${selectedCourse}' के लिए सफलतापूर्वक सहेज लिए गए हैं!`);
 }
 
 async function addNewTestToPortal() {
+    let langEl = document.getElementById('uploadLangSelect');
     let customCourseInput = document.getElementById('uploadNewCourseInput').value.trim();
     let selectCourse = document.getElementById('uploadCourseCategory').value;
+    let lang = langEl ? langEl.value : "English";
     let course = customCourseInput ? customCourseInput : selectCourse;
     
     let title = document.getElementById('uploadTestTitle').value.trim();
     let content = document.getElementById('uploadTestText').value.trim();
 
-    if(!title || !content) {
-        alert("कृपया टेस्ट का नाम और पैराग्राफ दोनों भरें!");
+    if(!title) {
+        alert("कृपया टेस्ट का नाम (Title) दर्ज करें!");
         return;
     }
 
@@ -1196,6 +1208,7 @@ async function addNewTestToPortal() {
     try {
         if(window.db && window.addDoc && window.collection) {
             let docRef = await window.addDoc(window.collection(window.db, "typingTests"), {
+                language: lang,
                 course: course,
                 title: title,
                 text: content,
@@ -1207,8 +1220,9 @@ async function addNewTestToPortal() {
         console.log("Cloud Upload Warning:", e);
     }
 
-    if(!typingData[course]) typingData[course] = [];
-    typingData[course].push({ id: docRefId, title: title, text: content });
+    if (!typingData[lang]) typingData[lang] = {};
+    if (!typingData[lang][course]) typingData[lang][course] = [];
+    typingData[lang][course].push({ id: docRefId, title: title, text: content });
     
     localStorage.setItem('tm_typing_data_custom', JSON.stringify(typingData));
     
@@ -1227,12 +1241,14 @@ function updateAllExamsViewList() {
     let listEl = document.getElementById('allExamsList');
     if(!listEl) return;
     listEl.innerHTML = "";
-    Object.keys(typingData).forEach(courseName => {
-        let count = typingData[courseName].length;
-        let li = document.createElement('li');
-        li.style.marginBottom = "8px";
-        li.innerHTML = `<b>${courseName}</b> — (${count} Test Paragraphs Available) <span style="color:#16a34a; font-size:12px; font-weight:bold;">[Active Series]</span>`;
-        listEl.appendChild(li);
+    Object.keys(typingData).forEach(lang => {
+        Object.keys(typingData[lang]).forEach(courseName => {
+            let count = typingData[lang][courseName].length;
+            let li = document.createElement('li');
+            li.style.marginBottom = "8px";
+            li.innerHTML = `<b>[${lang}] ${courseName}</b> — (${count} Test Paragraphs) <span style="color:#16a34a; font-size:12px; font-weight:bold;">[Active Series]</span>`;
+            listEl.appendChild(li);
+        });
     });
 }
 
@@ -1251,20 +1267,29 @@ function startLiveTest() {
     switchTab('liveTestView');
     applyFontSize();
 
+    let langEl = document.getElementById('portalLangSelect');
     let courseEl = document.getElementById('courseSelect');
     let testIdxInput = document.getElementById('testSelectHiddenIndex');
-    if (!courseEl || !testIdxInput) return;
+    if (!courseEl || !testIdxInput || !langEl) return;
 
+    let lang = langEl.value;
     let course = courseEl.value;
     let testIdx = parseInt(testIdxInput.value);
-    if (!typingData[course] || !typingData[course][testIdx]) {
+    
+    if (!typingData[lang] || !typingData[lang][course] || !typingData[lang][course][testIdx]) {
         alert("कृपया पहले वैध टेस्ट चुनें!");
         switchTab('chooseView', document.getElementById('menu-choose'));
         return;
     }
 
-    let testObj = typingData[course][testIdx];
-    let text = testObj.text;
+    let testObj = typingData[lang][course][testIdx];
+    let text = testObj.text || "";
+    if (!text.trim()) {
+        alert("इस टेस्ट में अभी कोई पैराग्राफ टेक्स्ट नहीं है। कृपया एडमिन पैनल से टेक्स्ट जोड़ें!");
+        switchTab('chooseView', document.getElementById('menu-choose'));
+        return;
+    }
+
     activeWords = text.trim().split(/\s+/);
     
     let titleDisplay = document.getElementById('liveTestTitleDisplay');
@@ -1322,7 +1347,9 @@ function updateTimer() {
     let timeSpent = (totalTimeSec - timeLeft) / 60;
     if (timeSpent > 0 && typingInput) {
         let typed = typingInput.value;
-        let grossWords = typed.length / 5;
+        let rules = examRulesConfig[courseSelect.value] || { wordCalc: "5_keystroke" };
+        let divisor = rules.wordCalc === "space_based" ? 1 : 5;
+        let grossWords = typed.length / divisor;
         let gross = Math.round((grossWords / timeSpent) * 10) / 10;
         document.getElementById('grossDisplay').innerText = gross + " WPM";
     }
@@ -1523,7 +1550,6 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// HYBRID LCS DYNAMIC ALIGNMENT ENGINE (PREVENTS SHIFT CASCADE ERRORS & HANDLES SKIPPED LINES)
 function computeStrictSubmissionAlignment(origWords, typedWords) {
     let n = origWords.length;
     let m = typedWords.length;
@@ -1629,11 +1655,13 @@ async function finishTest() {
     let testIdxInput = document.getElementById('testSelectHiddenIndex');
     let course = courseEl ? courseEl.value : 'General Practice';
     let testIdx = testIdxInput ? parseInt(testIdxInput.value) : 0;
-    if (!typingData[course] || !typingData[course][testIdx]) return;
-    let testObj = typingData[course][testIdx];
+    let lang = document.getElementById('portalLangSelect').value;
+
+    if (!typingData[lang] || !typingData[lang][course] || !typingData[lang][course][testIdx]) return;
+    let testObj = typingData[lang][course][testIdx];
     let testName = testObj.title;
 
-    let rules = examRulesConfig[course] || { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, accMandatory: "mandatory" };
+    let rules = examRulesConfig[course] || { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, accMandatory: "mandatory", wordCalc: "5_keystroke" };
 
     let allowPct = rules.allowance / 100;
     let penaltyMultiplier = rules.penalty;
@@ -1641,6 +1669,7 @@ async function finishTest() {
     let minKeysReq = rules.minKeystrokes;
     let minAccReq = rules.minAcc;
     let accMandatory = rules.accMandatory || "mandatory";
+    let wordCalc = rules.wordCalc || "5_keystroke";
 
     let timeSpentSec = totalTimeSec - timeLeft;
     let timeSpentMin = timeSpentSec / 60;
@@ -1650,17 +1679,18 @@ async function finishTest() {
     let typedKeystrokes = typed.length;
     let totalKeystrokesInOrig = activeWords.join(' ').length;
     
-    let totalWordsInOrig = Math.round((totalKeystrokesInOrig / 5) * 10) / 10;
-    let totalTypedWordsNum = Math.round((typedKeystrokes / 5) * 10) / 10;
+    let divisor = wordCalc === "space_based" ? 1 : 5;
+    let totalWordsInOrig = Math.round((totalKeystrokesInOrig / divisor) * 10) / 10;
+    let totalTypedWordsNum = Math.round((typedKeystrokes / divisor) * 10) / 10;
     
-    let grossWords = typedKeystrokes / 5;
+    let grossWords = typedKeystrokes / divisor;
     let grossWpm = Math.round((grossWords / timeSpentMin) * 10) / 10;
     
     let typedWordsArray = typed.trim() ? typed.trim().split(/\s+/) : [];
 
     let { diffList, correctCount, mistakesCount, correctKeystrokesCount } = computeStrictSubmissionAlignment(activeWords, typedWordsArray);
 
-    let correctWordsNum = Math.round((correctKeystrokesCount / 5) * 10) / 10;
+    let correctWordsNum = Math.round((correctKeystrokesCount / divisor) * 10) / 10;
 
     let allowedMistakes = Math.round((totalTypedWordsNum * allowPct) * 10) / 10;
     let extraMistakes = Math.max(0, mistakesCount - allowedMistakes);
@@ -1684,7 +1714,7 @@ async function finishTest() {
 
     let durationStr = Math.floor(totalTimeSec / 60) + " mins : 00 seconds";
     let timeTakenStr = Math.floor(timeSpentSec / 60) + " mins : " + (timeSpentSec % 60) + " seconds";
-    let detailsStr = Math.floor(totalTimeSec / 60) + " mins | english | " + testName + " | " + formattedDate + " | Email: " + (window.loggedInUserEmail || "Guest");
+    let detailsStr = Math.floor(totalTimeSec / 60) + " mins | " + lang + " | " + testName + " | " + formattedDate + " | Email: " + (window.loggedInUserEmail || "Guest");
     let formulaStr = `Net speed >= ${minNetWpmReq} WPM${accMandatory === "mandatory" ? `, Acc >= ${minAccReq}%` : ''} (${Math.round(allowPct*100)}% allowance)`;
 
     let resultObj = {
