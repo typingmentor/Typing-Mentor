@@ -375,17 +375,34 @@
                 </div>
             </div>
 
-            <!-- EXAM RULES VIEW -->
+            <!-- EXAM RULES & CUSTOMIZATION VIEW -->
             <div id="rulesView" class="view-section">
                 <div class="card">
                     <h3><i class="fa-solid fa-sliders"></i> Exam Rules & Customization Settings</h3>
-                    <p style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">जिस परीक्षा के नियम आप बदलना चाहते हैं, पहले उसे सेलेक्ट करें या नया नियम जोड़ें:</p>
+                    <p style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">नया कोर्स यहाँ 'Add On' से जोड़ें और जिस परीक्षा के नियम बदलना चाहें उसे सेलेक्ट करें:</p>
                     
-                    <div class="form-group" style="margin-bottom: 15px; background: #eef2ff; padding: 12px; border-radius: 6px;">
-                        <label style="color:#1e3a8a; font-size:14px;"><i class="fa-solid fa-graduation-cap"></i> Select or Create Exam Rule:</label>
+                    <!-- ADD NEW COURSE (ADD ON) SECTION -->
+                    <div style="background: #eff6ff; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #bfdbfe;">
+                        <label style="color:#1e3a8a; font-size:13px; font-weight: bold;"><i class="fa-solid fa-plus-circle"></i> Add New Course (Add On):</label>
                         <div style="display:flex; gap:10px; margin-top:5px;">
-                            <select id="ruleCourseSelect" onchange="loadExamRulesForCourse()" style="font-weight:bold; flex:1;"></select>
-                            <button class="btn-view-result" onclick="createNewCustomExamRule()" style="background:#16a34a;"><i class="fa-solid fa-plus"></i> नया नियम जोड़ें</button>
+                            <input type="text" id="newCourseAddInput" placeholder="नया कोर्स नाम दर्ज करें (जैसे: RRB NTPC Typing Test)..." style="flex:1; padding:8px; border:1px solid #93c5fd; border-radius:4px; font-size:14px;">
+                            <button class="btn-view-result" onclick="addNewCourseAddOn()" style="background:#16a34a; padding: 0 20px;"><i class="fa-solid fa-plus"></i> Add On</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        <div style="display:flex; gap:15px; align-items:center; flex-wrap: wrap;">
+                            <div style="flex:1; min-width: 240px;">
+                                <label style="color:#1e3a8a; font-size:13px; font-weight: bold;"><i class="fa-solid fa-graduation-cap"></i> Select Exam Course Rule:</label>
+                                <select id="ruleCourseSelect" onchange="loadExamRulesForCourse()" style="font-weight:bold; margin-top:4px;"></select>
+                            </div>
+                            <div style="width: 180px;">
+                                <label style="color:#1e3a8a; font-size:13px; font-weight: bold;"><i class="fa-solid fa-language"></i> Rule Language:</label>
+                                <select id="ruleLangSelect" onchange="loadExamRulesForCourse()" style="font-weight:bold; margin-top:4px;">
+                                    <option value="English">English Rules</option>
+                                    <option value="Hindi">Hindi Rules</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -417,7 +434,7 @@
                                 <option value="optional">Non-Mandatory (Penalize mistakes only, no fail)</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" style="grid-column: 1 / -1;">
                             <label>Word Calculation Type / Font Layout:</label>
                             <select id="ruleWordCalculation">
                                 <option value="5_keystroke">5 Keystrokes = 1 Word (Standard English)</option>
@@ -434,21 +451,22 @@
             <!-- ADMIN VIEW -->
             <div id="adminView" class="view-section">
                 <div class="card">
-                    <h3>📥 नया टेस्ट सीरीज / पैराग्राफ अपलोड करें</h3>
-                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">नया कोर्स बनाएं या बिना पैराग्राफ के केवल टेस्ट/कोर्स नाम पहले जोड़ें।</p>
+                    <h3>📥 नया टेस्ट / पैराग्राफ अपलोड करें</h3>
+                    <p style="font-size:13px; color:#6b7280; margin-bottom:15px;">मौजूदा कोर्स में नया टेस्ट पैराग्राफ अपलोड करें (पैराग्राफ अनिवार्य है):</p>
                     
-                    <div class="form-group">
-                        <label>भाषा चुनें (Language):</label>
-                        <select id="uploadLangSelect" style="font-weight:bold; background:#f0fdf4;">
-                            <option value="English">English</option>
-                            <option value="Hindi">Hindi (Mangal Font Support)</option>
-                        </select>
-                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div class="form-group">
+                            <label>भाषा चुनें (Language):</label>
+                            <select id="uploadLangSelect" style="font-weight:bold; background:#f0fdf4;" onchange="refreshCourseDropdowns()">
+                                <option value="English">English</option>
+                                <option value="Hindi">Hindi</option>
+                            </select>
+                        </div>
 
-                    <div class="form-group">
-                        <label>कोर्स/टेस्ट सीरीज नाम:</label>
-                        <input type="text" id="uploadNewCourseInput" placeholder="या नया कोर्स नाम टाइप करें (जैसे: RRB NTPC Typing Test)">
-                        <select id="uploadCourseCategory" style="margin-top:6px;" onchange="document.getElementById('uploadNewCourseInput').value = this.value; renderAdminDeleteList();"></select>
+                        <div class="form-group">
+                            <label>कोर्स/टेस्ट सीरीज चुनें:</label>
+                            <select id="uploadCourseCategory" style="font-weight:bold;" onchange="renderAdminDeleteList()"></select>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -457,8 +475,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label>पैराग्राफ टेक्स्ट (Optional - बाद में भी जोड़ सकते हैं):</label>
-                        <textarea id="uploadTestText" rows="6" placeholder="यहाँ टेक्स्ट पेस्ट करें (खाली छोड़ने पर केवल टेस्ट नाम जुड़ेगा)..."></textarea>
+                        <label>पैराग्राफ टेक्स्ट (Mandatory):</label>
+                        <textarea id="uploadTestText" rows="6" placeholder="यहाँ पूरा पैराग्राफ टेक्स्ट पेस्ट करें..."></textarea>
                     </div>
 
                     <button class="start-btn" style="width:auto; padding:10px 25px;" onclick="addNewTestToPortal()">Upload to Cloud & Publish</button>
@@ -468,7 +486,7 @@
                         <div style="display:flex; gap:10px; margin-bottom:10px;">
                             <button onclick="deleteEntireCourse()" style="background:#dc2626; color:white; border:none; padding:6px 12px; border-radius:4px; font-size:12px; cursor:pointer;"><i class="fa-solid fa-triangle-exclamation"></i> पूरा कोर्स डिलीट करें</button>
                         </div>
-                        <p style="font-size:12px; color:#6b7280; margin-bottom:8px;">चुने गए कोर्स के व्यक्तिगत टेस्ट्स यहाँ से हटाएं:</p>
+                        <p style="font-size:12px; color:#6b7280; margin-bottom:8px;">चुने गए कोर्स के व्यक्तिगत टेस्ट्स (क्रमबद्ध 1, 2, 3...) यहाँ से हटाएं:</p>
                         <div id="adminDeleteListContainer"></div>
                     </div>
                 </div>
@@ -494,7 +512,7 @@
             <div id="examsView" class="view-section">
                 <div class="card">
                     <h3>All Available Exams & Test Series</h3>
-                    <ul id="allExamsList" style="margin-top: 10px; padding-left: 20px;"></ul>
+                    <ul id="allExamsList" style="margin-top: 10px; padding-left: 20px; line-height: 1.8;"></ul>
                 </div>
             </div>
 
@@ -521,7 +539,7 @@
                 </div>
             </div>
 
-            <!-- 6. SINGLE DETAILED RESULT SUMMARY VIEW (SIDE BY SIDE LAYOUT) -->
+            <!-- 6. SINGLE DETAILED RESULT SUMMARY VIEW -->
             <div id="singleResultView" class="view-section">
                 <button class="btn-view-result" onclick="switchTab('resultsHistoryView', document.getElementById('menu-results'))" style="margin-bottom: 15px; padding: 8px 15px; font-size:14px; width:fit-content;">
                     <i class="fa-solid fa-arrow-left"></i> Back to All Results
@@ -567,12 +585,11 @@
                         <div class="legend-item"><span class="word-normal">Word</span> Correct Typed (Normal)</div>
                         <div class="legend-item"><span class="word-orig-blue-line">Word</span> Original Word (Should be typed)</div>
                         <div class="legend-item"><span class="word-wrong-red">Word</span> Your Wrong Typed Word</div>
-                        <div class="legend-item"><span class="word-untyped-strike">Word</span> Untyped / Skipped Passage Block (Middle Strikethrough)</div>
+                        <div class="legend-item"><span class="word-untyped-strike">Word</span> Untyped / Skipped Passage Block</div>
                     </div>
 
                     <div class="no-scroll-breakdown" id="differencesBox"></div>
 
-                    <!-- SIDE BY SIDE PASSAGES COMPARISON -->
                     <div class="side-by-side-grid" style="margin-top: 25px;">
                         <div>
                             <h4 style="margin-bottom: 8px; color: #1e293b;"><i class="fa-solid fa-keyboard"></i> Your Typed Passage:</h4>
@@ -726,19 +743,23 @@ let activeLessonIndex = 0;
 let currentLessonTypedIndex = 0;
 
 let examRulesConfig = JSON.parse(localStorage.getItem('tm_exam_rules_config')) || {
-    "BSF HCM Typing Test": { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, accMandatory: "mandatory", wordCalc: "5_keystroke" },
-    "SSC CGL Typing Test": { allowance: 5, penalty: 10, minWpm: 27, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory", wordCalc: "5_keystroke" },
-    "General Practice": { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1000, minAcc: 80, accMandatory: "optional", wordCalc: "5_keystroke" }
+    "BSF HCM Typing Test": { 
+        English: { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, accMandatory: "mandatory", wordCalc: "5_keystroke" },
+        Hindi: { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory", wordCalc: "mangal_inscript" }
+    },
+    "SSC CGL Typing Test": { 
+        English: { allowance: 5, penalty: 10, minWpm: 27, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory", wordCalc: "space_based" },
+        Hindi: { allowance: 5, penalty: 10, minWpm: 25, minKeystrokes: 1200, minAcc: 80, accMandatory: "mandatory", wordCalc: "mangal_inscript" }
+    }
 };
 
 let typingData = JSON.parse(localStorage.getItem('tm_typing_data_custom')) || {
     "English": {
         "BSF HCM Typing Test": [],
-        "SSC CGL Typing Test": [],
-        "General Practice": []
+        "SSC CGL Typing Test": []
     },
     "Hindi": {
-        "Hindi Standard Test": []
+        "BSF HCM Typing Test": []
     }
 };
 
@@ -771,17 +792,11 @@ function updateHeaderUserUI() {
     if (window.loggedInUserEmail) {
         if(nameEl) nameEl.innerText = window.loggedInUserName;
         if(emailEl) emailEl.innerText = window.loggedInUserEmail;
-        if(authBtn) { 
-            authBtn.innerText = "Logout"; 
-            authBtn.onclick = logoutUser; 
-        }
+        if(authBtn) { authBtn.innerText = "Logout"; authBtn.onclick = logoutUser; }
     } else {
         if(nameEl) nameEl.innerText = "Guest User";
         if(emailEl) emailEl.innerText = "Not logged in";
-        if(authBtn) { 
-            authBtn.innerText = "Login / Signup"; 
-            authBtn.onclick = openLoginModal; 
-        }
+        if(authBtn) { authBtn.innerText = "Login / Signup"; authBtn.onclick = openLoginModal; }
     }
 }
 
@@ -804,11 +819,11 @@ async function fetchCloudData() {
                 let data = docSnap.data();
                 let lang = data.language || "English";
                 let course = data.course;
-                if (course && data.title) {
+                if (course && data.title && data.text) {
                     if (!typingData[lang]) typingData[lang] = {};
                     if (!typingData[lang][course]) typingData[lang][course] = [];
                     if (!typingData[lang][course].some(t => t.title === data.title)) {
-                        typingData[lang][course].push({ id: docSnap.id, title: data.title, text: data.text || "" });
+                        typingData[lang][course].push({ id: docSnap.id, title: data.title, text: data.text });
                     }
                 }
             });
@@ -832,27 +847,12 @@ async function fetchCloudData() {
 
 document.addEventListener('keydown', function(e) {
     if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-        if (isAdminLoggedIn) {
-            let adminItem = document.getElementById('adminSidebarMenu');
-            let rulesItem = document.getElementById('rulesSidebarMenu');
-            if (adminItem && rulesItem) {
-                adminItem.classList.toggle('hidden');
-                rulesItem.classList.toggle('hidden');
-            }
-        } else {
-            let enteredPwd = prompt("🔐 एडमिन पासवर्ड दर्ज करें:");
-            if (enteredPwd === "Saurabh@2003") {
-                isAdminLoggedIn = true;
-                let adminItem = document.getElementById('adminSidebarMenu');
-                let rulesItem = document.getElementById('rulesSidebarMenu');
-                if (adminItem && rulesItem) {
-                    adminItem.classList.remove('hidden');
-                    rulesItem.classList.remove('hidden');
-                }
-                alert("एडमिन एक्सेस एक्टिवेट हो गया है!");
-            } else if (enteredPwd !== null) {
-                alert("गलत पासवर्ड!");
-            }
+        let enteredPwd = prompt("🔐 एडमिन पासवर्ड दर्ज करें:");
+        if (enteredPwd === "Saurabh@2003") {
+            isAdminLoggedIn = true;
+            document.getElementById('adminSidebarMenu').classList.remove('hidden');
+            document.getElementById('rulesSidebarMenu').classList.remove('hidden');
+            alert("एडमिन एक्सेस एक्टिवेट हो गया है!");
         }
     }
 });
@@ -862,31 +862,14 @@ function checkAdminAccess(viewId) {
         switchTab(viewId, document.getElementById(viewId === 'adminView' ? 'adminSidebarMenu' : 'rulesSidebarMenu'));
         if(viewId === 'rulesView') loadExamRulesForCourse();
         if(viewId === 'adminView') { refreshCourseDropdowns(); renderAdminDeleteList(); }
-    } else {
-        let enteredPwd = prompt("🔐 एडमिन पासवर्ड दर्ज करें:");
-        if (enteredPwd === "Saurabh@2003") {
-            isAdminLoggedIn = true;
-            let adminItem = document.getElementById('adminSidebarMenu');
-            let rulesItem = document.getElementById('rulesSidebarMenu');
-            if (adminItem && rulesItem) {
-                adminItem.classList.remove('hidden');
-                rulesItem.classList.remove('hidden');
-            }
-            switchTab(viewId, document.getElementById(viewId === 'adminView' ? 'adminSidebarMenu' : 'rulesSidebarMenu'));
-            if(viewId === 'rulesView') loadExamRulesForCourse();
-            if(viewId === 'adminView') { refreshCourseDropdowns(); renderAdminDeleteList(); }
-        } else if (enteredPwd !== null) {
-            alert("गलत पासवर्ड!");
-        }
     }
 }
 
 window.onload = function() {
     let savedEmail = localStorage.getItem('tm_user_email');
-    let savedName = localStorage.getItem('tm_user_name');
     if (savedEmail) {
         window.loggedInUserEmail = savedEmail;
-        window.loggedInUserName = savedName || savedEmail.split('@')[0];
+        window.loggedInUserName = localStorage.getItem('tm_user_name') || savedEmail.split('@')[0];
     }
     updateHeaderUserUI();
     refreshCourseDropdowns();
@@ -898,32 +881,20 @@ window.onload = function() {
 
     const urlParams = new URLSearchParams(window.location.search);
     const sharedId = urlParams.get('resultId');
-    if (sharedId) {
-        loadSharedResult(sharedId);
-    } else {
-        switchTab('homeView', document.getElementById('menu-home'));
-    }
+    if (sharedId) loadSharedResult(sharedId);
+    else switchTab('homeView', document.getElementById('menu-home'));
 };
 
 function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
 function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
 function logoutUser() { handleGoogleLogout(); }
-
-function toggleSidebar() {
-    let sidebar = document.getElementById('sidebar');
-    if (sidebar) sidebar.classList.toggle('collapsed');
-}
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
 
 function switchTab(tabId, clickedElement) {
     let views = document.querySelectorAll('.view-section');
     views.forEach(v => { v.classList.remove('active'); v.style.display = 'none'; });
-    
     let targetView = document.getElementById(tabId);
-    if (targetView) {
-        targetView.style.display = 'flex';
-        targetView.classList.add('active');
-    }
-
+    if (targetView) { targetView.style.display = 'flex'; targetView.classList.add('active'); }
     let menuItems = document.querySelectorAll('.menu-item');
     menuItems.forEach(item => item.classList.remove('active'));
     if (clickedElement) clickedElement.classList.add('active');
@@ -960,7 +931,13 @@ function refreshCourseDropdowns() {
     if (!typingData[currentLang]) typingData[currentLang] = {};
     let courses = Object.keys(typingData[currentLang]);
     
-    let populate = (el) => {
+    let allCourses = new Set();
+    if (typingData["English"]) Object.keys(typingData["English"]).forEach(c => allCourses.add(c));
+    if (typingData["Hindi"]) Object.keys(typingData["Hindi"]).forEach(c => allCourses.add(c));
+    Object.keys(examRulesConfig).forEach(c => allCourses.add(c));
+    let courseArray = Array.from(allCourses);
+
+    let populateLangSpecific = (el) => {
         if(!el) return;
         let currentVal = el.value;
         el.innerHTML = "";
@@ -973,26 +950,47 @@ function refreshCourseDropdowns() {
         if(courses.includes(currentVal)) el.value = currentVal;
     };
 
-    populate(courseSelect);
-    populate(ruleCourseSelect);
-    populate(uploadCourseCategory);
+    let populateAll = (el) => {
+        if(!el) return;
+        let currentVal = el.value;
+        el.innerHTML = "";
+        courseArray.forEach(c => {
+            let opt = document.createElement('option');
+            opt.value = c;
+            opt.textContent = c;
+            el.appendChild(opt);
+        });
+        if(courseArray.includes(currentVal)) el.value = currentVal;
+    };
+
+    populateLangSpecific(courseSelect);
+    populateAll(ruleCourseSelect);
+    populateLangSpecific(uploadCourseCategory);
     renderAdminDeleteList();
 }
 
-function createNewCustomExamRule() {
-    let newExamName = prompt("नया परीक्षा/कोर्स नियम का नाम दर्ज करें (जैसे: UP Police Typing Test):");
-    if (!newExamName) return;
-    newExamName = newExamName.trim();
-    if (examRulesConfig[newExamName]) {
-        alert("यह नियम पहले से मौजूद है!");
-        return;
+function addNewCourseAddOn() {
+    let input = document.getElementById('newCourseAddInput');
+    let name = input ? input.value.trim() : "";
+    if(!name) { alert("कृपया कोर्स का नाम दर्ज करें!"); return; }
+    
+    if(!examRulesConfig[name]) {
+        examRulesConfig[name] = { 
+            English: { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, accMandatory: "mandatory", wordCalc: "5_keystroke" },
+            Hindi: { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory", wordCalc: "mangal_inscript" }
+        };
+        localStorage.setItem('tm_exam_rules_config', JSON.stringify(examRulesConfig));
     }
-    examRulesConfig[newExamName] = { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory", wordCalc: "5_keystroke" };
-    localStorage.setItem('tm_exam_rules_config', JSON.stringify(examRulesConfig));
+    
+    if(!typingData["English"][name]) typingData["English"][name] = [];
+    if(!typingData["Hindi"][name]) typingData["Hindi"][name] = [];
+    localStorage.setItem('tm_typing_data_custom', JSON.stringify(typingData));
+
     refreshCourseDropdowns();
-    document.getElementById('ruleCourseSelect').value = newExamName;
+    document.getElementById('ruleCourseSelect').value = name;
     loadExamRulesForCourse();
-    alert(`नया नियम '${newExamName}' सफलतापूर्वक जोड़ दिया गया है!`);
+    input.value = "";
+    alert(`नया कोर्स '${name}' सफलतापूर्वक जोड़ दिया गया है!`);
 }
 
 function onCourseChanged() {
@@ -1017,10 +1015,7 @@ function openTestModal() {
     document.getElementById('unattemptedOnlyCheck').checked = false;
     renderTestCardsModal();
 }
-
-function closeTestModal() {
-    document.getElementById('testSelectModal').classList.add('hidden');
-}
+function closeTestModal() { document.getElementById('testSelectModal').classList.add('hidden'); }
 
 function renderTestCardsModal() {
     let langEl = document.getElementById('portalLangSelect');
@@ -1045,24 +1040,21 @@ function renderTestCardsModal() {
     });
 
     let attemptedTestNames = new Set(testHistory.map(h => h.name));
-
     let countShown = 0;
+
     sortedList.forEach(item => {
         let isAttempted = attemptedTestNames.has(item.title);
-        
         if (query && !item.title.toLowerCase().includes(query)) return;
         if (unattemptedOnly && isAttempted) return;
 
         countShown++;
         let card = document.createElement('div');
         card.className = `test-card-item ${isAttempted ? 'attempted' : ''}`;
-        let wordCount = item.text ? item.text.trim().split(/\s+/).length : 0;
         card.innerHTML = `
             <div style="font-weight: bold; font-size: 14px; color: #1e293b; display: flex; justify-content: space-between; align-items: center;">
                 ${item.title}
-                ${isAttempted ? '<span style="color: #16a34a; font-size: 16px;" title="Attempted">✔</span>' : ''}
+                ${isAttempted ? '<span style="color: #16a34a; font-size: 16px;">✔</span>' : ''}
             </div>
-            <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Words: ~${wordCount}</div>
         `;
         card.onclick = function() {
             document.getElementById('testSelectHiddenIndex').value = item.originalIndex;
@@ -1092,7 +1084,7 @@ function renderAdminDeleteList() {
             let itemDiv = document.createElement('div');
             itemDiv.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:#f3f4f6; border-radius:4px; margin-bottom:6px; border:1px solid #e5e7eb;";
             itemDiv.innerHTML = `
-                <span style="font-size:13px; font-weight:600;">${testObj.title} ${!testObj.text ? '<span style="color:#eab308; font-size:11px;">(No Text Yet)</span>' : ''}</span>
+                <span style="font-size:13px; font-weight:600;"><b>${idx + 1}.</b> ${testObj.title}</span>
                 <button onclick="deleteTestFromCourse('${lang}', '${course}', ${idx})" style="background:#dc2626; color:white; border:none; padding:4px 10px; border-radius:4px; font-size:12px; cursor:pointer;"><i class="fa-solid fa-trash"></i> Delete Test</button>
             `;
             container.appendChild(itemDiv);
@@ -1127,7 +1119,7 @@ async function deleteEntireCourse() {
     let lang = langEl.value;
     let course = courseEl.value;
 
-    if (confirm(`⚠️ चेतावनी: क्या आप पूरा कोर्स '${course}' और उसके अंदर के सभी टेस्ट्स को हमेशा के लिए हटाना चाहते हैं?`)) {
+    if (confirm(`⚠️ चेतावनी: क्या आप पूरा कोर्स '${course}' और उसके सभी टेस्ट्स हटाना चाहते हैं?`)) {
         try {
             if (typingData[lang] && typingData[lang][course]) {
                 for (let testObj of typingData[lang][course]) {
@@ -1139,7 +1131,9 @@ async function deleteEntireCourse() {
         } catch(e) { console.log("Cloud Course Delete Error:", e); }
 
         if (typingData[lang]) delete typingData[lang][course];
-        if(examRulesConfig[course]) delete examRulesConfig[course];
+        if (typingData["English"] && !typingData["English"][course] && typingData["Hindi"] && !typingData["Hindi"][course]) {
+            delete examRulesConfig[course];
+        }
         
         localStorage.setItem('tm_typing_data_custom', JSON.stringify(typingData));
         localStorage.setItem('tm_exam_rules_config', JSON.stringify(examRulesConfig));
@@ -1153,29 +1147,36 @@ async function deleteEntireCourse() {
 
 function loadExamRulesForCourse() {
     let courseSelect = document.getElementById('ruleCourseSelect');
-    if(!courseSelect) return;
+    let langSelect = document.getElementById('ruleLangSelect');
+    if(!courseSelect || !langSelect) return;
     let selectedCourse = courseSelect.value;
+    let selectedLang = langSelect.value;
     
-    if(!examRulesConfig[selectedCourse]) {
-        examRulesConfig[selectedCourse] = { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory", wordCalc: "5_keystroke" };
+    if(!examRulesConfig[selectedCourse]) examRulesConfig[selectedCourse] = {};
+    if(!examRulesConfig[selectedCourse][selectedLang]) {
+        examRulesConfig[selectedCourse][selectedLang] = { allowance: 5, penalty: 10, minWpm: 30, minKeystrokes: 1500, minAcc: 80, accMandatory: "mandatory", wordCalc: selectedLang === "Hindi" ? "mangal_inscript" : "5_keystroke" };
     }
 
-    let rules = examRulesConfig[selectedCourse];
+    let rules = examRulesConfig[selectedCourse][selectedLang];
     document.getElementById('ruleAllowance').value = rules.allowance;
     document.getElementById('rulePenalty').value = rules.penalty;
     document.getElementById('ruleMinWpm').value = rules.minWpm;
     document.getElementById('ruleMinKeystrokes').value = rules.minKeystrokes;
     document.getElementById('ruleMinAcc').value = rules.minAcc;
     document.getElementById('ruleAccuracyMandatory').value = rules.accMandatory || "mandatory";
-    document.getElementById('ruleWordCalculation').value = rules.wordCalc || "5_keystroke";
+    document.getElementById('ruleWordCalculation').value = rules.wordCalc || (selectedLang === "Hindi" ? "mangal_inscript" : "5_keystroke");
 }
 
 function saveExamRules() {
     let courseSelect = document.getElementById('ruleCourseSelect');
-    if(!courseSelect) return;
+    let langSelect = document.getElementById('ruleLangSelect');
+    if(!courseSelect || !langSelect) return;
     let selectedCourse = courseSelect.value;
+    let selectedLang = langSelect.value;
 
-    examRulesConfig[selectedCourse] = {
+    if(!examRulesConfig[selectedCourse]) examRulesConfig[selectedCourse] = {};
+
+    examRulesConfig[selectedCourse][selectedLang] = {
         allowance: parseFloat(document.getElementById('ruleAllowance').value),
         penalty: parseFloat(document.getElementById('rulePenalty').value),
         minWpm: parseFloat(document.getElementById('ruleMinWpm').value),
@@ -1186,21 +1187,17 @@ function saveExamRules() {
     };
 
     localStorage.setItem('tm_exam_rules_config', JSON.stringify(examRulesConfig));
-    alert(`नियम '${selectedCourse}' के लिए सफलतापूर्वक सहेज लिए गए हैं!`);
+    alert(`नियम '${selectedCourse}' (${selectedLang}) के लिए सफलतापूर्वक सहेज लिए गए हैं!`);
 }
 
 async function addNewTestToPortal() {
-    let langEl = document.getElementById('uploadLangSelect');
-    let customCourseInput = document.getElementById('uploadNewCourseInput').value.trim();
-    let selectCourse = document.getElementById('uploadCourseCategory').value;
-    let lang = langEl ? langEl.value : "English";
-    let course = customCourseInput ? customCourseInput : selectCourse;
-    
+    let lang = document.getElementById('uploadLangSelect').value;
+    let course = document.getElementById('uploadCourseCategory').value;
     let title = document.getElementById('uploadTestTitle').value.trim();
     let content = document.getElementById('uploadTestText').value.trim();
 
-    if(!title) {
-        alert("कृपया टेस्ट का नाम (Title) दर्ज करें!");
+    if(!title || !content) {
+        alert("कृपया टेस्ट का नाम और पैराग्राफ दोनों भरें!");
         return;
     }
 
@@ -1216,9 +1213,7 @@ async function addNewTestToPortal() {
             });
             docRefId = docRef.id;
         }
-    } catch(e) {
-        console.log("Cloud Upload Warning:", e);
-    }
+    } catch(e) { console.log("Cloud Upload Warning:", e); }
 
     if (!typingData[lang]) typingData[lang] = {};
     if (!typingData[lang][course]) typingData[lang][course] = [];
@@ -1226,10 +1221,9 @@ async function addNewTestToPortal() {
     
     localStorage.setItem('tm_typing_data_custom', JSON.stringify(typingData));
     
-    alert("नया टेस्ट/कोर्स सफलतापूर्वक जोड़ दिया गया है!");
+    alert("नया टेस्ट सफलतापूर्वक अपलोड हो गया है!");
     document.getElementById('uploadTestTitle').value = "";
     document.getElementById('uploadTestText').value = "";
-    document.getElementById('uploadNewCourseInput').value = "";
     
     refreshCourseDropdowns();
     onCourseChanged();
@@ -1241,14 +1235,19 @@ function updateAllExamsViewList() {
     let listEl = document.getElementById('allExamsList');
     if(!listEl) return;
     listEl.innerHTML = "";
-    Object.keys(typingData).forEach(lang => {
-        Object.keys(typingData[lang]).forEach(courseName => {
-            let count = typingData[lang][courseName].length;
-            let li = document.createElement('li');
-            li.style.marginBottom = "8px";
-            li.innerHTML = `<b>[${lang}] ${courseName}</b> — (${count} Test Paragraphs) <span style="color:#16a34a; font-size:12px; font-weight:bold;">[Active Series]</span>`;
-            listEl.appendChild(li);
-        });
+    
+    let allCourses = new Set();
+    if (typingData["English"]) Object.keys(typingData["English"]).forEach(c => allCourses.add(c));
+    if (typingData["Hindi"]) Object.keys(typingData["Hindi"]).forEach(c => allCourses.add(c));
+    
+    allCourses.forEach(courseName => {
+        let engCount = (typingData["English"] && typingData["English"][courseName]) ? typingData["English"][courseName].length : 0;
+        let hinCount = (typingData["Hindi"] && typingData["Hindi"][courseName]) ? typingData["Hindi"][courseName].length : 0;
+        
+        let li = document.createElement('li');
+        li.style.marginBottom = "8px";
+        li.innerHTML = `<b>${courseName}</b> — (English: ${engCount} | Hindi: ${hinCount} Available) <span style="color:#16a34a; font-size:12px; font-weight:bold;">[Active Series]</span>`;
+        listEl.appendChild(li);
     });
 }
 
@@ -1259,9 +1258,7 @@ function startLiveTest() {
     let fullScreenToggle = document.getElementById('setFullScreen');
     if (fullScreenToggle && fullScreenToggle.checked) {
         let elem = document.documentElement;
-        if (elem.requestFullscreen) {
-            elem.requestFullscreen().catch(err => console.log(err));
-        }
+        if (elem.requestFullscreen) elem.requestFullscreen().catch(err => console.log(err));
     }
 
     switchTab('liveTestView');
@@ -1284,12 +1281,6 @@ function startLiveTest() {
 
     let testObj = typingData[lang][course][testIdx];
     let text = testObj.text || "";
-    if (!text.trim()) {
-        alert("इस टेस्ट में अभी कोई पैराग्राफ टेक्स्ट नहीं है। कृपया एडमिन पैनल से टेक्स्ट जोड़ें!");
-        switchTab('chooseView', document.getElementById('menu-choose'));
-        return;
-    }
-
     activeWords = text.trim().split(/\s+/);
     
     let titleDisplay = document.getElementById('liveTestTitleDisplay');
@@ -1324,7 +1315,6 @@ function startLiveTest() {
 
     isTimerStarted = false;
     if (timerInterval) clearInterval(timerInterval);
-    
     updateTimerDisplay();
     document.getElementById('grossDisplay').innerText = "0 WPM";
     document.getElementById('accuracyDisplay').innerText = "100%";
@@ -1334,9 +1324,7 @@ function updateTimerDisplay() {
     let min = Math.floor(timeLeft / 60);
     let sec = timeLeft % 60;
     let timerDisplay = document.getElementById('timerDisplay');
-    if (timerDisplay) {
-        timerDisplay.innerText = `${min}:${sec < 10 ? '0' : ''}${sec}`;
-    }
+    if (timerDisplay) timerDisplay.innerText = `${min}:${sec < 10 ? '0' : ''}${sec}`;
 }
 
 function updateTimer() {
@@ -1347,16 +1335,16 @@ function updateTimer() {
     let timeSpent = (totalTimeSec - timeLeft) / 60;
     if (timeSpent > 0 && typingInput) {
         let typed = typingInput.value;
-        let rules = examRulesConfig[courseSelect.value] || { wordCalc: "5_keystroke" };
+        let course = document.getElementById('courseSelect').value;
+        let lang = document.getElementById('portalLangSelect').value;
+        let rules = (examRulesConfig[course] && examRulesConfig[course][lang]) ? examRulesConfig[course][lang] : { wordCalc: "5_keystroke" };
         let divisor = rules.wordCalc === "space_based" ? 1 : 5;
         let grossWords = typed.length / divisor;
         let gross = Math.round((grossWords / timeSpent) * 10) / 10;
         document.getElementById('grossDisplay').innerText = gross + " WPM";
     }
 
-    if (timeLeft <= 0) {
-        finishTest();
-    }
+    if (timeLeft <= 0) finishTest();
 }
 
 document.addEventListener('keydown', function(e) {
@@ -1365,9 +1353,7 @@ document.addEventListener('keydown', function(e) {
         if (activeEl && activeEl.id === 'typingInput') {
             backspaceCount++;
             let backspaceToggle = document.getElementById('setBackspace');
-            if (backspaceToggle && !backspaceToggle.checked) {
-                e.preventDefault();
-            }
+            if (backspaceToggle && !backspaceToggle.checked) e.preventDefault();
         }
     }
 });
@@ -1394,7 +1380,6 @@ document.addEventListener('input', function(e) {
                 let span = document.getElementById(`w-${idx}`);
                 if (!span) return;
                 span.className = '';
-
                 if (highlight) {
                     if (idx < typedWords.length - 1) {
                         span.classList.add(typedWords[idx] === word ? 'correct' : 'incorrect');
@@ -1412,19 +1397,6 @@ document.addEventListener('input', function(e) {
         let totalTypedSoFar = Math.max(1, typedWords.length - 1);
         let liveAcc = Math.round((correctLive / totalTypedSoFar) * 100);
         document.getElementById('accuracyDisplay').innerText = (liveAcc > 100 ? 100 : liveAcc) + "%";
-
-        let autoScrollEl = document.getElementById('setAutoScroll');
-        if (autoScrollEl && autoScrollEl.checked && !isPaperMode) {
-            let currentSpan = document.getElementById(`w-${activeIdx}`);
-            let pBox = document.getElementById('paragraphBox');
-            if (currentSpan && pBox) {
-                let spanTop = currentSpan.offsetTop - pBox.offsetTop;
-                let scrollThreshold = pBox.clientHeight * 0.4;
-                if (spanTop > scrollThreshold) {
-                    pBox.scrollTop = spanTop - 60;
-                }
-            }
-        }
     }
 });
 
@@ -1446,18 +1418,10 @@ function loadLearnLesson(idx) {
     currentLessonTypedIndex = 0;
     renderLearnLessonsSidebar();
     let lesson = learnLessonsList[idx];
-    
     let titleEl = document.getElementById('activeLessonTitleDisplay');
     if (titleEl) titleEl.innerHTML = `<i class="fa-solid fa-graduation-cap"></i> ${lesson.title}`;
-
     renderEdClubLessonBoxes();
     highlightNextEdClubKey();
-
-    let inputEl = document.getElementById('learnInputBox');
-    if (inputEl) {
-        inputEl.value = "";
-        inputEl.focus();
-    }
 }
 
 function renderEdClubLessonBoxes() {
@@ -1465,15 +1429,11 @@ function renderEdClubLessonBoxes() {
     if (!container) return;
     let text = learnLessonsList[activeLessonIndex].text;
     container.innerHTML = "";
-
     for (let i = 0; i < text.length; i++) {
         let span = document.createElement('span');
         span.className = 'ed-char-box';
-        if (i < currentLessonTypedIndex) {
-            span.classList.add('done-char');
-        } else if (i === currentLessonTypedIndex) {
-            span.classList.add('current-char');
-        }
+        if (i < currentLessonTypedIndex) span.classList.add('done-char');
+        else if (i === currentLessonTypedIndex) span.classList.add('current-char');
         span.innerText = text[i] === ' ' ? ' ' : text[i];
         container.appendChild(span);
     }
@@ -1485,30 +1445,20 @@ function highlightNextEdClubKey() {
     document.getElementById('rightHandBox').classList.remove('active-hand-indicator');
 
     let text = learnLessonsList[activeLessonIndex].text;
-    
     if (currentLessonTypedIndex < text.length) {
         let nextChar = text[currentLessonTypedIndex].toLowerCase();
         let keyId = nextChar === ' ' ? 'key-space' : 'key-' + nextChar;
         let targetKeyEl = document.getElementById(keyId);
-        if (targetKeyEl) {
-            targetKeyEl.classList.add('active-key');
-        }
-
+        if (targetKeyEl) targetKeyEl.classList.add('active-key');
         let mapping = fingerMapping[nextChar] || { hand: 'left', text: `Press key '${nextChar.toUpperCase()}'` };
-        
-        if (mapping.hand === 'left') {
-            document.getElementById('leftHandBox').classList.add('active-hand-indicator');
-        } else if (mapping.hand === 'right') {
-            document.getElementById('rightHandBox').classList.add('active-hand-indicator');
-        } else {
+        if (mapping.hand === 'left') document.getElementById('leftHandBox').classList.add('active-hand-indicator');
+        else if (mapping.hand === 'right') document.getElementById('rightHandBox').classList.add('active-hand-indicator');
+        else {
             document.getElementById('leftHandBox').classList.add('active-hand-indicator');
             document.getElementById('rightHandBox').classList.add('active-hand-indicator');
         }
-
         let bannerTextEl = document.getElementById('fingerInstructionText');
-        if (bannerTextEl) {
-            bannerTextEl.innerHTML = `अगला बटन <b>'${nextChar === ' ' ? 'SPACE' : nextChar.toUpperCase()}'</b> — उंगली निर्देश: <u>${mapping.text}</u>`;
-        }
+        if (bannerTextEl) bannerTextEl.innerHTML = `अगला बटन <b>'${nextChar === ' ' ? 'SPACE' : nextChar.toUpperCase()}'</b> — <u>${mapping.text}</u>`;
     }
 }
 
@@ -1516,7 +1466,6 @@ function handleLearnTypingInput(e) {
     let text = learnLessonsList[activeLessonIndex].text;
     let inputVal = e.target.value;
     if (inputVal.length === 0) return;
-    
     let typedChar = inputVal.slice(-1);
     let expectedChar = text[currentLessonTypedIndex];
 
@@ -1524,15 +1473,10 @@ function handleLearnTypingInput(e) {
         currentLessonTypedIndex++;
         renderEdClubLessonBoxes();
         highlightNextEdClubKey();
-
         if (currentLessonTypedIndex >= text.length) {
-            alert("🎉 बधाई हो! आपने यह अभ्यास सफलतापूर्वक पूरा कर लिया है!");
-            if (activeLessonIndex < learnLessonsList.length - 1) {
-                loadLearnLesson(activeLessonIndex + 1);
-            } else {
-                currentLessonTypedIndex = 0;
-                loadLearnLesson(0);
-            }
+            alert("🎉 बधाई हो! आपने यह अभ्यास पूरा कर लिया है!");
+            if (activeLessonIndex < learnLessonsList.length - 1) loadLearnLesson(activeLessonIndex + 1);
+            else { currentLessonTypedIndex = 0; loadLearnLesson(0); }
         }
     }
     e.target.value = "";
@@ -1544,8 +1488,7 @@ document.addEventListener('keydown', function(e) {
         let inputEl = document.getElementById('learnInputBox');
         if (inputEl) {
             inputEl.focus();
-            let fakeEvent = { target: { value: e.key } };
-            handleLearnTypingInput(fakeEvent);
+            handleLearnTypingInput({ target: { value: e.key } });
         }
     }
 });
@@ -1553,19 +1496,14 @@ document.addEventListener('keydown', function(e) {
 function computeStrictSubmissionAlignment(origWords, typedWords) {
     let n = origWords.length;
     let m = typedWords.length;
-    
     let dp = Array(n + 1).fill(null).map(() => Array(m + 1).fill(0));
 
     for (let i = 1; i <= n; i++) {
         for (let j = 1; j <= m; j++) {
             let cleanOrig = origWords[i - 1].replace(/[,.;:!?]/g, '').toLowerCase();
             let cleanTyped = typedWords[j - 1].replace(/[,.;:!?]/g, '').toLowerCase();
-            
-            if (cleanOrig === cleanTyped) {
-                dp[i][j] = dp[i - 1][j - 1] + 1;
-            } else {
-                dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
-            }
+            if (cleanOrig === cleanTyped) dp[i][j] = dp[i - 1][j - 1] + 1;
+            else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
         }
     }
 
@@ -1577,11 +1515,8 @@ function computeStrictSubmissionAlignment(origWords, typedWords) {
         if (cleanOrig === cleanTyped) {
             lcsPath.push({ origIdx: i - 1, typedIdx: j - 1 });
             i--; j--;
-        } else if (dp[i - 1][j] >= dp[i][j - 1]) {
-            i--;
-        } else {
-            j--;
-        }
+        } else if (dp[i - 1][j] >= dp[i][j - 1]) i--;
+        else j--;
     }
     lcsPath.reverse();
 
@@ -1589,42 +1524,33 @@ function computeStrictSubmissionAlignment(origWords, typedWords) {
     let correctCount = 0;
     let mistakesCount = 0;
     let correctKeystrokesCount = 0;
-
-    let currOrig = 0;
-    let currTyped = 0;
+    let currOrig = 0, currTyped = 0;
 
     for (let match of lcsPath) {
         while (currOrig < match.origIdx && currTyped < match.typedIdx) {
             diffList.push({ type: 'typo', origWord: origWords[currOrig], userWord: typedWords[currTyped] });
-            mistakesCount++;
-            currOrig++;
-            currTyped++;
+            mistakesCount++; currOrig++; currTyped++;
         }
         while (currOrig < match.origIdx) {
             diffList.push({ type: 'omitted_word', origWord: origWords[currOrig] });
-            mistakesCount++;
-            currOrig++;
+            mistakesCount++; currOrig++;
         }
         while (currTyped < match.typedIdx) {
             diffList.push({ type: 'typo', origWord: "", userWord: typedWords[currTyped] });
-            mistakesCount++;
-            currTyped++;
+            mistakesCount++; currTyped++;
         }
 
         let matchedWord = typedWords[match.typedIdx];
         diffList.push({ type: 'correct', word: matchedWord });
         correctCount++;
         correctKeystrokesCount += matchedWord.length + 1;
-
         currOrig = match.origIdx + 1;
         currTyped = match.typedIdx + 1;
     }
 
     while (currOrig < n && currTyped < m) {
         diffList.push({ type: 'typo', origWord: origWords[currOrig], userWord: typedWords[currTyped] });
-        mistakesCount++;
-        currOrig++;
-        currTyped++;
+        mistakesCount++; currOrig++; currTyped++;
     }
     while (currOrig < n) {
         diffList.push({ type: 'untyped_subdued', origWord: origWords[currOrig] });
@@ -1632,8 +1558,7 @@ function computeStrictSubmissionAlignment(origWords, typedWords) {
     }
     while (currTyped < m) {
         diffList.push({ type: 'typo', origWord: "", userWord: typedWords[currTyped] });
-        mistakesCount++;
-        currTyped++;
+        mistakesCount++; currTyped++;
     }
 
     return { diffList, correctCount, mistakesCount, correctKeystrokesCount };
@@ -1644,10 +1569,7 @@ async function finishTest() {
     let typingInput = document.getElementById('typingInput');
     if (typingInput) typingInput.disabled = true;
 
-    if (document.exitFullscreen) {
-        document.exitFullscreen().catch(err => console.log(err));
-    }
-
+    if (document.exitFullscreen) document.exitFullscreen().catch(err => console.log(err));
     let sidebar = document.getElementById('sidebar');
     if (sidebar) sidebar.classList.remove('collapsed');
 
@@ -1661,7 +1583,7 @@ async function finishTest() {
     let testObj = typingData[lang][course][testIdx];
     let testName = testObj.title;
 
-    let rules = examRulesConfig[course] || { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, accMandatory: "mandatory", wordCalc: "5_keystroke" };
+    let rules = (examRulesConfig[course] && examRulesConfig[course][lang]) ? examRulesConfig[course][lang] : { allowance: 5, penalty: 10, minWpm: 35, minKeystrokes: 1750, minAcc: 85, accMandatory: "mandatory", wordCalc: "5_keystroke" };
 
     let allowPct = rules.allowance / 100;
     let penaltyMultiplier = rules.penalty;
@@ -1687,9 +1609,7 @@ async function finishTest() {
     let grossWpm = Math.round((grossWords / timeSpentMin) * 10) / 10;
     
     let typedWordsArray = typed.trim() ? typed.trim().split(/\s+/) : [];
-
     let { diffList, correctCount, mistakesCount, correctKeystrokesCount } = computeStrictSubmissionAlignment(activeWords, typedWordsArray);
-
     let correctWordsNum = Math.round((correctKeystrokesCount / divisor) * 10) / 10;
 
     let allowedMistakes = Math.round((totalTypedWordsNum * allowPct) * 10) / 10;
@@ -1698,55 +1618,27 @@ async function finishTest() {
     
     let netWords = Math.max(0, grossWords - penaltyWords);
     let netWpm = Math.round((netWords / timeSpentMin) * 10) / 10;
-
     let accuracy = typedKeystrokes > 0 ? Math.round((correctKeystrokesCount / typedKeystrokes) * 100 * 10) / 10 : 0;
     if (accuracy > 100) accuracy = 100;
 
     let isQualified = netWpm >= minNetWpmReq && typedKeystrokes >= minKeysReq;
-    if (accMandatory === "mandatory") {
-        if (accuracy < minAccReq) isQualified = false;
-    }
+    if (accMandatory === "mandatory" && accuracy < minAccReq) isQualified = false;
     
     let now = new Date();
     let formattedDate = now.getDate() + " " + now.toLocaleString('en-US', { month: 'short' }) + " " + now.getFullYear() + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
     let randomId = Math.random().toString(36).substring(2, 10).toUpperCase();
 
-    let durationStr = Math.floor(totalTimeSec / 60) + " mins : 00 seconds";
-    let timeTakenStr = Math.floor(timeSpentSec / 60) + " mins : " + (timeSpentSec % 60) + " seconds";
-    let detailsStr = Math.floor(totalTimeSec / 60) + " mins | " + lang + " | " + testName + " | " + formattedDate + " | Email: " + (window.loggedInUserEmail || "Guest");
-    let formulaStr = `Net speed >= ${minNetWpmReq} WPM${accMandatory === "mandatory" ? `, Acc >= ${minAccReq}%` : ''} (${Math.round(allowPct*100)}% allowance)`;
-
     let resultObj = {
-        id: randomId,
-        course: course,
-        email: window.loggedInUserEmail || "Guest",
-        rawTimestamp: now.toISOString(),
-        time: formattedDate,
-        name: testName,
-        duration: durationStr,
-        timeTaken: timeTakenStr,
-        formula: formulaStr,
-        totalKeystrokes: totalKeystrokesInOrig,
-        totalWords: totalWordsInOrig,
-        typedKeystrokes: typedKeystrokes,
-        typedCorrectKeystrokes: correctKeystrokesCount,
-        typedWordsCount: totalTypedWordsNum,
-        correctKeystrokes: correctKeystrokesCount,
-        correctWords: correctWordsNum,
-        incorrectWords: mistakesCount,
-        gross: grossWpm + " WPM",
-        allowedMistakes: allowedMistakes,
-        penalty: penaltyWords,
-        netWpm: netWpm,
-        backspaceCount: backspaceCount,
-        accuracy: accuracy,
-        status: isQualified ? "Qualified" : "Non Qualified",
-        details: detailsStr,
-        activeWords: activeWords,
-        typedWordsArray: typedWordsArray,
-        diffList: diffList,
-        typedText: typed
+        id: randomId, course: course, email: window.loggedInUserEmail || "Guest",
+        rawTimestamp: now.toISOString(), time: formattedDate, name: testName,
+        duration: Math.floor(totalTimeSec / 60) + " mins", timeTaken: Math.floor(timeSpentSec / 60) + " mins",
+        totalKeystrokes: totalKeystrokesInOrig, totalWords: totalWordsInOrig,
+        typedKeystrokes: typedKeystrokes, typedCorrectKeystrokes: correctKeystrokesCount,
+        typedWordsCount: totalTypedWordsNum, correctWords: correctWordsNum,
+        incorrectWords: mistakesCount, gross: grossWpm + " WPM", allowedMistakes: allowedMistakes,
+        penalty: penaltyWords, netWpm: netWpm, backspaceCount: backspaceCount, accuracy: accuracy,
+        status: isQualified ? "Qualified" : "Non Qualified", activeWords: activeWords,
+        typedWordsArray: typedWordsArray, diffList: diffList, typedText: typed
     };
 
     try {
@@ -1764,14 +1656,9 @@ async function finishTest() {
 
 function updateResultsHistoryTable() {
     let tbody = document.getElementById('resultsTableBody');
-    let totalCountEl = document.getElementById('totalTestsCount');
-    let qualCountEl = document.getElementById('qualifiedCount');
-
-    if (totalCountEl) totalCountEl.innerText = testHistory.length;
-    let qualified = testHistory.filter(h => h.status === "Qualified").length;
-    if (qualCountEl) qualCountEl.innerText = qualified;
-
     if (!tbody) return;
+    document.getElementById('totalTestsCount').innerText = testHistory.length;
+    document.getElementById('qualifiedCount').innerText = testHistory.filter(h => h.status === "Qualified").length;
 
     if (testHistory.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No test attempts found yet.</td></tr>`;
@@ -1791,54 +1678,23 @@ function updateResultsHistoryTable() {
 }
 
 function updateBestPerformance() {
-    let bestSpeed = 0;
-    let bestAcc = 0;
-    
-    if (testHistory.length > 0) {
-        testHistory.forEach(h => {
-            if (h.netWpm > bestSpeed) {
-                bestSpeed = h.netWpm;
-                bestAcc = h.accuracy;
-            }
-        });
-    }
-
-    let speedEl = document.getElementById('bestSpeedDisplay');
-    let accEl = document.getElementById('bestAccDisplay');
-    if(speedEl) speedEl.innerText = bestSpeed + " WPM";
-    if(accEl) accEl.innerText = bestAcc + "%";
-
-    let quotes = [
-        "\"सफलता एक दिन में नहीं मिलती, लेकिन ठान लो तो एक दिन जरूर मिलती है! निरंतर अभ्यास ही सफलता की चाबी है।\"",
-        "\"मुश्किलें दिल के इरादे आजमाती हैं, स्वप्न के पर्दे निगाहों से हटाती हैं, हौसला मत हार गिर कर ऐ मुसाफिर, ठोकरें इंसान को चलना सिखाती हैं!\"",
-        "\"आज की मेहनत कल की जीत है, अपनी उंगलियों की रफ्तार और सटीकता को हर दिन बेहतर बनाओ!\"",
-        "\"लक्ष्य पर नजर और उंगलियों में फुर्ती हो, तो दुनिया की कोई भी टाइपिंग परीक्षा नामुमकिन नहीं!\""
-    ];
-    let randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-    let quoteEl = document.getElementById('motivationQuote');
-    if(quoteEl) quoteEl.innerText = randomQuote;
+    let bestSpeed = 0, bestAcc = 0;
+    testHistory.forEach(h => { if (h.netWpm > bestSpeed) { bestSpeed = h.netWpm; bestAcc = h.accuracy; } });
+    document.getElementById('bestSpeedDisplay').innerText = bestSpeed + " WPM";
+    document.getElementById('bestAccDisplay').innerText = bestAcc + "%";
 }
 
 function viewSingleResult(index) {
     let res = testHistory[index];
     if (!res) return;
-
     if (!res.diffList && res.activeWords && res.typedWordsArray) {
-        let evaluated = computeStrictSubmissionAlignment(res.activeWords, res.typedWordsArray);
-        res.diffList = evaluated.diffList;
+        res.diffList = computeStrictSubmissionAlignment(res.activeWords, res.typedWordsArray).diffList;
     }
 
-    let setVal = (id, val) => {
-        let el = document.getElementById(id);
-        if (el) el.innerText = val;
-    };
-
+    let setVal = (id, val) => { let el = document.getElementById(id); if (el) el.innerText = val; };
     let shareLink = window.location.origin + window.location.pathname + "?resultId=" + (res.docId || res.id);
     let linkEl = document.getElementById('resLinkShare');
-    if (linkEl) {
-        linkEl.innerText = res.id + " (Copy Link)";
-        linkEl.setAttribute('data-link', shareLink);
-    }
+    if (linkEl) { linkEl.innerText = res.id + " (Copy Link)"; linkEl.setAttribute('data-link', shareLink); }
 
     setVal('resDuration', res.duration);
     setVal('resTimeTaken', res.timeTaken);
@@ -1849,49 +1705,26 @@ function viewSingleResult(index) {
     setVal('resTypedCorrectKeystrokes', res.typedCorrectKeystrokes || res.correctKeystrokes || 0);
     setVal('resCorrectWords', res.correctWords);
     setVal('resIncorrectWords', res.incorrectWords);
-
     setVal('resGross', res.gross);
     setVal('resAllowedMistakes', res.allowedMistakes);
     setVal('resPenalty', res.penalty);
     setVal('resNet', res.netWpm + " WPM");
     setVal('resBackspaceCount', res.backspaceCount);
     setVal('resAccuracy', res.accuracy + "%");
-    setVal('resDetails', res.details);
-    setVal('resFormula', res.formula);
     
     let statusEl = document.getElementById('resStatus');
-    if (statusEl) {
-        statusEl.innerText = res.status;
-        statusEl.style.color = res.status === 'Qualified' ? '#16a34a' : '#dc2626';
-    }
+    if (statusEl) { statusEl.innerText = res.status; statusEl.style.color = res.status === 'Qualified' ? '#16a34a' : '#dc2626'; }
 
-    let diffHtml = "";
-    if (res.diffList && res.diffList.length > 0) {
-        diffHtml = res.diffList.map(item => {
-            if (item.type === 'correct') {
-                return `<span class="word-normal">${item.word}</span>`;
-            } else if (item.type === 'omitted_word') {
-                return `<span class="word-orig-blue-line">${item.origWord}</span>`;
-            } else if (item.type === 'untyped_subdued') {
-                return `<span class="word-untyped-strike">${item.origWord}</span>`;
-            } else if (item.type === 'typo') {
-                let origPart = item.origWord ? `<span class="word-orig-blue-line">${item.origWord}</span>` : "";
-                let userPart = item.userWord ? `<span class="word-wrong-red">${item.userWord}</span>` : "";
-                return origPart + userPart;
-            }
-        }).join(' ');
-    } else if (res.activeWords) {
-        diffHtml = res.activeWords.map(w => `<span class="word-normal">${w}</span>`).join(' ');
-    }
+    let diffHtml = res.diffList ? res.diffList.map(item => {
+        if (item.type === 'correct') return `<span class="word-normal">${item.word}</span>`;
+        if (item.type === 'omitted_word') return `<span class="word-orig-blue-line">${item.origWord}</span>`;
+        if (item.type === 'untyped_subdued') return `<span class="word-untyped-strike">${item.origWord}</span>`;
+        if (item.type === 'typo') return (item.origWord ? `<span class="word-orig-blue-line">${item.origWord}</span>` : "") + (item.userWord ? `<span class="word-wrong-red">${item.userWord}</span>` : "");
+    }).join(' ') : "";
 
-    let diffBox = document.getElementById('differencesBox');
-    if (diffBox) diffBox.innerHTML = diffHtml;
-
-    let typedPassageEl = document.getElementById('yourTypedPassageBox');
-    let origPassageEl = document.getElementById('originalPassageBox');
-    if (typedPassageEl) typedPassageEl.innerText = res.typedText || (res.typedWordsArray ? res.typedWordsArray.join(' ') : "");
-    if (origPassageEl) origPassageEl.innerText = res.activeWords ? res.activeWords.join(' ') : "";
-
+    document.getElementById('differencesBox').innerHTML = diffHtml;
+    document.getElementById('yourTypedPassageBox').innerText = res.typedText || "";
+    document.getElementById('originalPassageBox').innerText = res.activeWords ? res.activeWords.join(' ') : "";
     switchTab('singleResultView');
 }
 
@@ -1900,11 +1733,7 @@ function copyResultShareLink(e) {
     let linkEl = document.getElementById('resLinkShare');
     let shareLink = linkEl.getAttribute('data-link');
     if (shareLink) {
-        navigator.clipboard.writeText(shareLink).then(() => {
-            alert("🔗 रिजल्ट शेयरिंग लिंक कॉपी हो गया है!");
-        }).catch(err => {
-            alert("लिंक कॉपी करने में विफल: " + err);
-        });
+        navigator.clipboard.writeText(shareLink).then(() => alert("🔗 रिजल्ट शेयरिंग लिंक कॉपी हो गया है!"));
     }
 }
 
@@ -1913,23 +1742,11 @@ async function loadSharedResult(docId) {
         if (window.db && window.getDocs) {
             let snap = await window.getDocs(window.collection(window.db, "userResults"));
             let foundResult = null;
-            snap.forEach(d => {
-                if (d.id === docId || d.data().id === docId) {
-                    foundResult = { docId: d.id, ...d.data() };
-                }
-            });
-            if (foundResult) {
-                activeWords = foundResult.activeWords || [];
-                testHistory = [foundResult];
-                viewSingleResult(0);
-            } else {
-                alert("रिजल्ट नहीं मिला या लिंक एक्सपायर हो गया है।");
-                switchTab('homeView', document.getElementById('menu-home'));
-            }
+            snap.forEach(d => { if (d.id === docId || d.data().id === docId) foundResult = { docId: d.id, ...d.data() }; });
+            if (foundResult) { activeWords = foundResult.activeWords || []; testHistory = [foundResult]; viewSingleResult(0); }
+            else { alert("रिजल्ट नहीं मिला।"); switchTab('homeView', document.getElementById('menu-home')); }
         }
-    } catch(e) {
-        console.log("Load Shared Result Error:", e);
-    }
+    } catch(e) { console.log(e); }
 }
 </script>
 
